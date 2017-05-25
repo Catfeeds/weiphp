@@ -1,0 +1,49 @@
+<include file="Public/mobile_head"/>
+<link href="{:ADDON_PUBLIC_PATH}/pinyin.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
+<!-- 引入 jQuery Mobile 样式 -->
+<link rel="stylesheet" href="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<!-- 引入 jQuery 库 -->
+<script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+<!-- 引入 jQuery Mobile 库 -->
+<script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script>
+var pinyingbiao = new Array("","a","ai","an","ang","ao","ba","bai","ban","bang","bao","bei","ben","beng","bi","bian","biao","bie","bin","bing","bo","bu","ca","cai","can","cang","cao","ce","cen","ceng","cha","chai","chan","chang","chao","che","chen","cheng","chong","chou","chu","chua","chuai","chuan","chuang","chui","chun","chuo","cong","cou","cu","cuan","cui","cun","cuo","da","dai","dan","dang","dao","de","dei","den","deng","di","dian","diao","die","ding","diu","dong","dou","du","duan","dui","dun","duo","e","ei","en","eng","er","fa","fan","fang","fei","fen","feng","fo","fou","fu","ga","gai","gan","gang","gao","ge","gei","gen","geng","gong","gou","gu","gua","guai","guan","guang","gui","gun","guo","ha","hai","han","hang","hao","he","hei","hen","heng","hong","hou","hu","hua","huai","huan","huang","hui","hun","huo","ji","jia","jian","jiang","jiao","jie","jin","jing","jiong","jiu","ju","juan","jue","jun","ka","kai","kan","kang","kao","ke","ken","keng","kong","kou","ku","kua","kuai","kuan","kuang","kui","kun","kuo","la","lai","lan","lang","lao","le","lei","leng","li","lia","lian","liang","liao","lie","lin","ling","liu","long","lou","lu","lü","luan","lüe","lun","luo","ma","mai","man","mang","mao","me","mei","men","meng","mi","mian","miao","mie","min","ming","miu","mo","mou","mu","na","nai","nan","nang","nao","ne","nei","nen","neng","ni","nian","niang","niao","nie","nin","ning","niu","nong","nou","nu","nü","nuan","nüe","nuo","o","ou","pa","pai","pan","pang","pao","pei","pen","peng","pi","pian","piao","pie","pin","ping","po","pou","pu","qi","qia","qian","qiang","qiao","qie","qin","qing","qiong","qiu","qu","quan","que","qun","ran","rang","rao","re","ren","reng","ri","rong","rou","ru","ruan","rui","run","ruo","sa","sai","san","sang","sao","se","sen","seng","sha","shai","shan","shang","shao","she","shei","shen","sheng","shou","shu","shua","shuai","shuan","shuang","shui","shun","shuo","song","sou","su","suan","sui","sun","suo","ta","tai","tan","tang","tao","te","teng","ti","tian","tiao","tie","ting","tong","tou","tu","tuan","tui","tun","tuo","wa","wai","wan","wang","wei","wen","weng","wo","wu","xi","xia","xian","xiang","xiao","xie","xin","xing","xiong","xiu","xu","xuan","xue","xun","ya","yan","yang","yao","ye","yi","yin","ying","yong","you","yu","yuan","yue","yun","za","zai","zan","zang","zao","ze","zei","zen","zeng","zha","zhai","zhan","zhang","zhao","zhe","zhei","zhen","zheng","zhong","zhou","zhu","zhua","zhuai","zhuan","zhuang","zhui","zhun","zhuo","zong","zou","zu","zuan","zui","zun","zuo");
+var old = 1;
+$(document).on("pageinit",function(event){
+  $(".touch").on("swipeleft",function(event){
+  	change();
+  });  
+  $(".touch").on("swiperight",function(event){
+  	change();
+  }); 
+});
+function change(){
+    var newx = parseInt(Math.random()*(400-1+1)+1);
+    while(old == newx) {
+    	newx = parseInt(Math.random()*(400-1+1)+1);
+    }
+    old = newx;
+    var tmp = "<span>" + pinyingbiao[newx] + "</span>";
+    $(".text").html(tmp).css({"color":"red","font-size":"500%","text-align":"center"});               
+
+}
+</script>
+
+<body id="scratch">
+   <div class="container body" style="position:relative; background:#fff;">
+    	<div class="head_box">
+    		<img src="{:ADDON_PUBLIC_PATH}/head_bg.jpg" width="100%"/>
+            <div class="title_layer">XIXI学拼音</div>
+            <div class="style"></div>
+        </div>
+            <div class="box">
+                <h6>使用说明</h6>
+                <div>划划看</div>
+            </div>
+		<div class="touch">
+		<div class="text" style="text-align:center;border:1px solid black;height:100px;"><br><br>滑动本区域</div>
+		</div>
+    	 <p class="copyright">{$system_copy_right}{$tongji_code}</p>
+        </div>
+</body>
+</html>
