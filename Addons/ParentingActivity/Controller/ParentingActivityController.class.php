@@ -13,9 +13,8 @@ class ParentingActivityController extends AddonsController{
 		$param ['token'] = get_token ();
 		$param ['openid'] = get_openid ();
 		
-		addWeixinLog ( ”ParentingActivityController“, $param );
-		
-		$this->display ( SITE_PATH . '/Addons/ParentingActivity/View/default/show.html' );
+		addWeixinLog ( 'ParentingActivityController', $param );
+                $this->display ( SITE_PATH . '/Addons/ParentingActivity/View/default/show.html' );
 	}
 
 }
