@@ -16,6 +16,7 @@ date_default_timezone_set ( 'PRC' );
 if (version_compare ( PHP_VERSION, '5.3.0', '<' ))
 	die ( 'Your PHP Version is ' . PHP_VERSION . ', But WeiPHP require PHP > 5.3.0 !' );
 
+define ( 'SYSTEM_TOKEN', 'weiphp' );
 /**
  * 微信接入验证
  * 在入口进行验证而不是放到框架里验证，主要是解决验证URL超时的问题
@@ -26,7 +27,7 @@ if (! empty ( $_GET ['echostr'] ) && ! empty ( $_GET ["signature"] ) && ! empty 
 	$nonce = $_GET ["nonce"];
 	
 	$tmpArr = array (
-			'weiphp',
+			SYSTEM_TOKEN,
 			$timestamp,
 			$nonce 
 	);
@@ -34,7 +35,6 @@ if (! empty ( $_GET ['echostr'] ) && ! empty ( $_GET ["signature"] ) && ! empty 
 	$tmpStr = sha1 ( implode ( $tmpArr ) );
 	
 	if ($tmpStr == $signature) {
-		header('content-type:text');
 		echo $_GET ["echostr"];
 	}
 	exit ();
@@ -46,7 +46,7 @@ if (! empty ( $_GET ['echostr'] ) && ! empty ( $_GET ["signature"] ) && ! empty 
 define ( 'APP_DEBUG', true );
 define ( 'SHOW_ERROR', true );
 
-define ( 'IN_WEIXIN', false );
+define ( 'IN_WEIXIN', true );
 define ( 'DEFAULT_TOKEN', '-1' ); 
 
 /**
@@ -63,7 +63,7 @@ define ( 'SITE_PATH', dirname ( __FILE__ ) );
  */
 define ( 'APP_PATH', './Application/' );
 
-if (! is_file ( SITE_PATH.'/Data/install.lock' )) {
+if (! is_file ( SITE_PATH . '/Data/install.lock' )) {
 	header ( 'Location: ./install.php' );
 	exit ();
 }
