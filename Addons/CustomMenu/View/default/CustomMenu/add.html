@@ -30,6 +30,10 @@
                       <textarea name="{$field.name}">{:I($field[name], $field[value])}</textarea>
                     </label>
                   </case>
+                   <case value="material">
+                  <div id="material_{$field.name}"></div>
+                  {:hook('material', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                  </case>
                   <case value="datetime">
                     <input type="datetime" name="{$field.name}" class="text time" value="{:I($field[name], $field[value])}" placeholder="请选择时间" />
                   </case>
@@ -74,6 +78,10 @@
                   <div id="dynamic_select_{$field.name}"></div>
                   {:hook('dynamic_select', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
                   </case>
+                  <case value="dynamic_checkbox">
+                  <div id="dynamic_checkbox_{$field.name}"></div>
+                  {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                  </case>                     
                   <case value="news">
                   <div id="news_{$field.name}"></div>
                   {:hook('news', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
@@ -118,7 +126,7 @@
                       {:hook('adminArticleEdit', array('name'=>$field['name'],'value'=>$field['value']))} </label>
                   </case>
                   <case value="picture">
-                    <div class="controls uploadrow2" title="点击修改图片" rel="{$field.name}">
+                    <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="{$field.name}">
                       <input type="file" id="upload_picture_{$field.name}">
                       <input type="hidden" name="{$field.name}" id="cover_id_{$field.name}"/>
                       <div class="upload-img-box">
@@ -144,7 +152,7 @@
                             </volist>
                           </notempty>
                         </div>
-                        <div class="controls uploadrow2 mult" title="点击上传图片" rel="{$field.name}">
+                        <div class="controls uploadrow2" data-max="9" title="点击上传图片" rel="{$field.name}">
                           <input type="file" id="upload_picture_{$field.name}">
                         </div>
                     </div>
@@ -217,7 +225,7 @@
        
         </div>
         <div class="form-item form_bh">
-          <button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">{$submit_name|default='确 定'}</button>
+          <button class="btn submit-btn ajax-post" id="submit1" type="button" target-form="form-horizontal">{$submit_name|default='确 定'}</button>
         </div>
       </form>
       		
@@ -236,9 +244,35 @@
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={:SITE_VERSION}" charset="UTF-8"></script> 
   <script type="text/javascript">
-$('#submit').click(function(){
+$('#submit1').click(function(){
 // 	var url=$("select[name='target_id'] option:selected").data('url');
 // 	$("input[name='url']").val(url);
+	var title = $("input[name='title']").val();
+	if(!title){
+		alert('请填写菜单名');
+		return false;
+	}
+	var fromType=$("select[name='from_type'] option:selected").val();
+	if(fromType == -1){
+		alert('请选择配置动作');
+		return false;
+	}
+	if(fromType == 9){
+		var type= $("input[name='type']:checked").val();
+		if(type == 'view'){
+			var url=$("input[name='url']").val();
+			if(!url){
+				alert('请输入关联url');
+				return false;
+			}
+		}else if(type != 'none'){
+			var keyword=$("input[name='keyword']").val();
+			if(!keyword){
+				alert('请输入关联关键词');
+				return false;
+			}
+		}
+	}
     $('#form').submit();
 });
 $(function(){
@@ -283,21 +317,29 @@ $(function(){
 		
 		var fromType=$("select[name='from_type'] option:selected").val();
 		if(fromType != 9){
-			$("input[name='keyword']").prop('readonly',true);
-			$("input[name='url']").prop('readonly',true);
+			$('.toggle-keyword').hide();
+			$('.toggle-url').hide();
+// 			$("input[name='keyword']").prop('readonly',true);
+// 			$("input[name='url']").prop('readonly',true);
 		}else{
-			$("input[name='keyword']").prop('readonly',false);
-			$("input[name='url']").prop('readonly',false);
+// 			$("input[name='keyword']").prop('readonly',false);
+// 			$("input[name='url']").prop('readonly',false);
+			$('.toggle-keyword').show();
+			//$('.toggle-url').show();
 		}
 	});	
 	var addon="{$data.addon}";
 	var jump_type=$("input[name='jump_type']:checked").val();
 	getAddon(jump_type,addon);
 	$("input[name='jump_type']").click(function(){
+		$('.toggle-keyword').hide();
+		$('.toggle-url').hide();
 		var jump_type=$("input[name='jump_type']:checked").val();
 		getAddon(jump_type,addon);
 	});
 	$("select[name='addon']").change(function(){
+		$('.toggle-keyword').hide();
+		$('.toggle-url').hide();
 		var jump_type=$("input[name='jump_type']:checked").val();
 		var select_addon=$("select[name='addon'] option:selected").val();
 		
@@ -307,10 +349,17 @@ $(function(){
 				selectAddons(urls['url'],select_addon,jump_type);
 			}else{
 				if(jump_type==0){
-					$("input[name='type']").val('click');
-					var k='custom_addon_'+select_addon+'_lists';
-					$("input[name='keyword']").val(k);
-					$("input[name='target_id']").val(-1);
+					if(select_addon =='Weiba'){
+						$("input[name='type']").val('click');
+						var k='微社区';
+						$("input[name='keyword']").val(k);
+						$("input[name='target_id']").val(-1);
+					}else{
+						$("input[name='type']").val('click');
+						var k='custom_addon_'+select_addon+'_lists';
+						$("input[name='keyword']").val(k);
+						$("input[name='target_id']").val(-1);
+					}
 // 					$("select[name='target_id'] option").remove();
 // 					var targetStr='<option value="-1" selected=selected>-1</option>';
 // 					$(targetStr).appendTo("select[name='target_id']");
@@ -338,6 +387,8 @@ $(function(){
 	});	
 	
 	$("select[name='sucai_type']").change(function(){ 
+		$('.toggle-keyword').hide();
+		$("select[name='addon']").val(0);
 		var select_sucai=$("select[name='sucai_type'] option:selected").val();
 		$("select[name='target_id'] option").remove();
 		if(select_sucai == 1){
@@ -404,90 +455,6 @@ function selectAddons(url,addon,jump_type){
 			}
 		}
 	})
-}
-
-function selectText(){
-	$.WeiPHP.openSelectLists("{:U('Material/text_lists')}",1,'选择文本素材',function(data){
-		if(data && data.length>0){
-			for(var i=0;i<data.length;i++){
-				var id=data[i]['id'];
-				if(id){
-					$("input[name='type']").val('click');
-					var k='custom_sucai_text_'+id;
-					$("input[name='keyword']").val(k);
-					$("input[name='target_id']").val(id);
-// 					$("select[name='target_id'] option").remove();
-// 					var targetStr='<option value='+id+' selected=selected>'+id+'</option>';
-// 					$(targetStr).appendTo("select[name='target_id']");
-// 					var targetStr='';
-// 					$.post("{:U('Material/get_content_by_id')}",{'id':id},function(d){
-// // 						$('#message_text').text(d);
-// 						targetStr+='<option value='+id+' data-url="">'+d+'</option>';
-// 						$(targetStr).appendTo("select[name='target_id']");
-// 					})
-				}
-			}
-		}
-	})
-}
-function selectAppMsgCallback(_this){
-	$('.appmsg_wrap').html($(_this).html()).show();
-	$('#appmsg_area .select_appmsg').hide();
-	$('#appmsg_area .delete').show();
-// 	$('input[name="appmsg_id"]').val($(_this).data('group_id'));
-	var id=$(_this).data('group_id');
-	$("input[name='type']").val('click');
-	var k='custom_sucai_appmsg_'+id;
-	$("input[name='keyword']").val(k);
-	$("input[name='target_id']").val(id);
-// 	$("select[name='target_id'] option").remove();
-// 	var targetStr='<option value='+id+' selected=selected>'+id+'</option>';
-// 	$(targetStr).appendTo("select[name='target_id']");
-	$.Dialog.close();
-}
-function selectImageCallback(_this){
-	$('.image_wrap').html($(_this).html()).show();
-	$('.select_image').hide();
-	$('.image_material .delete').show();
-	var id=$(_this).data('id');
-	$("input[name='type']").val('click');
-	var k='custom_sucai_image_'+id;
-	$("input[name='keyword']").val(k);
-	$("input[name='target_id']").val(id);
-// 	$("select[name='target_id'] option").remove();
-// 	var targetStr='<option value='+id+' selected=selected>'+id+'</option>';
-// 	$(targetStr).appendTo("select[name='target_id']");
-	$.Dialog.close();
-}
-function selectVoiceCallback(_this){
-	$('.voice_wrap').html($(_this).html()).show();
-	$('#voice_area .select_appmsg').hide();
-	$('#voice_area .delete').show();
-// 	$('input[name="voice_id"]').val($(_this).data('id'));
-	var id=$(_this).data('id');
-	$("input[name='type']").val('click');
-	var k='custom_sucai_voice_'+id;
-	$("input[name='keyword']").val(k);
-	$("input[name='target_id']").val(id);
-// 	$("select[name='target_id'] option").remove();
-// 	var targetStr='<option value='+id+' selected=selected>'+id+'</option>';
-// 	$(targetStr).appendTo("select[name='target_id']");
-	$.Dialog.close();
-}
-function selectVideoCallback(_this){
-	$('.video_wrap').html($(_this).html()).show();
-	$('#video_area .select_appmsg').hide();
-	$('#video_area .delete').show();
-// 	$('input[name="video_id"]').val($(_this).data('id'));
-	var id=$(_this).data('id');
-	$("input[name='type']").val('click');
-	var k='custom_sucai_video_'+id;
-	$("input[name='keyword']").val(k);
-	$("input[name='target_id']").val(id);
-// 	$("select[name='target_id'] option").remove();
-// 	var targetStr='<option value='+id+' selected=selected>'+id+'</option>';
-// 	$(targetStr).appendTo("select[name='target_id']");
-	$.Dialog.close();
 }
 </script> 
 </block>

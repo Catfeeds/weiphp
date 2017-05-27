@@ -28,7 +28,6 @@ class WapController extends AddonsController {
 			// dump ( $value );
 			unset ( $data ['value'] );
 			$data = array_merge ( $data, $value );
-			
 			$this->assign ( 'data', $data );
 			// dump($data);
 		} else {
@@ -38,8 +37,9 @@ class WapController extends AddonsController {
 				$map ['forms_id'] = $this->forms_id;
 				
 				$data = M ( get_table_name ( $this->model ['id'] ) )->where ( $map )->find ();
-				if ($data && $forms ['jump_url']) {
-					// redirect ( $forms ['jump_url'] );
+				if ($data ) {
+				    $id = $data['id'];
+					redirect (U('index',array('forms_id'=>$this->forms_id,'id'=>$id)));
 				}
 			}
 		}
@@ -53,10 +53,18 @@ class WapController extends AddonsController {
 			foreach ( $fields as $vo ) {
 				$error_tip = ! empty ( $vo ['error_info'] ) ? $vo ['error_info'] : '请正确输入' . $vo ['title'] . '的值';
 				$value = $_POST [$vo ['name']];
-				if (($vo ['is_must'] && !isset( $value )) || (! empty ( $vo ['validate_rule'] ) && ! M ()->regex ( $value, $vo ['validate_rule'] ))) {
-					$this->error ( $error_tip );
-					exit ();
+				if ($vo['type'] == 'radio' || $vo['type'] == 'checkbox'){
+				    if (($vo ['is_must'] &&  is_null ( $value )) || (! empty ( $vo ['validate_rule'] ) && ! M ()->regex ( $value, $vo ['validate_rule'] ))) {
+				        $this->error ( $error_tip );
+				        exit ();
+				    }
+				}else {
+				    if (($vo ['is_must'] &&  empty ( $value )) || (! empty ( $vo ['validate_rule'] ) && ! M ()->regex ( $value, $vo ['validate_rule'] ))) {
+				        $this->error ( $error_tip );
+				        exit ();
+				    }
 				}
+				
 				
 				$post [$vo ['name']] = $vo ['type'] == 'datetime' ? strtotime ( $_POST [$vo ['name']] ) : $_POST [$vo ['name']];
 				unset ( $_POST [$vo ['name']] );
@@ -92,7 +100,6 @@ class WapController extends AddonsController {
 				'name' => 'forms_id',
 				'value' => $this->forms_id 
 		);
-		
 		$this->assign ( 'fields', $fields );
 		
 		$this->display ();

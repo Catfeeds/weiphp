@@ -25,7 +25,7 @@ class AddonsModel extends Model {
 	 */
 	public function getWeixinList($isAll = false, $token_status = array(), $is_admin = false, $is_show = false) {
 		$list = $this->getList ();
-		
+
 		if ($is_show) {
 			foreach ( $list as $n => $vo ) {
 				if ($vo ['is_show'] != 1)
@@ -34,6 +34,7 @@ class AddonsModel extends Model {
 		}
 		
 		$isAll || $token_status = D ( 'Common/AddonStatus' )->getList ( $is_admin );
+		
 		foreach ( $list as $addon ) {
 			if (! $isAll && isset ( $token_status [$addon ['name']] ) && $token_status [$addon ['name']] < 1)
 				continue;

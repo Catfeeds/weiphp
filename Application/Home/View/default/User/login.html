@@ -6,12 +6,7 @@
 <div class="login_header">
 	
     <div class="log_wrap">
-        <a href="/" title="乐摇"><img class="logo" src="__IMG__/logo.png"/></a>
-        <!--
-        <div class="nav_r">
-            第一次使用WeiPHP？<a href="{:U('User/register')}">立即注册</a>
-        </div>
-        -->
+        <a href="/" title="WeiPHP"><img class="logo" src="__IMG__/logo.png"/></a>
     </div>
     
 </div>
@@ -24,7 +19,7 @@
                 </div>
             	<section class="login_box">
                   <form class="login-form" action="__SELF__" method="post">
-                          <div class="form_body">
+                          <div class="form_body" id="input_login" style="display:<php>if(C('SCAN_LOGIN')) echo 'none';</php> ">
                                 <h6>欢迎使用WeiPHP!</h6>
                                 <div class="input_panel">
                                   <div class="control-group">
@@ -81,6 +76,16 @@
                                  <php> } </php>
                               </div>
                           </div>
+                          <php>if(C('SCAN_LOGIN')) { </php>
+                          <div class="form_body" id='scan_login'>
+                                <h6>请用微信扫码登录</h6>
+                                <div class="input_panel">
+                      <div id="qrCode"><img src="{$qrcode}" /></div>
+                      <p class="qr_time_tips">如未关注公众号，先关注即可登录</p>
+                               </div>
+                               <div class="o_p"><a href="javascript:void(0)" onclick="$('#input_login').show();$('#scan_login').hide();">原注册用户登录入口</a></div>
+                              </div>
+                          <php> } </php>
                        </form> 
                 </section>
             </div>
@@ -131,5 +136,17 @@
 				$(this).parent().find('.fa').css('color','#aaa');
 				})
 		});
+		
+<php>if(C('SCAN_LOGIN')) { </php>		
+	setInterval(function(){
+		$.post("{:U('login')}",{},function(res){
+			if(res==1){
+				window.location.href = "{:U('home/index/main')}";
+			}
+		});
+	},3000);
+<php> } </php>
+
+	$('#login_body').height($(window).height());	
 	</script>
 </block>

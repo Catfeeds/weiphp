@@ -494,7 +494,7 @@ function addons_url($url, $param = array()) {
 	$urlArr = explode ( '://', $url );
 	if (stripos ( $urlArr [0], '_' ) !== false) {
 		$addons = $urlArr [0];
-		$url = 'http://' . $urlArr [1];
+		$url = HTTP_PREFIX . $urlArr [1];
 	}
 	$url = parse_url ( $url );
 	$case = C ( 'URL_CASE_INSENSITIVE' );
@@ -1054,13 +1054,39 @@ function get_cover($cover_id, $field = null) {
 }
 function get_cover_url($cover_id, $width = '', $height = '') {
 	$info = get_cover ( $cover_id );
-	
 	if ($width > 0 && $height > 0) {
 		$thumb = "?imageMogr2/thumbnail/{$width}x{$height}";
 	} elseif ($width > 0) {
 		$thumb = "?imageMogr2/thumbnail/{$width}x";
 	} elseif ($height > 0) {
 		$thumb = "?imageMogr2/thumbnail/x{$height}";
+	}
+	if ($width || $height){
+	    $path = '';
+	    if ($info['url']){
+	        $path =   mk_rule_image($info['url'], $width, $height);
+	    }else {
+	        if (empty (  $info ['path'] ))
+	            return '';
+	        $path =  mk_rule_image($info['path'], $width, $height);
+	    }
+	    return $path.$thumb;
+	}else{
+	    if ($info ['url'])
+	        return $info ['url'] . $thumb;
+	    
+	    $url = $info ['path'];
+	    if (empty ( $url ))
+	        return '';
+	    return SITE_URL . $url . $thumb;
+	}
+	
+}
+function get_square_url($cover_id, $width = '') {
+	$info = get_cover ( $cover_id );
+	
+	if ($width > 0) {
+		$thumb = "?imageView2/1/w/{$width}";
 	}
 	if ($info ['url'])
 		return $info ['url'] . $thumb;
@@ -1283,7 +1309,7 @@ function get_list_field($data, $grid, $model) {
 			), $href );
 			
 			// 替换数据变量
-			$href = preg_replace_callback ( '/\[([a-z_]+)\]/', function ($match) use($data) {
+			$href = preg_replace_callback ( '/\[([a-z_]+)\]/', function ($match) use ($data) {
 				return $data [$match [1]];
 			}, $href );
 			
@@ -1294,10 +1320,19 @@ function get_list_field($data, $grid, $model) {
 			if ($show == '删除') {
 				$val [] = '<a class="confirm"   href="' . urldecode ( U ( $href, $GLOBALS ['get_param'] ) ) . '">' . $show . '</a>';
 			} else if ($show == '复制链接') {
+				$paramArrs = $GLOBALS ['get_param'];
+				unset ( $paramArrs ['mdm'] );
 				$publicid = get_token_appinfo ( '', 'id' );
-				$val [] = '<a class="list_copy_link" id="copyLink_' . $data ['id'] . '"   data-clipboard-text="' . urldecode ( U ( $href, $GLOBALS ['get_param'] ) ) . '&publicid=' . $publicid . '">' . $show . '</a>';
+				$val [] = '<a class="list_copy_link" id="copyLink_' . $data ['id'] . '"   data-clipboard-text="' . urldecode ( U ( $href, $paramArrs ) ) . '&publicid=' . $publicid . '">' . $show . '</a>';
 			} else {
-				$val [] = '<a  target="' . $target . '" href="' . urldecode ( U ( $href, $GLOBALS ['get_param'] ) ) . '">' . $show . '</a>';
+				// 排除GET里的参数影响到已赋值的参数
+				$url_param = array ();
+				foreach ( $GLOBALS ['get_param'] as $key => $gp ) {
+					if (strpos ( $href, $key . '=' ) === false) {
+						$url_param [$key] = $gp;
+					}
+				}
+				$val [] = '<a  target="' . $target . '" href="' . urldecode ( U ( $href, $url_param ) ) . '">' . $show . '</a>';
 			}
 		}
 		$value = implode ( ' ', $val );
@@ -1396,11 +1431,8 @@ function isWeixinBrowser($from = 0) {
 }
 // php获取当前访问的完整url地址
 function GetCurUrl() {
-	$url = 'http://';
-	if (isset ( $_SERVER ['HTTPS'] ) && $_SERVER ['HTTPS'] == 'on') {
-		$url = 'https://';
-	}
-	if ($_SERVER ['SERVER_PORT'] != '80') {
+	$url = HTTP_PREFIX;
+	if ($_SERVER ['SERVER_PORT'] != '80' && $_SERVER ['SERVER_PORT'] != '443') {
 		$url .= $_SERVER ['HTTP_HOST'] . ':' . $_SERVER ['SERVER_PORT'] . $_SERVER ['REQUEST_URI'];
 	} else {
 		$url .= $_SERVER ['HTTP_HOST'] . $_SERVER ['REQUEST_URI'];
@@ -1414,20 +1446,23 @@ function GetCurUrl() {
 // 获取当前用户的OpenId
 function get_openid($openid = NULL) {
 	$token = get_token ();
-	if ($openid !== NULL && $openid != '-1') {
+	if ($openid !== NULL && $openid != '-1' && $openid != '-2') {
 		session ( 'openid_' . $token, $openid );
 	} elseif (! empty ( $_REQUEST ['openid'] ) && $_REQUEST ['openid'] != '-1' && $_REQUEST ['openid'] != '-2') {
 		session ( 'openid_' . $token, $_REQUEST ['openid'] );
 	}
 	$openid = session ( 'openid_' . $token );
+	
 	$isWeixinBrowser = isWeixinBrowser ();
 	if ((empty ( $openid ) || $openid == '-1') && $isWeixinBrowser && $_REQUEST ['openid'] != '-2' && IS_GET && ! IS_AJAX) {
 		$callback = GetCurUrl ();
-		OAuthWeixin ( $callback, $token );
+		$openid = OAuthWeixin ( $callback, $token, true );
+		if ($openid != false && $openid != '-2') {
+			session ( 'openid_' . $token, $openid );
+		}
 	}
 	if (empty ( $openid )) {
 		return '-1';
-		// exit ( 'openid获取失败error' );
 	}
 	return $openid;
 }
@@ -1443,57 +1478,26 @@ function getOpenidByUid($uid, $token = '') {
  * 获取支付的appid的openid
  * 微信支付和红包使用
  */
-function getPaymentOpenid($appId = "", $serect = "") { // echo '444';
+function getPaymentOpenid($appId = "", $serect = "") {
 	if (empty ( $appId ) || empty ( $serect )) {
-		get_openid ();
+		
+		$openid = get_openid ();
+		return $openid;
 		exit ();
 	}
 	$callback = GetCurUrl ();
-	if ((defined ( 'IN_WEIXIN' ) && IN_WEIXIN) || isset ( $_GET ['is_stree'] ))
-		return false;
 	
-	$callback = urldecode ( $callback );
-	$isWeixinBrowser = isWeixinBrowser ();
+	$param = $appId . ':' . $serect;
+	$openid = OAuthWeixin ( $callback, $param, true );
 	
-	if (strpos ( $callback, '?' ) === false) {
-		$callback .= '?';
-	} else {
-		$callback .= '&';
-	}
-	$param ['appid'] = $appId;
-	
-	if (! isset ( $_GET ['getOpenId'] )) {
-		$param ['redirect_uri'] = $callback . 'getOpenId=1';
-		$param ['response_type'] = 'code';
-		$param ['scope'] = 'snsapi_base';
-		$param ['state'] = 123;
-		
-		$url = 'https://open.weixin.qq.com/connect/oauth2/authorize?' . http_build_query ( $param ) . '#wechat_redirect';
-		redirect ( $url );
-	} else if ($_GET ['state']) {
-		$param ['secret'] = $serect;
-		$param ['code'] = I ( 'code' );
-		$param ['grant_type'] = 'authorization_code';
-		
-		$url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' . http_build_query ( $param );
-		$content = file_get_contents ( $url );
-		$content = json_decode ( $content, true );
-		return $content ['openid'];
-	}
+	return $openid;
 }
 // 获取当前用户的Token
 function get_token($token = NULL) {
 	$stoken = session ( 'token' );
-	$domain = explode ( '.', SITE_DOMAIN );
 	
 	if ($token !== NULL && $token != '-1') {
 		session ( 'token', $token );
-	} elseif (empty ( $stoken ) && C ( 'DIV_DOMAIN' ) && ! is_numeric ( $domain [0] ) && SITE_DOMAIN != 'localhost') { // 泛域名支持
-		$domain = explode ( '.', SITE_DOMAIN );
-		$map ['domain'] = $domain [0];
-		! $GLOBALS ['is_wap'] && $GLOBALS ['mid'] && $map ['uid'] = $GLOBALS ['uid'];
-		$token = D ( 'Common/Public' )->where ( $map )->getField ( 'token' );
-		$token && session ( 'token', $token );
 	} elseif (! empty ( $_REQUEST ['token'] ) && $_REQUEST ['token'] != '-1') {
 		session ( 'token', $_REQUEST ['token'] );
 	} elseif (! empty ( $_REQUEST ['publicid'] )) {
@@ -1502,19 +1506,12 @@ function get_token($token = NULL) {
 		$token && session ( 'token', $token );
 	}
 	$token = session ( 'token' );
+	if (! empty ( $token ) && $token != '-1' && $stoken != $token && $GLOBALS ['is_wap']) {
+		session ( 'mid', null );
+	}
 	
 	if (empty ( $token ) || $token == '-1') {
-		// $map ['uid'] = session ( 'mid' );
-		// if ($map ['uid'] > 0) {
-		// $user = get_userinfo ( $map ['uid'] );
-		
-		// $user ['level'] < 2 && $user ['manager_id'] > 0 && $map ['uid'] = $user ['manager_id'];
-		// $token = $user ['level'] < 2 || $user ['has_public'] ? D ( 'Common/Public' )->where ( $map )->getField ( 'token' ) : DEFAULT_TOKEN;
-		
-		// isset ( $user ['has_public'] ) && $token && session ( 'token', $token );
-		// } else {
 		$token = DEFAULT_TOKEN;
-		// }
 	}
 	
 	return $token;
@@ -1560,39 +1557,69 @@ function get_token_type($token = '') {
 	return intval ( $info ['type'] );
 }
 // 获取access_token，自动带缓存功能
-function get_access_token($token = '') {
+function get_access_token($token = '', $update = false) {
 	empty ( $token ) && $token = get_token ();
 	
 	$info = get_token_appinfo ( $token );
 	
 	// 微信开放平台一键绑定
-	if ($token == 'gh_3c884a361561' || (C ( 'PUBLIC_BIND' ) && $info ['is_bind'])) {
-		$dao = D ( 'Addons://PublicBind/PublicBind' );
-		$auth_code = $dao->_get_pre_auth_code ();
-		$info = $dao->getAuthInfo ( $auth_code );
-		return $info ['authorization_info'] ['authorizer_access_token'];
+	if ($token == 'gh_3c884a361561' || $info ['is_bind']) {
+		$access_token = get_authorizer_access_token ( $info ['appid'], $info ['authorizer_refresh_token'], $update );
+	} else {
+		$access_token = get_access_token_by_apppid ( $info ['appid'], $info ['secret'], $update );
 	}
 	
-	return get_access_token_by_apppid ( $info ['appid'], $info ['secret'] );
-}
-// 获取access_token，自动带缓存功能
-function get_tv_access_token($uid = '') {
-	empty ( $uid ) && $uid = session ( 'mid' );
+	// 自动判断access_token是否已失效，如失效自动获取新的
+	if ($update == false) {
+		$url = 'https://api.weixin.qq.com/cgi-bin/getcallbackip?access_token=' . $access_token;
+		$res = wp_file_get_contents ( $url );
+		$res = json_decode ( $res, true );
+		if ($res ['errcode'] == '40001') {
+			$access_token = get_access_token ( $token, true );
+		}
+	}
 	
-	$info = get_userinfo ( $uid );
-	return get_access_token_by_apppid ( $info ['GammaAppId'], $info ['GammaSecret'] );
+	return $access_token;
 }
-function get_access_token_by_apppid($appid, $secret) {
+function get_authorizer_access_token($appid, $refresh_token, $update) {
+	if (empty ( $appid )) {
+		return 0;
+	}
+	
+	$key = 'authorizer_access_token_' . $appid;
+	$res = S ( $key );
+	if ($res !== false && ! $update)
+		return $res;
+	
+	$dao = D ( 'Addons://PublicBind/PublicBind' );
+	if (empty ( $refresh_token )) {
+		$auth_code = $dao->_get_pre_auth_code ();
+		$info = $dao->getAuthInfo ( $auth_code );
+		$authorizer_access_token = $info ['authorization_info'] ['authorizer_access_token'];
+	} else {
+		$info = $dao->refreshToken ( $appid, $refresh_token );
+		$authorizer_access_token = $info ['authorizer_access_token'];
+	}
+	
+	if (! empty ( $authorizer_access_token )) {
+		S ( $key, $authorizer_access_token, $info ['expires_in'] - 200 );
+		return $authorizer_access_token;
+	} else {
+		addWeixinLog ( $info, 'get_authorizer_access_token_fail_' . $appid );
+		return 0;
+	}
+}
+function get_access_token_by_apppid($appid, $secret, $update = false) {
 	if (empty ( $appid ) || empty ( $secret )) {
 		return 0;
 	}
 	
 	$key = 'access_token_apppid_' . $appid . '_' . $secret;
 	$res = S ( $key );
-	if ($res !== false)
+	if ($res !== false && ! $update)
 		return $res;
 	
-	$url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' . $appid . '&secret=' . $secret;
+	$url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&secret=' . $secret . '&appid=' . $appid;
 	$tempArr = json_decode ( file_get_contents ( $url ), true );
 	if (@array_key_exists ( 'access_token', $tempArr )) {
 		S ( $key, $tempArr ['access_token'], $tempArr ['expires_in'] );
@@ -1601,34 +1628,44 @@ function get_access_token_by_apppid($appid, $secret) {
 		return 0;
 	}
 }
-function OAuthWeixin($callback, $token = '') {
-	if ((defined ( 'IN_WEIXIN' ) && IN_WEIXIN) || isset ( $_GET ['is_stree'] ))
+function OAuthWeixin($callback, $token = '', $is_return = false) {
+	if ((defined ( 'IN_WEIXIN' ) && IN_WEIXIN) || isset ( $_GET ['is_stree'] ) || ! C ( 'USER_OAUTH' ))
 		return false;
 	
-	$callback = urldecode ( $callback );
 	$isWeixinBrowser = isWeixinBrowser ();
-	$info = get_token_appinfo ( $token );
-	
+	if (! $isWeixinBrowser) {
+		return false;
+	}
+	$callback = urldecode ( $callback );
 	if (strpos ( $callback, '?' ) === false) {
 		$callback .= '?';
 	} else {
 		$callback .= '&';
 	}
-	
-	if (! $isWeixinBrowser || ! C ( 'USER_OAUTH' ) || empty ( $info ['appid'] )) {
+	if (! empty ( $token ) && strpos ( $token, ':' ) !== false) {
+		$arr = explode ( ':', $token );
+		$info ['appid'] = $arr [0];
+		$info ['secret'] = $arr [1];
+	} else {
+		$info = get_token_appinfo ( $token );
+	}
+	if (empty ( $info ['appid'] )) {
 		redirect ( $callback . 'openid=-2' );
 	}
 	$param ['appid'] = $info ['appid'];
-	
-	if (! isset ( $_GET ['getOpenId'] )) {
-		$param ['redirect_uri'] = $callback . 'getOpenId=1';
+	if ($_GET ['state'] != 'weiphp') {
+		$param ['redirect_uri'] = $callback;
 		$param ['response_type'] = 'code';
 		$param ['scope'] = 'snsapi_base';
-		$param ['state'] = 123;
+		$param ['state'] = 'weiphp';
 		$info ['is_bind'] && $param ['component_appid'] = C ( 'COMPONENT_APPID' );
 		$url = 'https://open.weixin.qq.com/connect/oauth2/authorize?' . http_build_query ( $param ) . '#wechat_redirect';
 		redirect ( $url );
-	} elseif ($_GET ['state']) {
+	} elseif ($_GET ['state'] == 'weiphp') {
+		if (empty ( $_GET ['code'] )) {
+			exit ( 'code获取失败' );
+		}
+		
 		$param ['code'] = I ( 'code' );
 		$param ['grant_type'] = 'authorization_code';
 		
@@ -1646,7 +1683,11 @@ function OAuthWeixin($callback, $token = '') {
 		
 		$content = file_get_contents ( $url );
 		$content = json_decode ( $content, true );
-		redirect ( $callback . 'openid=' . $content ['openid'] );
+		if ($is_return) {
+			return $content ['openid'];
+		} else {
+			redirect ( $callback . 'openid=' . $content ['openid'] );
+		}
 	}
 }
 /**
@@ -1702,6 +1743,7 @@ function get_public_group_name($group_id) {
 
 // 截取内容
 function getShort($str, $length = 40, $ext = '') {
+	$str = filter_line_tab ( $str );
 	$str = htmlspecialchars ( $str );
 	$str = strip_tags ( $str );
 	$str = htmlspecialchars_decode ( $str );
@@ -1727,7 +1769,25 @@ function getShort($str, $length = 40, $ext = '') {
 	}
 	return $output;
 }
-
+// 过滤非法html标签 去掉换行符
+function filter_line_tab($text) {
+	$text = str_replace ( array (
+			"\r\n",
+			"\r",
+			"\n",
+			" " 
+	), '', $text );
+	// 过滤标签
+	$text = nl2br ( $text );
+	$text = real_strip_tags ( $text );
+	$text = addslashes ( $text );
+	$text = trim ( $text );
+	return addslashes ( $text );
+}
+function real_strip_tags($str, $allowable_tags = "") {
+	$str = stripslashes ( htmlspecialchars_decode ( $str ) );
+	return strip_tags ( $str, $allowable_tags );
+}
 // 防超时的file_get_contents改造函数
 function wp_file_get_contents($url) {
 	$context = stream_context_create ( array (
@@ -1905,7 +1965,10 @@ function add_credit($name, $lock_time = 5, $credit = array(), $admin_uid = 0) {
 	$data ['credit_name'] = $name;
 	$data ['admin_uid'] = $admin_uid;
 	$data = array_merge ( $data, $credit );
+	
 	$credit = D ( 'Common/Credit' )->addCredit ( $data );
+	
+	return $credit;
 }
 /**
  * 增加用户余额函数
@@ -1952,20 +2015,20 @@ function diyPage($keyword) {
 }
 // 各插件获取关联抽奖活动的地址 暂只支持刮刮卡
 function event_url($addon_title, $id = '0') {
-	$map ['token'] = get_token ();
-	$map ['addon_condition'] = array (
-			'exp',
-			"='[{$addon_title}:*]' or addon_condition='[{$addon_title}:{$id}]'" 
-	);
+	// $map ['token'] = get_token ();
+	// $map ['addon_condition'] = array (
+	// 'exp',
+	// "='[{$addon_title}:*]' or addon_condition='[{$addon_title}:{$id}]'"
+	// );
 	
-	$event = M ( 'Scratch' )->where ( $map )->order ( 'id desc' )->find ();
+	// $event = M ( 'Scratch' )->where ( $map )->order ( 'id desc' )->find ();
 	$event_url = '';
-	if ($event) {
-		$param ['token'] = get_token ();
-		$param ['openid'] = get_openid ();
-		$param ['id'] = $event ['id'];
-		$event_url = addons_url ( 'Scratch://Scratch/show', $param );
-	}
+	// if ($event) {
+	// $param ['token'] = get_token ();
+	// $param ['openid'] = get_openid ();
+	// $param ['id'] = $event ['id'];
+	// $event_url = addons_url ( 'Scratch://Scratch/show', $param );
+	// }
 	return $event_url;
 }
 // 抽奖或者优惠券领取的插件条件判断
@@ -2234,6 +2297,7 @@ function int_to_string(&$data, $map = array('status'=>array(1=>'正常',-1=>'删
 	return $data;
 }
 function importFormExcel($attach_id, $column, $dateColumn = array()) {
+	$attach_id = intval ( $attach_id );
 	$res = array (
 			'status' => 0,
 			'data' => '' 
@@ -2587,9 +2651,9 @@ function isAndroid() {
 }
 
 // 通过服务号获取用户UID
-function get_uid_by_openid($init = true) {
+function get_uid_by_openid($init = true, $openid = '') {
 	$info = get_token_appinfo ();
-	$openid = get_openid ();
+	empty ( $openid ) && $openid = get_openid ();
 	if (! $openid) {
 		return 0;
 	}
@@ -2665,6 +2729,7 @@ function getAddonConfig($name, $token = '') {
 	if (isset ( $_config [$name] )) {
 		return $_config [$name];
 	}
+	
 	$config = array ();
 	
 	$token = empty ( $token ) ? get_token () : $token;
@@ -2743,6 +2808,7 @@ function wp_money_format($number, $decimals = '2') {
 
 // 以POST方式提交数据
 function post_data($url, $param, $is_file = false, $return_array = true) {
+	set_time_limit ( 0 );
 	if (! $is_file && is_array ( $param )) {
 		$param = JSON ( $param );
 	}
@@ -2751,8 +2817,14 @@ function post_data($url, $param, $is_file = false, $return_array = true) {
 	} else {
 		$header [] = "content-type: application/json; charset=UTF-8";
 	}
-	
 	$ch = curl_init ();
+	if (class_exists ( '/CURLFile' )) { // php5.5跟php5.6中的CURLOPT_SAFE_UPLOAD的默认值不同
+		curl_setopt ( $ch, CURLOPT_SAFE_UPLOAD, true );
+	} else {
+		if (defined ( 'CURLOPT_SAFE_UPLOAD' )) {
+			curl_setopt ( $ch, CURLOPT_SAFE_UPLOAD, false );
+		}
+	}
 	curl_setopt ( $ch, CURLOPT_URL, $url );
 	curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, "POST" );
 	curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, FALSE );
@@ -2764,7 +2836,6 @@ function post_data($url, $param, $is_file = false, $return_array = true) {
 	curl_setopt ( $ch, CURLOPT_POSTFIELDS, $param );
 	curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
 	$res = curl_exec ( $ch );
-	
 	$flat = curl_errno ( $ch );
 	if ($flat) {
 		$data = curl_error ( $ch );
@@ -2788,7 +2859,7 @@ function make_sign($paraMap = array(), $partner_key = '') {
 			$buff .= strtolower ( $k ) . "=" . $v . "&";
 		}
 	}
-	$reqPar;
+	$reqPar = '';
 	if (strlen ( $buff ) > 0) {
 		$reqPar = substr ( $buff, 0, strlen ( $buff ) - 1 );
 	}
@@ -3219,9 +3290,19 @@ function top_domain() {
 // 处理带Emoji的数据，type=0表示写入数据库前的emoji转为HTML，为1时表示HTML转为emoji码
 function deal_emoji($msg, $type = 1) {
 	if ($type == 0) {
+		$msg = urlencode ( $msg );
 		$msg = json_encode ( $msg );
 	} else {
-		$txt = json_decode ( $msg );
+		
+		$msg = preg_replace ( "#\\\u([0-9a-f]+)#ie", "iconv('UCS-2','UTF-8', pack('H4', '\\1'))", $msg );
+		
+		// $msg = preg_replace("#(\\\ue[0-9a-f]{3})#ie", "addslashes('\\1')",$msg);
+		
+		$msg = urldecode ( $msg );
+		// $msg = json_decode ( $msg );
+		// dump($msg);
+		$msg = str_replace ( '"', "", $msg );
+		// dump($msg);exit;
 		if ($txt !== null) {
 			$msg = $txt;
 		}
@@ -3235,18 +3316,17 @@ function down_media($media_id) {
 	$savePath = SITE_PATH . '/Uploads/Picture/' . time_format ( NOW_TIME, 'Y-m-d' );
 	mkdirs ( $savePath );
 	// 获取图片URL
-	$url = 'http://file.api.weixin.qq.com/cgi-bin/media/get?access_token=' . get_access_token () . '&media_id=' . $media_id;
 	
-	$picContent = outputCurl ( $url );
+	$url = 'http://api.weixin.qq.com/cgi-bin/media/get?access_token=' . get_access_token () . '&media_id=' . $media_id;
+	$picContent = wp_file_get_contents ( $url );
 	$picjson = json_decode ( $picContent, true );
 	if (isset ( $picjson ['errcode'] ) && $picjson ['errcode'] != 0) {
 		return 0;
 	}
-	// if ($picContent) {
-	$picName = NOW_TIME . '.jpg';
+	
+	$picName = $media_id . '.jpg';
 	$picPath = $savePath . '/' . $picName;
 	$res = file_put_contents ( $picPath, $picContent );
-	// }
 	$cover_id = 0;
 	if ($res) {
 		// 保存记录，添加到picture表里，获取coverid
@@ -3281,7 +3361,11 @@ function outputCurl($url) {
 function upload_media($path, $type = 'image') {
 	$url = 'http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=' . get_access_token ();
 	$param ['type'] = $type;
-	$param ['media'] = '@' . realpath ( $path );
+	if (class_exists ( '\CURLFile' )) { // 关键是判断curlfile,官网推荐php5.5或更高的版本使用curlfile来实例文件
+		$param ['media'] = new \CURLFile ( realpath ( $path ) );
+	} else {
+		$param ['media'] = '@' . realpath ( $path );
+	}
 	$res = post_data ( $url, $param, true );
 	if (isset ( $res ['errcode'] ) && $res ['errcode'] != 0) {
 		$this->error ( error_msg ( $res, '图片上传' ) );
@@ -3412,4 +3496,391 @@ function down_file_media($media_id, $type = 'voice') {
 		unlink ( $picPath );
 	}
 	return $cover_id;
+}
+
+// 二维数组根据键排序
+function array_sort($arr, $keys, $type = 'desc') {
+	$keysvalue = $new_array = array ();
+	foreach ( $arr as $k => $v ) {
+		$keysvalue [$k] = $v [$keys];
+	}
+	if ($type == 'asc') {
+		asort ( $keysvalue );
+	} else {
+		arsort ( $keysvalue );
+	}
+	reset ( $keysvalue );
+	foreach ( $keysvalue as $k => $v ) {
+		$new_array [$k] = $arr [$k];
+	}
+	return $new_array;
+}
+function test_mem_cache() {
+	$key = 'test_mem_cache';
+	$res = S ( $key );
+	if ($res !== false)
+		return $res;
+	
+	S ( $key, NOW_TIME, 7200 );
+	return NOW_TIME;
+}
+
+// 转换得到含emoji表情的代码 注意引入css文件
+function parseHtmlemoji($text) {
+	vendor ( "emoji" );
+	$tmpStr = json_encode ( $text );
+	$tmpStr = preg_replace ( "#(\\\ue[0-9a-f]{3})#ie", "addslashes('\\1')", $tmpStr );
+	$text = json_decode ( $tmpStr );
+	preg_match_all ( "#u([0-9a-f]{4})+#iUs", $text, $rs );
+	if (empty ( $rs [1] )) {
+		return $text;
+	}
+	foreach ( $rs [1] as $v ) {
+		$test_iphone = '0x' . trim ( strtoupper ( $v ) );
+		$test_iphone = $test_iphone + 0;
+		$utbytes = utf8_bytes ( $test_iphone );
+		$emji = emoji_softbank_to_unified ( $utbytes );
+		$t = emoji_unified_to_html ( $emji );
+		$text = str_replace ( "\u$v", $t, $text );
+	}
+	return $text;
+}
+function utf8_bytes($cp) {
+	if ($cp > 0x10000) {
+		// 4 bytes
+		return chr ( 0xF0 | (($cp & 0x1C0000) >> 18) ) . chr ( 0x80 | (($cp & 0x3F000) >> 12) ) . chr ( 0x80 | (($cp & 0xFC0) >> 6) ) . chr ( 0x80 | ($cp & 0x3F) );
+	} else if ($cp > 0x800) {
+		// 3 bytes
+		return chr ( 0xE0 | (($cp & 0xF000) >> 12) ) . chr ( 0x80 | (($cp & 0xFC0) >> 6) ) . chr ( 0x80 | ($cp & 0x3F) );
+	} else if ($cp > 0x80) {
+		// 2 bytes
+		return chr ( 0xC0 | (($cp & 0x7C0) >> 6) ) . chr ( 0x80 | ($cp & 0x3F) );
+	} else {
+		// 1 byte
+		return chr ( $cp );
+	}
+}
+function curl_post($url, $data = null) {
+	$ch = curl_init ();
+	curl_setopt ( $ch, CURLOPT_URL, $url ); // 设置访问的url地址
+	curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, "POST" );
+	curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, FALSE );
+	curl_setopt ( $ch, CURLOPT_SSL_VERIFYHOST, FALSE );
+	curl_setopt ( $ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36' );
+	/*
+	 * if($data){
+	 * curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 5.01; Windows NT 5.0)');
+	 * curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	 * curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+	 *
+	 * }
+	 */
+	$data && curl_setopt ( $ch, CURLOPT_POSTFIELDS, $data );
+	curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
+	$tmpInfo = curl_exec ( $ch );
+	if (curl_errno ( $ch )) {
+		return curl_error ( $ch );
+	}
+	curl_close ( $ch );
+	return $tmpInfo;
+}
+function matchImages($content = '') {
+	$src = array ();
+	preg_match_all ( '/<img.*src=\s*[\'"](.*)[\s>\'"]/isU', $content, $src );
+	if (count ( $src [1] ) > 0) {
+		foreach ( $src [1] as $v ) {
+			$images [] = trim ( $v, "\"'" ); // 删除首尾的引号 ' "
+		}
+		return $images;
+	} else {
+		return false;
+	}
+}
+function getEditorImages($content) {
+	preg_match_all ( '/<img.*src=\s*[\'"](.*)[\s>\'"]/isU', $content, $matchs );
+	$image = '';
+	foreach ( $matchs [1] as $match ) {
+		$isFace = strpos ( $match, '/emotion/' ) === false ? false : true;
+		if ($isFace) {
+			continue;
+		}
+		if (preg_match ( '/http:\/\/[\w.]+[\w\/]*[\w.]*\??[\w=&\+\%]*/is', $match ) && ! $isFace) {
+			$image = $match;
+		} else if (! $isFace) {
+			$url = implode ( '/', array_slice ( explode ( '/', $match ), - 4 ) );
+			$image = getImageUrl ( $url, 200, 200, true );
+		}
+		break;
+	}
+	
+	return $image;
+}
+function matchReplaceImages($content = '') {
+	$image = preg_replace_callback ( '/<img.*src=\s*[\'"](.*)[\s>\'"]/isU', "matchReplaceImagesOnce", $content );
+	return $image;
+}
+function matchReplaceImagesOnce($matches) {
+	$matches [1] = str_replace ( '"', '', $matches [1] );
+	return sprintf ( "<a class='thickbox'  href='%s'>%s</a>", $matches [1], $matches [0] );
+}
+/**
+ * 获取字符串的长度
+ *
+ * 计算时, 汉字或全角字符占1个长度, 英文字符占0.5个长度
+ *
+ * @param string $str        	
+ * @param boolean $filter
+ *        	是否过滤html标签
+ * @return int 字符串的长度
+ */
+function get_str_length($str, $filter = false) {
+	if ($filter) {
+		$str = html_entity_decode ( $str, ENT_QUOTES, 'UTF-8' );
+		$str = strip_tags ( $str );
+	}
+	return (strlen ( $str ) + mb_strlen ( $str, 'UTF8' )) / 4;
+}
+/**
+ * 检查表单是否已锁定
+ *
+ * @return boolean 表单已锁定时返回true, 否则返回false
+ */
+function isSubmitLocked() {
+	return isset ( $_SESSION ['LOCK_SUBMIT_TIME'] ) && intval ( $_SESSION ['LOCK_SUBMIT_TIME'] ) > time ();
+}
+/**
+ * 锁定表单
+ *
+ * @param int $life_time
+ *        	表单锁的有效时间(秒). 如果有效时间内未解锁, 表单锁自动失效.
+ * @return boolean 成功锁定时返回true, 表单锁已存在时返回false
+ */
+function lockSubmit($life_time = null) {
+	if (isset ( $_SESSION ['LOCK_SUBMIT_TIME'] ) && intval ( $_SESSION ['LOCK_SUBMIT_TIME'] ) > time ()) {
+		return false;
+	} else {
+		$life_time = $life_time ? $life_time : 10;
+		$_SESSION ['LOCK_SUBMIT_TIME'] = time () + intval ( $life_time );
+		return true;
+	}
+}
+/**
+ * 表单解锁
+ *
+ * @return void
+ */
+function unlockSubmit() {
+	unset ( $_SESSION ['LOCK_SUBMIT_TIME'] );
+}
+/**
+ * 记录自动检测过程数据
+ */
+function addAutoCheckLog($na = '', $msg = '', $token = '') {
+	$data ['na'] = empty ( $na ) ? I ( 'na' ) : $na;
+	$data ['msg'] = $msg;
+	$data ['token'] = empty ( $token ) ? get_token () : $token;
+	
+	// dump ( $data );
+	$res = M ( 'public_check' )->add ( $data );
+	// dump ( M ( 'public_check' )->getLastSql() );
+}
+
+/**
+ * 通用奖品选择器
+ * 显示奖品信息
+ */
+function get_prize_detail($prizeValue) {
+	$data = array ();
+	$prizeData = explode ( ',', $prizeValue );
+	foreach ( $prizeData as $key => $value ) {
+		$keyArr = explode ( ':', $value );
+		if (empty ( $keyArr [0] ))
+			continue;
+		$title = '';
+		$typeName = '';
+		$imgurl = '';
+		$total_count = 0;
+		$num = $keyArr [2];
+		if ($keyArr [0] == 'coupon') {
+			$pdata = D ( 'Addons://Coupon/Coupon' )->getInfo ( $keyArr [1] );
+			$typeName = '优惠卷';
+			$title = $pdata ['title'];
+			$imgurl = $pdata ['background'];
+			$total_count = $pdata ['num'];
+		} elseif ($keyArr [0] == 'shopCoupon' && is_install("ShopCoupon")) {
+			$pdata = D ( 'Addons://ShopCoupon/Coupon' )->getInfo ( $keyArr [1] );
+			$typeName = '代金卷';
+			$title = $pdata ['title'];
+			$total_count = $pdata ['num'];
+		} elseif ($keyArr [0] == 'realPrize') {
+			$pdata = D ( 'Addons://RealPrize/RealPrize' )->getInfo ( $keyArr [1] );
+			$typeName = '实物奖励';
+			$title = $pdata ['prize_name'];
+			$imgurl = $pdata ['prize_image'];
+			$total_count = $pdata ['prize_count'];
+		} elseif ($keyArr [0] == 'cardVouchers') {
+			$pdata = D ( 'Addons://CardVouchers/CardVouchers' )->getInfo ( $keyArr [1] );
+			$typeName = '微信卡卷';
+			$title = $pdata ['title'];
+			$imgurl = $pdata ['background'];
+		} elseif ($keyArr [0] == 'redBag') {
+			$pdata = D ( 'Addons://RedBag/RedBag' )->getInfo ( $keyArr [1] );
+			$typeName = '微信红包';
+			$title = $pdata ['act_name'];
+			$total_count = $pdata ['total_num'];
+		} elseif ($keyArr [0] == 'points') {
+			$typeName = '积分';
+			$title = '积分';
+			$num = $keyArr [3];
+			$total_count = $keyArr [2]; // 奖励的积分数
+		}
+		
+		$data ['title'] [$key] = $title;
+		$data ['id'] [$key] = $keyArr [1];
+		$data ['typeName'] [$key] = $typeName;
+		$data ['img'] [$key] = get_cover_url ( $imgurl );
+		$data ['num'] [$key] = $num;
+		$data ['total_count'] [$key] = $total_count;
+		$data ['type'] [$key] = $keyArr [0];
+	}
+	return $data;
+}
+// 文件名
+/**
+ * 获取缩略图
+ *
+ * @param unknown_type $filename
+ *        	原图路劲、url
+ * @param unknown_type $width
+ *        	宽度
+ * @param unknown_type $height
+ *        	高
+ * @param unknown_type $cut
+ *        	是否切割 默认不切割
+ * @return string
+ */
+function getThumbImage($filename, $width = 100, $height = 'auto', $cut = false, $replace = false, $redirect = false) {
+	return $filename; // 待完善
+}
+// 判断微信插件是否已经安装
+function is_install($addon_name) {
+	$list = D ( 'Home/Addons' )->getList ();
+	return isset ( $list [$addon_name] );
+}
+
+    /*
+ * 上传图片到微信获取url
+ * 上传图文消息内的图片获取URL 请注意，本接口所上传的图片不占用公众号的素材库中图片数量的5000个的限制。
+ * 图片仅支持jpg/png格式，大小必须在1MB以下。
+ */
+function uploadimg($path)
+{
+    if (preg_match('#^(http|https)://mmbiz.qpic.cn/#i', $path)) {
+        return $path;
+    }
+    $filePath = '';
+    if (! file_exists($path)) {
+        $filePath = './Uploads/' . think_weiphp_md5($path) . '.jpg';
+        getImg($path, $filePath);
+        $path = $filePath;
+    }
+    $url = 'https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=' . get_access_token();
+    $param['type'] = 'image';
+    if (class_exists('\CURLFile')) { // 关键是判断curlfile,官网推荐php5.5或更高的版本使用curlfile来实例文件
+        $param['media'] = new \CURLFile(realpath($path));
+    } else {
+        $param['media'] = '@' . realpath($path);
+    }
+    $res = post_data($url, $param, true);
+    unlink($filePath);//删除本地创建的图片
+    return empty($res['url']) ? '' : $res['url'];
+}
+
+/*
+ * @通过curl方式获取指定的图片到本地
+ * @ 完整的图片地址
+ * @ 要存储的文件名
+ */
+function getImg($url = "", $filename = "")
+{
+    // 去除URL连接上面可能的引号
+    // $url = preg_replace( '/(?:^['"]+|['"/]+$)/', '', $url );
+    $hander = curl_init();
+    $fp = fopen($filename, 'wb');
+    curl_setopt($hander, CURLOPT_URL, $url);
+    curl_setopt($hander, CURLOPT_FILE, $fp);
+    curl_setopt($hander, CURLOPT_HEADER, 0);
+    curl_setopt($hander, CURLOPT_FOLLOWLOCATION, 1);
+    // curl_setopt($hander,CURLOPT_RETURNTRANSFER,false);//以数据流的方式返回数据,当为false是直接显示出来
+    curl_setopt($hander, CURLOPT_TIMEOUT, 10);
+    curl_exec($hander);
+    curl_close($hander);
+    fclose($fp);
+    Return true;
+}
+
+// 获取显示确定规格图片
+/*
+ * http://img.baidu.com/hi/jx2/j_0002.gif
+ * http://img1.gtimg.com/auto/pics/hv1/156/84/2125/138199701.jpg
+ * /Uploads/Editor/gh_dd85ac50d2dd/2016-08-26/57bfa4a23fba5.png
+ */
+function mk_rule_image($imgurl, $w, $h) {
+   
+    if (preg_match ( '#^/Uploads/Picture/#i', $imgurl ) || preg_match ( '#^/Public/static/icon/#i', $imgurl )) { // 内部图片
+        $imgurl = '.' . $imgurl;
+        $filename = basename ( $imgurl );
+        $filename_ex = explode ( '.', $filename );
+        $dirname = dirname ( $imgurl );
+        $dirname_new = $dirname . '/' . $filename_ex [0] . "_$w" . "X$h." . $filename_ex [1];
+        if (file_exists ( $dirname_new )) {
+            return str_replace ( './Uploads', SITE_URL . '/Uploads', $dirname_new );
+        }
+
+        file_exists ( $imgurl ) && $imginfo = getimagesize ( $imgurl ); // 图片存在并获取到信息
+
+        if ($imginfo) { // 规格图片存在
+            if ($imginfo [0] > $w || $imginfo ['1'] > $h) {
+                $img_model || $img_model = new \Think\Image ();
+                //生成缩略图
+                $re = $img_model->open ( $imgurl );
+
+                $res = $img_model->thumb ( $w, $h )->save ( $dirname_new );
+            }else{
+                return SITE_URL . $imgurl;
+            }
+        }
+        return str_replace ( './Uploads', SITE_URL . '/Uploads', $dirname_new );
+    }
+    if (preg_match ( '#^(http|https)://#i', $imgurl )) { // 外部
+        $imgurl1=$imgurl;
+        $imginfo = getimagesize ( $imgurl ); // 图片存在并获取到信息
+        // dump($imginfo);
+        $url_info = parse_url ( $imgurl );
+        $filename = basename ( $url_info ['path'] );
+        $filename_ex = explode ( '.', $filename );
+        $dirname = './Uploads/Picture';
+        $dirname_new = $dirname . '/' . think_weiphp_md5 ( $filename_ex [0] . $url_info ['query'] ) . "_$w" . "X$h." . 'jpg'; // $filename_ex[1];
+        $imgurl = SITE_URL . '/Uploads/Picture/' . think_weiphp_md5 ( $filename_ex [0] . $url_info ['query'] ) . "_$w" . "X$h." . 'jpg';
+        if (file_exists ( $dirname_new )) {
+            return $imgurl;
+        }
+        if ($imginfo) { // 规格图片存在
+            if ($imginfo [0] > $w || $imginfo [1] > $h) {
+                $img_model || $img_model = new \Think\Image ();
+
+                $save_filename = './Uploads/Picture/' . $filename;
+                $res = getImg ( $imgurl1, $save_filename );
+
+                $re = $img_model->open ( $save_filename );
+
+                $res = $img_model->thumb ( $w, $h)->save ( $dirname_new );
+                unlink ( $save_filename );
+            }else{
+                getImg ( $imgurl1, $dirname_new );
+                $imgurl = SITE_URL .$dirname_new;
+            }
+        }
+        return $imgurl;
+    }
 }

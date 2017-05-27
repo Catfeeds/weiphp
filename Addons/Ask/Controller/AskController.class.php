@@ -7,15 +7,16 @@ use Home\Controller\AddonsController;
 class AskController extends AddonsController {
 	function index() {
 		$info = $public_info = get_token_appinfo ();
+		$param['mdm']=$_GET['mdm'];
 		$param ['publicid'] = $info ['id'];
 		$param ['ask_id'] = $ask_id = I ( 'id' );
-		
+
 		$url = addons_url ( "Ask://Ask/ask", $param );
-		
+
 		$ask = D ( 'Ask' )->getAskInfo ( $ask_id );
 		$this->assign ( 'ask', $ask );
 		$this->assign ( 'button_name', '马上开始' );
-		
+
 		$this->assign ( 'jumpURL', $url );
 		// dump ( $content );
 		// exit ();
@@ -25,18 +26,20 @@ class AskController extends AddonsController {
 	function preview() {
 		$id = I ( 'id', 0, 'intval' );
 		$url = U ( 'index', array (
-				'id' => $id 
+				'id' => $id
 		) );
 		$this->assign ( 'url', $url );
 		$this->display ( SITE_PATH . '/Application/Home/View/default/Addons/preview.html' );
 	}
 	function ask_question() {
+	    $param['mdm']=$_GET['mdm'];
 		$param ['ask_id'] = I ( 'id', 0, 'intval' );
 		$url = addons_url ( 'Ask://Question/lists', $param );
 		// dump($url);
 		redirect ( $url );
 	}
 	function ask_answer() {
+	    $param['mdm']=$_GET['mdm'];
 		$param ['ask_id'] = I ( 'id', 0, 'intval' );
 		$url = addons_url ( 'Ask://Answer/lists', $param );
 		// dump($url);
@@ -45,26 +48,27 @@ class AskController extends AddonsController {
 	function show() {
 		$ask_id = intval ( $_REQUEST ['ask_id'] );
 		$ask = D ( 'Ask' )->getAskInfo ( $ask_id );
-		
+
 		$this->assign ( 'ask', $ask );
-		
+
 		$answer = D ( 'AskAnswer' )->myLastAnswer ( $ask_id );
 		if ($answer) {
 			$this->assign ( 'button_name', '继续抢答' );
 		} else {
 			$this->assign ( 'button_name', '马上开始' );
 		}
-		
+
 		$this->display ();
 	}
 	function ask() {
+	    $param['mdm']=$_GET['mdm'];
 		$param ['ask_id'] = $ask_id = intval ( $_REQUEST ['ask_id'] );
 		$ask = D ( 'Ask' )->getAskInfo ( $ask_id );
 		$question_list = D ( 'AskQuestion' )->getQuestionsByAskid ( $ask_id );
 		$answer = D ( 'AskAnswer' )->myLastAnswer ( $ask_id );
 		$last_question = $question_list [$answer ['question_id']];
 		$times = 0; // 次数
-		
+
 		if (($answer ['is_correct'] && $last_question ['is_last']) || ($answer ['question_id'] && ! $last_question)) {
 			// 重新开始进入
 			reset ( $question_list );
@@ -104,7 +108,7 @@ class AskController extends AddonsController {
 			reset ( $question_list );
 			$question = current ( $question_list );
 		}
-		
+
 		// 概率进入
 		$wait = session ( 'percent_wait_' . $this->mid );
 		if ($wait) {
@@ -115,43 +119,46 @@ class AskController extends AddonsController {
 				session ( 'percent_wait_' . $this->mid, null );
 			}
 		}
-		
+
 		$percent = intval ( $question ['percent'] );
 		if ($percent < 100) {
 			$rand = rand ( 1, 100 );
 			if ($percent < $rand) { // 未抢中
 				$wait = array (
 						'time' => NOW_TIME,
-						'wait' => $question ['wait_time'] 
+						'wait' => $question ['wait_time']
 				);
 				session ( 'percent_wait_' . $this->mid, $wait );
-				
+
 				redirect ( U ( 'percent', $param ) );
 			}
 		}
 		// dump ( $question );
-		$extra = parse_config_attr ( $question ['extra'] );
-		
+		$extra = parse_config_attr ( strtr($question ['extra'] , array(' '=>''))  );
+//		$extra = parse_config_attr ($question ['extra'] );
+
+
 		$this->assign ( 'ask', $ask );
 		$this->assign ( 'question', $question );
 		$this->assign ( 'extra', $extra );
 		$this->assign ( 'times', $times );
-		
+
 		$this->display ();
 	}
 	function doAsk() {
+	    $param['mdm']=$_GET['mdm'];
 		$dao = D ( 'AskAnswer' );
 		$ask_id = $param ['ask_id'] = I ( 'get.ask_id' );
 		$question_id = I ( 'post.question_id', 0, 'intval' );
 		$an = empty ( $_POST ['other_answer'] ) ? I ( 'post.answer' ) : I ( 'post.other_answer' );
-		
+
 		$question = D ( 'AskQuestion' )->getQuestionsByAskid ( $ask_id, $question_id );
 		if ($question ['type'] == 'radio') {
 			$an = array (
-					$an 
+					$an
 			);
 		}
-		
+
 		$data ['is_correct'] = $this->_checkAnswer ( $question, $an );
 		$data ['ask_id'] = $ask_id;
 		$data ['uid'] = $this->mid;
@@ -161,7 +168,7 @@ class AskController extends AddonsController {
 		$data ['token'] = get_token ();
 		$data ['question_id'] = $question_id;
 		$data ['openid'] = get_openid ();
-		
+
 		if ($data ['openid'] == NULL) {
 			$data ['openid'] = - 1;
 		}
@@ -171,7 +178,7 @@ class AskController extends AddonsController {
 		} else {
 			$dao->delayAdd ( $data );
 		}
-		
+
 		if ($data ['is_correct']) {
 			$url = $question ['is_last'] ? U ( 'finish', $param ) : U ( 'wait', $param );
 			redirect ( $url );
@@ -183,20 +190,20 @@ class AskController extends AddonsController {
 	function _checkAnswer($question, $answer) {
 		if (! is_array ( $answer )) {
 			$answer = array (
-					$answer 
+					$answer
 			);
 		}
-		
+
 		$answer = array_filter ( $answer );
 		$answer = array_map ( 'trim', $answer );
 		if (empty ( $answer )) {
 			return 0;
 		}
-		
+
 		$correct = preg_split ( '/[\s,;]+/', $question ['answer'] );
 		$correct = array_filter ( $correct );
 		$correct = array_map ( 'trim', $correct );
-		
+
 		$diff = array_diff ( ( array ) $correct, ( array ) $answer );
 		$diff2 = array_diff ( ( array ) $answer, ( array ) $correct );
 		return empty ( $diff ) && empty ( $diff2 ) ? 1 : 0;
@@ -242,15 +249,15 @@ class AskController extends AddonsController {
 			$sha1 ['appsecre'] = trim ( $info ['appsecre'] );
 			$sha1 ['card_id'] = $card_id = trim ( $info ['card_id'] );
 			$sha1 ['signature'] = getSHA1 ( $sha1 );
-			
+
 			$info ['card_ext'] = "{\"code\":\"{$sha1['code']}\",\"openid\":\"{$sha1['openid']}\",\"timestamp\":\"{$sha1['timestamp']}\",\"signature\":\"{$sha1['signature']}\"}";
 		}
-		
+
 		$this->assign ( 'info', $info );
-		
+
 		// 增加积分
 		// add_credit ( 'ask' );
-		
+
 		$this->display ();
 	}
 	// 第一步：查看缓存配置并设置一个缓存值
@@ -258,7 +265,7 @@ class AskController extends AddonsController {
 		dump ( C ( 'DATA_CACHE_TYPE' ) );
 		dump ( C ( 'MEMCACHE_HOST' ) );
 		dump ( C ( 'MEMCACHE_PORT' ) );
-		
+
 		$key = 'test_cache1';
 		$vv = I ( 'val', 'test_cache value' );
 		dump ( S ( $key, $vv ) );

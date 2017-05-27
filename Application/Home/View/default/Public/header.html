@@ -17,7 +17,7 @@
        </a>
         <if condition="is_login()">
         	<div class="switch_mp">
-            	<a href="#">{$public_info.public_name}<b class="pl_5 fa fa-sort-down"></b></a>
+            	<notempty name="public_info.public_name"><a href="#">{$public_info.public_name}<b class="pl_5 fa fa-sort-down"></b></a></notempty>
                 <ul>
                 <volist name='myPublics' id='vo'>
                 	<li><a href="{:U('home/index/main', array('publicid'=>$vo[mp_id]))}">{$vo.public_name}</a></li>
@@ -34,7 +34,7 @@
                     		<li><p>该账号配置信息尚未完善，功能还不能使用</p></li>
                     		<elseif condition="$myinfo.is_audit eq 0 and !$reg_audit_switch" />
                     		<li><p>该账号配置信息已提交，请等待审核</p></li>
-                            <elseif condition="$index_2 eq 'home/public/*' or $index_3 eq 'home/user/profile' or $index_2 eq 'home/publiclink/*'" />
+                            <elseif condition="$index_2 eq 'home/public/*' or $index_3 eq 'home/user/profile' or $index_2 eq 'home/publiclink/*' or $index_3 eq 'home/user/bind_login'" />
                     		
                     		<else /> 
                     		<volist name='core_top_menu' id='ca'>

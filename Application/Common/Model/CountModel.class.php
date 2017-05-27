@@ -33,6 +33,8 @@ class CountModel extends Model {
 		$datas = ( array ) S ( $key );
 		S ( $key, null );
 		
+		$px = C ( 'DB_PREFIX' );
+		
 		foreach ( $datas as $k => $d ) {
 			list ( $table, $id ) = explode ( '|', $k );
 			$set = '';
@@ -43,7 +45,7 @@ class CountModel extends Model {
 			if (empty ( $set ))
 				continue;
 			
-			$sql = "UPDATE wp_{$table} SET $set WHERE id=" . $id . ' limit 1';
+			$sql = "UPDATE {$px}{$table} SET $set WHERE id=" . $id . ' limit 1';
 			M ()->execute ( $sql );
 		}
 	}

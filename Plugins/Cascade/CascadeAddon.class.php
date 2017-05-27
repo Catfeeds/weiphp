@@ -67,7 +67,10 @@ class CascadeAddon extends Plugin {
 			} else {
 				$tree = $this->str2json ( $arr ['data'] );
 			}
-			// dump ( $tree );
+			//dump($tree);
+			$a =array('a'=>'0','t'=>'请选择');
+			array_unshift($tree,$a);
+			//dump($tree);
 			$json = json_encode ( $tree );
 			
 			S ( $key, $json, 86400 );
@@ -77,6 +80,7 @@ class CascadeAddon extends Plugin {
 		
 		$data ['default_value'] = $data ['value'];
 		empty ( $data ['default_value'] ) || $data ['default_value'] = '"' . str_replace ( ',', '","', $data ['default_value'] ) . '"';
+		//dump($data);exit;
 		$this->assign ( $data );
 		
 		$this->display ( 'content' );

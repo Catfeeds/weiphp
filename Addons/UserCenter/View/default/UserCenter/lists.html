@@ -4,8 +4,9 @@
     <section id="contents"> <include file="Addons/_nav" />
       <div class="table-bar">
         <div class="fl">
-          <div class="tools"> <a href="javascript:void(0);" class="btn setting_group">设置用户组</a> &nbsp; <a href="{:U ( 'Home/AuthGroup/export' )}" class="btn">导出用户</a> &nbsp; 
-          <if condition="$syc_wechat"><a href="{:U('syc_auth_group')}" class="btn tongbu">一键同步微信公众号粉丝</a> &nbsp;</if> </div>
+          <div class="tools"> <a href="javascript:void(0);" class="btn setting_group">设置用户组</a> &nbsp;<a href="javascript:void(0);" class="btn setting_tag">设置标签</a> &nbsp; <a href="{:U ( 'Home/AuthGroup/export' )}" class="btn">导出用户</a> &nbsp; 
+          <if condition="$syc_wechat"><a href="{:U('syc_auth_group')}" class="btn tongbu">一键同步微信公众号粉丝</a> &nbsp;</if> 
+          </div>
         </div>
         <!-- 高级搜索 -->
         <div class="search-form fr cf">
@@ -18,7 +19,7 @@
               </select>
           </div>
           <div class="sleft">
-            <input type="text" placeholder="请输入关键字" value="{:I('nickname')}" class="search-input" name="nickname">
+            <input type="text" placeholder="请输入昵称或标签搜索" value="{:I('nickname')}" class="search-input" name="nickname">
             <a url="{:addons_url('UserCenter://UserCenter/lists',$get_param)}" id="search" href="javascript:;" class="sch-btn"><i class="btn-search"></i></a> </div>
         </div>
         <!-- 多维过滤 --> 
@@ -36,8 +37,7 @@
                 <th>用户昵称</th>
                 <th>性别</th>
                 <th>分组</th>
-                <th>登录账号</th>
-                <th>登录密码</th>
+                <th>标签</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -52,9 +52,8 @@
                   <td>{$vo.nickname}</td>
                   <td>{$vo.sex_name}</td>
                   <td>{$vo.group}</td>
-                  <td>{$vo.login_name}</td>
-                  <td>{$vo.login_password}</td>
-                  <td><a href="{:addons_url('UserCenter://UserCenter/set_login',array('uid'=>$vo[uid]))}" target="_self">设置登录账号</a> 
+                  <td>{$vo.tag_titles}</td>
+                  <td>
                   <a href="{:addons_url('UserCenter://UserCenter/detail',array('uid'=>$vo[uid]))}" target="_self">详细资料</a> 
                   <!--<a href="{:addons_url('UserCenter://UserCenter/edit',array('uid'=>$vo[uid]))}" target="_self">编辑</a>-->
                   <a href="{:U('Home/CreditData/lists',array('uid'=>$vo[uid]))}" target="_self">积分记录</a>
@@ -86,7 +85,7 @@
             <div class="btn_wrap"><button class="btn setting_group" url="{:U('changeGroup')}" target-form="ids">确定</button></div>
             </div>
         </div>
-    </div>
+    </div> 
     <!-- 备注用户名 -->
     <div class="remark_html" style="display:none">
     	<div class="manage_group normal_dialog">
@@ -101,22 +100,18 @@
   <script type="text/javascript">
 $(function(){
 	//搜索功能
-	$("#search").click(function(){
-		var url = $(this).attr('url');
-        var query  = $('.search-form').find('input').serialize();
-        query = query.replace(/(&|^)(\w*?\d*?\-*?_*?)*?=?((?=&)|(?=$))/g,'');
-        query = query.replace(/^&/g,'');
+  $("#search").click(function(){
+    var url = $(this).attr('url');
+    var str = $('.search-input').val()
+        var query  = $('.search-input').attr('name')+'='+str.replace(/(^\s*)|(\s*$)/g,"");
+
         if( url.indexOf('?')>0 ){
             url += '&' + query;
         }else{
             url += '?' + query;
         }
-        if(query == '' ){
-        	url= $(this).attr('url');
-        	//url="{:addons_url($_REQUEST ['_addons'].'://'.$_REQUEST ['_controller'].'/lists')}";
-        }
-		window.location.href = url;
-	});
+    window.location.href = url;
+  });
 
     //回车自动提交
     $('.search-form').find('input').keyup(function(event){
@@ -140,7 +135,8 @@ $(function(){
 		$('button',html).click(function(){
 			that = this;
 			target = $(that).attr('url');
-			query = query + "&group_id="+$('#select_group', html).val() ;//+ "&type="+$('#select_type', html).val();
+			var group = $('#select_group', html).val();
+			query = query + "&group_id="+group ;//+ "&type="+$('#select_type', html).val();
 			$(that).addClass('disabled').attr('autocomplete','off').prop('disabled',true);
             $.post(target,query).success(function(data){
 				location.reload();
@@ -148,7 +144,50 @@ $(function(){
             });
 		})
 	})
-	
+	//设置标签
+	$('.setting_tag').click(function(){
+    //用户标签弹框
+		var html = $('<div class="manage_group normal_dialog">'+
+                  '<div class="content">'+
+                          '<volist name="tags" id="vo">'+
+                            '<div class="check-item"><input type="checkbox" class="regular-checkbox select_tag" value="{$vo.id}" id="tag_{$vo.id}" name="tags[]">'+
+                              '<label for="tag_{$vo.id}"></label>{$vo.title} </div>'+
+                          '</volist>'+                  
+                  '<div class="btn_wrap"><button class="btn setting_tag" url="{:U('changeTag')}" target-form="ids">确定</button></div>'+
+                  '</div>'+
+              '</div>');
+    query = $('.ids').serialize();
+    if(query==""){
+      alert('请选择用户');
+      return;
+    }
+    $.Dialog.open('设置用户标签',{width:300,height:300},html);
+    //$.thinkbox(html);
+      var voList = $('.select_tag',html).html();
+      //console.log(voList);
+      if(voList==undefined){
+        $('.content',html).html("<center>请先增加标签</center>")
+      }
+    $('button',html).click(function(){
+      that = this;
+      target = $(that).attr('url');
+      var tags=''
+      $('.select_tag', html).each(function() {
+        if($(this).prop('checked'))  tags += $(this).val()+',';
+                
+            });
+      if(tags==""){
+        alert('请选择标签');
+        return;
+        }
+			query = query + "&tags="+tags ;//+ "&type="+$('#select_type', html).val();
+			$(that).addClass('disabled').attr('autocomplete','off').prop('disabled',true);
+            $.post(target,query).success(function(data){
+				location.reload();
+				$('.thinkbox-modal-blackout-default,.thinkbox-default').hide();
+            });
+		})
+	})	
 	$('.set_remark').click(function(){
 		var html = $($('.remark_html').html());
 		var uid = $(this).attr('rel');

@@ -3,13 +3,13 @@ return array (
 		'score' => array (
 				'title' => '初始化积分:',
 				'type' => 'text',
-				'value' => '100',
+				'value' => '0',
 				'tip' => '用户首次进入时赠送的金币值' 
 		),
 		'experience' => array (
 				'title' => '初始化经历值:',
 				'type' => 'text',
-				'value' => '100',
+				'value' => '0',
 				'tip' => '用户首次进入时赠送的经历值' 
 		),
 		'need_bind' => array ( // 配置在表单中的键名 ,这个会是config[random]

@@ -79,7 +79,7 @@ class CustomReplyMultController extends BaseController {
 			$model = $this->getModel ( 'custom_reply_mult' );
 			$this->_saveKeyword ( $model, $map ['id'], 'custom_reply_mult' );
 			
-			$this->success ( '操作成功', U ( 'lists' ) );
+			$this->success ( '操作成功', U ( 'lists',$this->get_param ) );
 			exit ();
 		}
 		
@@ -119,7 +119,7 @@ class CustomReplyMultController extends BaseController {
 			$model = $this->getModel ( 'custom_reply_mult' );
 			$this->_saveKeyword ( $model, $map ['id'], 'custom_reply_mult' );
 			
-			$this->success ( '操作成功', U ( 'lists' ) );
+			$this->success ( '操作成功', U ( 'lists',$this->get_param ) );
 			exit ();
 		}
 		// 使用提示

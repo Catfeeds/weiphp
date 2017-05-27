@@ -9,8 +9,8 @@ use Think\Model;
  */
 class PublicBindModel extends Model {
 	protected $tableName = 'addons';
-	public $component_appid = 'wxea0485bef5247236';
-	public $component_appsecret = '0c79e1fa963cd80cc0be99b20a18faeb';
+	public $component_appid = '';
+	public $component_appsecret = '';
 	function _initialize() {
 		$this->component_appid = C ( 'COMPONENT_APPID' );
 		$this->component_appsecret = C ( 'COMPONENT_APPSECRET' );
@@ -18,7 +18,6 @@ class PublicBindModel extends Model {
 	function _get_component_access_token() {
 		$key = 'component_access_token_' . $this->component_appid;
 		$component_access_token = S ( $key );
-		
 		if ($component_access_token === false) {
 			$url = 'https://api.weixin.qq.com/cgi-bin/component/api_component_token';
 			
@@ -29,8 +28,9 @@ class PublicBindModel extends Model {
 			$config = M ( 'addons' )->where ( $map )->getField ( 'config' );
 			$config = ( array ) json_decode ( $config, true );
 			$param ['component_verify_ticket'] = $config ['ComponentVerifyTicket'];
-			
+			// dump($param);
 			$data = post_data ( $url, $param );
+			// dump($data);exit;
 			if (! isset ( $data ['component_access_token'] )) {
 				return false;
 			}
@@ -58,7 +58,7 @@ class PublicBindModel extends Model {
 			
 			$pre_auth_code = $data ['pre_auth_code'];
 			
-			S ( $key1, $pre_auth_code, 600 );
+			S ( $key1, $pre_auth_code, $data ['expires_in'] );
 		}
 		return $pre_auth_code;
 	}
@@ -78,7 +78,7 @@ class PublicBindModel extends Model {
 			$res ['msg'] = '获取pre_auth_code失败！';
 			return $res;
 		}
-		
+
 		$callback = addons_url ( 'PublicBind://PublicBind/after_auth' );
 		$jumpURL = 'https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=' . $this->component_appid . '&pre_auth_code=' . $pre_auth_code . '&redirect_uri=' . $callback;
 		
@@ -113,6 +113,24 @@ class PublicBindModel extends Model {
 			
 			S ( $key, $info, $info ['expires_in'] );
 		}
+		return $info;
+	}
+	function refreshToken($appid, $refresh_token) {
+		$component_access_token = $this->_get_component_access_token ();
+		$url = 'https://api.weixin.qq.com/cgi-bin/component/api_authorizer_token?component_access_token=' . $component_access_token;
+		
+		$param ['component_appid'] = $this->component_appid;
+		$param ['authorizer_appid'] = $appid;
+		$param ['authorizer_refresh_token'] = $refresh_token;
+		
+		$info = post_data ( $url, $param );
+		if (! isset ( $info ['authorizer_access_token'] )) {
+			$res ['msg'] = '获取authorizer_access_token失败！';
+			return $res;
+		}
+		
+		D ( 'Common/Public' )->updateRefreshToken ( $appid, $info ['authorizer_refresh_token'] );
+		
 		return $info;
 	}
 	// 获取授权方的账户信息

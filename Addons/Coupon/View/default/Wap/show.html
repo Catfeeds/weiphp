@@ -28,6 +28,7 @@
                       var textLink = "{:U('do_pay',array('sn_id'=>$sn['id'],'publicid'=>$public_info['id']))}";
                       $('#qrCode').qrcode({width:150,height:150,text:textLink,refresh:true,time:30000}); 
                       </script>
+                      <div id="qrCode">SN码：{$sn.sn}</div>
                       <p class="qr_tips">将本页面展示给商家即可使用</p>
                       </div>
      </div>

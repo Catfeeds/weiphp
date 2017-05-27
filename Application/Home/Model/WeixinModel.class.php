@@ -28,10 +28,13 @@ class WeixinModel extends Model {
 				if ($_GET ['appid'] == 'wx570bc396a51b8ff8') {
 					$info ['token'] = 'gh_3c884a361561';
 					$info ['encodingaeskey'] = 'DfEqNBRvzbg8MJdRQCSGyaMp6iLcGOldKFT0r8I6Tnp';
-					$info ['appid'] = 'wxea0485bef5247236';
+					$info ['appid'] = C ( 'COMPONENT_APPID' );
 				} else {
 					$map ['appid'] = I ( 'get.appid' );
 					$info = D ( 'Common/Public' )->where ( $map )->find ();
+					if ($info ['is_bind']) {
+						$info ['appid'] = C ( 'COMPONENT_APPID' );
+					}
 				}
 			} else {
 				$id = I ( 'get.id' );
@@ -39,8 +42,7 @@ class WeixinModel extends Model {
 			}
 			
 			get_token ( $info ['token'] ); // 设置token
-			
-			$this->wxcpt = new \WXBizMsgCrypt ( 'weiphp', $info ['encodingaeskey'], $info ['appid'] );
+			$this->wxcpt = new \WXBizMsgCrypt ( SYSTEM_TOKEN, $info ['encodingaeskey'], $info ['appid'] );
 			
 			$sMsg = ""; // 解析之后的明文
 			$errCode = $this->wxcpt->DecryptMsg ( $this->sEncryptMsg, $this->sReqTimeStamp, $this->sReqNonce, $content, $sMsg );
@@ -78,7 +80,6 @@ class WeixinModel extends Model {
 	/* 回复语音消息 */
 	public function replyVoice($media_id) {
 		$msg ['Voice'] ['MediaId'] = $media_id;
-		$msg ['Voice'] ['MediaId'] = $media_id;
 		$this->_replyData ( $msg, 'voice' );
 	}
 	/* 回复视频消息 */
@@ -102,6 +103,13 @@ class WeixinModel extends Model {
 	 */
 	public function replyNews($articles) {
 		$msg ['ArticleCount'] = count ( $articles );
+		
+		if (! C ( 'USER_OAUTH' )) {
+			$openid = get_openid ();
+			foreach ( $articles as &$vo ) {
+				$vo ['Url'] .= '&openid=' . $openid;
+			}
+		}
 		$msg ['Articles'] = $articles;
 		
 		$this->_replyData ( $msg, 'news' );
@@ -112,19 +120,16 @@ class WeixinModel extends Model {
 		$msg ['FromUserName'] = $this->data ['ToUserName'];
 		$msg ['CreateTime'] = NOW_TIME;
 		$msg ['MsgType'] = $msgType;
-		
 		if ($_REQUEST ['doNotInit']) {
-			dump ( $msg );
+			// dump ( $msg );
 			exit ();
 		}
 		
 		$xml = new \SimpleXMLElement ( '<xml></xml>' );
 		$this->_data2xml ( $xml, $msg );
 		$str = $xml->asXML ();
-		
 		// 记录日志
 		addWeixinLog ( $str, '_replyData' );
-		
 		if ($_GET ['encrypt_type'] == 'aes') {
 			$sEncryptMsg = ""; // xml格式的密文
 			$errCode = $this->wxcpt->EncryptMsg ( $str, $this->sReqTimeStamp, $this->sReqNonce, $sEncryptMsg );
@@ -134,7 +139,6 @@ class WeixinModel extends Model {
 				addWeixinLog ( $str, "EncryptMsg Error: " . $errCode );
 			}
 		}
-		
 		echo ($str);
 	}
 	/* 组装xml数据 */
@@ -233,6 +237,152 @@ class WeixinModel extends Model {
 			return $sContent;
 		} else {
 			return false;
+		}
+	}
+	
+	// 回复选择素材产生的内容
+	function material_reply($param) {
+		$cArr = wp_explode($param, ':');
+		if ($cArr[0] == 'text') {
+			$config['type'] = 1;
+			$config['description'] = M('material_text')->where(array(
+					'id' => $cArr[1]
+			))->getField('content');
+		} else if ($cArr[0] == 'img') {
+			$config['type'] = 2;
+			$config['image_id'] = $cArr[1];
+		} else if ($cArr[0] == 'news') {
+			$config['type'] = 3;
+			$config ['appmsg_id'] = $cArr[1];
+		}else if ($cArr [0] == 'voice'){
+			$config ['type'] = 4;
+			$config ['voice_id']= $cArr[1];
+		}else if ($cArr [0] == 'video'){
+			$config ['type'] = 5;
+			$config ['video_id']= $cArr[1];
+		}
+		// 其中token和openid这两个参数一定要传，否则程序不知道是哪个微信用户进入了系统
+		$param ['token'] = get_token ();
+		$param ['openid'] = get_openid ();
+		
+		$sreach = array (
+				'[follow]',
+				'[website]',
+				'[token]',
+				'[openid]'
+		);
+		$replace = array (
+				addons_url ( 'UserCenter://Wap/bind', $param ),
+				addons_url ( 'WeiSite://WeiSite/index', $param ),
+				$param ['token'],
+				$param ['openid']
+		);
+		$config ['description'] = str_replace ( $sreach, $replace, $config ['description'] );
+		
+		switch ($config ['type']) {
+			case '3' :
+				$map ['group_id'] = $config ['appmsg_id'];
+				$appMsgData = M ( 'material_news' )->where ( $map )->select ();
+				foreach ( $appMsgData as $vo ) {
+					// 文章内容
+					if ($vo['title']){
+						$art ['Title'] = $vo ['title'];
+						$art ['Description'] = $vo ['intro'];
+						if (empty ( $vo ['url'] )) {
+							$art ['Url'] = replace_url ( $vo ['link'] );
+							$public_info = get_token_appinfo ();
+							if (! $art ['Url']) {
+								$art ['Url'] = U ( 'Material/news_detail', array (
+										'id' => $vo ['id'],
+										'publicid' => $public_info ['id']
+								) );
+							}
+						} else {
+							$art ['Url'] = $vo ['url'];
+						}
+		
+						if (! C ( 'USER_OAUTH' )) {
+							$art ['Url'] .= '&openid=' . $param ['openid'];
+						}
+		
+						// 获取封面图片URL
+						$art ['PicUrl'] = get_cover_url ( $vo ['cover_id'] );
+						$articles [] = $art;
+					}
+				}
+				if (!empty($articles)){
+					$this->replyNews ( $articles );
+				}else{
+					exit('success');
+				}
+				break;
+			case '2' :
+				$images = M ( 'material_image' )->find ( $config ['image_id'] );
+				if (! empty ( $images )) {
+					$media_id = '';
+					if ($images ['media_id']) {
+						$media_id = $images ['media_id'];
+					} else if ($images ['cover_id']) {
+						$media_id = D ( 'Common/Custom' )->get_image_media_id ( $images ['cover_id'] );
+					}
+					if (empty ( $media_id )) {
+						exit('success');
+					} else {
+						$res = $this->replyImage ( $media_id );
+					}
+				} else {
+					exit('success');
+				}
+				break;
+			case '4':
+				//语音
+				$voice = M('material_file')->find($config['voice_id']);
+				if (!empty($voice)){
+					$media_id='';
+					if ($voice['media_id']){
+						$media_id= $voice['media_id'];
+					}else if ($voice ['file_id']) {
+						$media_id = D ( 'Common/Custom' )->get_file_media_id ( $voice ['file_id'] );
+					}
+					if (empty($media_id)){
+						exit('success');
+					}else {
+						$res = $this->replyVoice($media_id);
+					}
+				}else{
+					exit('success');
+				}
+				break;
+			case '5':
+					
+				//视频
+				$video = M('material_file')->find($config['video_id']);
+				if (!empty($video)){
+					$media_id='';
+		
+					if ($video['media_id']){
+						$media_id= $video['media_id'];
+					}else if ($video ['file_id']) {
+		
+						$media_id = D ( 'Common/Custom' )->get_file_media_id ( $video ['file_id'],'video');
+					}
+		
+					if (empty($media_id)){
+						exit('success');
+					}else {
+						$res = $this->replyVideo($media_id, $video['title'] , $video['introduction']);
+					}
+				}else{
+					exit('success');
+				}
+				break;
+			default :
+				if ($config['description']){
+					$this->replyText ( $config ['description'] );
+				}else{
+					exit('success');
+				}
+		
 		}
 	}
 }

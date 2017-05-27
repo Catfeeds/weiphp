@@ -20,26 +20,32 @@ border-radius: 6px;margin-left: 5px;width: 12px;height: 12px;background: #fff;}
 </style>
 <body id="weisite">
 <div class="container">
+ <if condition="!empty($slide_data)">
+    <notempty name="slide_data">
     <section class="banner">
-    	<ul>
-        <php>foreach($list_data as $k=>$vo){ if($k>2) continue; </php>
+	<ul>
+        <volist name="slide_data" id="vo">
         	<li>
-            	<a href="{:U('detail', 'id='.$vo[id])}"><img src="{$vo.cover|get_cover_url}"/></a>
+            	<a href="{$vo.url}"><img src="{$vo.cover|get_cover_url=900,450}"/></a>
             	<span class="title">{$vo.title}</span>
             </li>
-         <php>$img_count += 1 ;unset($list_data[$k]); } </php>
+         </volist>
         </ul>
-        <div class="identify">
-        	<php>for($i=0; $i<$img_count; $i++){ </php>
+        <span class="identify">
+            <span class="pointer">
+            <volist name="slide_data" id="vo">
                 <em></em>
-             <php> } </php>
-        </div>
+             </volist> 
+             </span>       
+        </span>
+
     </section>
+    </notempty>
     <ul class="small_pic_list">
-    <volist name="list_data" id="vo">
+    <volist name="lists" id="vo">
     	<li>
-        	<a href="{:U('detail', 'id='.$vo[id])}">
-            	<notempty name="vo.cover"><img src="{$vo.cover|get_cover_url}"/></notempty>
+        	<a href="{$vo.url}">
+            	<notempty name="vo.cover"><img src="{$vo.cover|get_square_url=200}"/></notempty>
                 <h6>{$vo.title}</h6>
                 <p>{$vo.intro}</p>
                 <span class="colorless">{$vo.cTime|time_format}</span>
@@ -65,7 +71,7 @@ border-radius: 6px;margin-left: 5px;width: 12px;height: 12px;background: #fff;}
 </body>
 <script type="text/javascript">
 $(function(){
-	$.WeiPHP.initBanner(true,5000);
+	$.WeiPHP.initBanner(true,5000,9/5);
 })
 
 </script>

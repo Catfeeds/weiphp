@@ -15,7 +15,7 @@
         <div class="prize_content">
         	<div class="tips_div">
             <eq name='has_prize' value='1'>
-            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;你还有奖品未领取</a>
+            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;查看中奖奖品</a>
             </eq>
             </div>
             <div class="content_item">
@@ -75,10 +75,13 @@
         
         <p class="copyright">{$system_copy_right}{$tongji_code}</p>
     </div>
-    <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initZjd.js"></script>
+    <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initZjd.js?v=2"></script>
     <script>
 	$('.zjd_top').height($(window).width()*570/640);
 	var joinUrl = "{$joinurl}";
+	 var has_subscribe = "{$has_subscribe}";
+	 var title='{$public_info.public_name}';
+	 var qrcode='{$qrcode}';
  	//分享
 	$.WeiPHP.initWxShare({
 		title:'{$shareData.title}',

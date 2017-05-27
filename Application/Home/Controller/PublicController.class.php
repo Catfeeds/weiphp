@@ -41,9 +41,9 @@ class PublicController extends HomeController {
 	 * 显示指定模型列表数据
 	 */
 	public function lists() {
-		if (! is_administrator ( $this->mid )) {
-			redirect ( addons_url ( 'UserCenter://UserCenter/lists' ) );
-		}
+		// if (! is_administrator ( $this->mid )) {
+		// redirect ( addons_url ( 'UserCenter://UserCenter/lists' ) );
+		// }
 		// 获取模型信息
 		$model = $this->model;
 		
@@ -101,6 +101,9 @@ class PublicController extends HomeController {
 			);
 			M ( 'public_link' )->where ( $map_link )->delete ();
 			
+			if (C ( 'PUBLIC_BIND' )) {
+			}
+			
 			$this->success ( '删除成功' );
 		} else {
 			$this->error ( '删除失败！' );
@@ -151,6 +154,15 @@ class PublicController extends HomeController {
 		}
 	}
 	function step_0() {
+		if (C ( 'PUBLIC_BIND' ) && is_install ( 'PublicBind' )) {
+			$res = D ( 'Addons://PublicBind/PublicBind' )->bind ();
+			if (! $res ['status']) {
+				$this->error ( $res ['msg'] );
+				exit ();
+			}
+			redirect ( $res ['jumpURL'] );
+		}
+		
 		$map ['id'] = $id = I ( 'id' );
 		$data = D ( 'Common/Public' )->where ( $map )->find ();
 		if (! empty ( $data ) && $data ['uid'] != $this->mid) {
@@ -188,7 +200,7 @@ class PublicController extends HomeController {
 						'!=' . $this->mid 
 				);
 				$arr = array (
-						'www' => 1
+						'www' => 1 
 				); // CHECKOUT
 				
 				if (isset ( $arr [$domain] ) || D ( 'Common/Public' )->where ( $map2 )->getField ( 'id' )) {
@@ -201,8 +213,6 @@ class PublicController extends HomeController {
 			$_POST ['group_id'] = intval ( C ( 'DEFAULT_PUBLIC_GROUP_ID' ) );
 			$_POST ['uid'] = $this->mid;
 			
-			// 更新缓存
-			D ( 'Common/Public' )->clear ( $id );
 			session ( 'token', $_POST ['token'] );
 			
 			$map2 ['uid'] = $this->mid;
@@ -219,7 +229,9 @@ class PublicController extends HomeController {
 					$data ['mp_id'] = $id;
 					$data ['is_creator'] = 1;
 					M ( 'public_link' )->add ( $data );
-					
+					// 更新缓存
+			        D ( 'Common/Public' )->clear ( $id );
+
 					$url = U ( 'step_1?id=' . $id );
 					
 					$this->success ( '添加基本信息成功！', $url );
@@ -230,6 +242,9 @@ class PublicController extends HomeController {
 				$_POST ['id'] = $id;
 				$url = U ( 'step_1?id=' . $id );
 				$Model->create () && $res = $Model->save ();
+				// 更新缓存
+			    D ( 'Common/Public' )->clear ( $id );
+
 				if ($res) {
 					$this->success ( '保存基本信息成功！', $url );
 				} elseif ($res === 0) {
@@ -260,7 +275,9 @@ class PublicController extends HomeController {
 		if (empty ( $data ) || $data ['uid'] != $this->mid) {
 			$this->error ( '非法操作' );
 		}
-		$is_audit = $data ['is_audit'];
+		
+		$user = D ( 'Common/User' )->find ( $this->mid );
+		$is_audit = $user ['is_audit'];
 		$this->assign ( 'is_audit', $is_audit );
 		if (IS_POST) {
 			// 更新缓存
@@ -284,7 +301,7 @@ class PublicController extends HomeController {
 							'id' => $id 
 					) ) );
 				} else {
-					$this->success ( '保存成功！', U ( 'Home/Index/main' ) );
+					$this->success ( '保存成功！', U ( 'Home/Public/lists' ) );
 				}
 			} else {
 				$this->error ( $Model->getError () );
@@ -327,7 +344,7 @@ class PublicController extends HomeController {
 						$attr ['auto_time'],
 						$attr ['auto_type'] 
 				);
-			} elseif ('checkbox' == $attr ['type']) { // 多选型
+			} elseif ('checkbox' == $attr ['type'] || 'dynamic_checkbox' == $attr ['type']) { // 多选型
 				$auto [] = array (
 						$attr ['name'],
 						'arr2str',
@@ -370,5 +387,32 @@ class PublicController extends HomeController {
 		} else {
 			redirect ( U ( 'home/index/index' ) );
 		}
+	}
+	// 自动检测
+	function check_res() {
+		$map ['id'] = I ( 'id', 0, 'intval' );
+		$info = M ( 'public' )->where ( $map )->find ();
+		$type = $info ['type'];
+		$arr = array (
+				'0' => '普通订阅号',
+				'1' => '微信认证订阅号',
+				'2' => '普通服务号',
+				'3' => '微信认证服务号' 
+		);
+		$this->assign ( 'public_type', $arr [$type] );
+		$this->assign ( 'info', $info );
+		
+		$map2 ['token'] = $info ['token'];
+		M ( 'public_check' )->where ( $map2 )->delete ();
+		
+		// 获取微信权限节点
+		$list = M ( 'public_auth' )->select ();
+		foreach ( $list as &$vo ) {
+			$vo ['type'] = $vo ['type_' . $type];
+		}
+		$this->assign ( 'list_data', $list );
+		// dump ( $list );
+		
+		$this->display ( 'Publics/check_res' );
 	}
 }

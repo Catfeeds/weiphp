@@ -121,7 +121,7 @@ class AddonsController extends Controller {
 	}
 	function export($model = null) {
 		is_array ( $model ) || $model = $this->getModel ( $model );
-		parent::common_export ( $this->model );
+		parent::common_export ( $model );
 	}
 	
 	// 通用插件的编辑模型
@@ -152,7 +152,27 @@ class AddonsController extends Controller {
 	// 通用设置插件模型
 	public function config() {
 		$this->getModel ();
+		
+		$map ['name'] = _ADDONS;
+		$addon = M ( 'addons' )->where ( $map )->find ();
+		if (! $addon)
+		    $this->error ( '插件未安装' );
+		$addon_class = get_addon_class ( $addon ['name'] );
+		if (! class_exists ( $addon_class ))
+		    trace ( "插件{$addon['name']}无法实例化,", 'ADDONS', 'ERR' );
+		$data = new $addon_class ();
+		$addon ['addon_path'] = $data->addon_path;
+		$addon ['custom_config'] = $data->custom_config;
+		$this->meta_title = '设置插件-' . $data->info ['title'];
+		$db_config = D ( 'Common/AddonConfig' )->get ( _ADDONS );
+		$addon ['config'] = include $data->config_file;
+		
 		if (IS_POST) {
+		    foreach ($addon['config'] as $k=>$vv){
+		        if ($vv['type'] == 'material'){
+		            $_POST['config'][$k]=$_POST[$k];
+		        }
+		    }
 			$flag = D ( 'Common/AddonConfig' )->set ( _ADDONS, I ( 'config' ) );
 			
 			if ($flag !== false) {
@@ -162,19 +182,7 @@ class AddonsController extends Controller {
 			}
 		}
 		
-		$map ['name'] = _ADDONS;
-		$addon = M ( 'addons' )->where ( $map )->find ();
-		if (! $addon)
-			$this->error ( '插件未安装' );
-		$addon_class = get_addon_class ( $addon ['name'] );
-		if (! class_exists ( $addon_class ))
-			trace ( "插件{$addon['name']}无法实例化,", 'ADDONS', 'ERR' );
-		$data = new $addon_class ();
-		$addon ['addon_path'] = $data->addon_path;
-		$addon ['custom_config'] = $data->custom_config;
-		$this->meta_title = '设置插件-' . $data->info ['title'];
-		$db_config = D ( 'Common/AddonConfig' )->get ( _ADDONS );
-		$addon ['config'] = include $data->config_file;
+		
 		if ($db_config) {
 			foreach ( $addon ['config'] as $key => $value ) {
 				if ($value ['type'] != 'group') {

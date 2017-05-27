@@ -1,3 +1,13 @@
+ function check_subscribe(){
+    	//var has_subscribe = 1;
+    	if(has_subscribe=="0"){
+    	    $.WeiPHP.showSubscribeTips({'title':title,'qrcode': qrcode});
+    		return false;	
+    	}else{
+    		return true;
+    	}
+    }
+ 
 var isuseable=0;
 function initLayout(){
 	var prizeAreaWidth = $('.prize_list').width();
@@ -17,10 +27,14 @@ function initLayout(){
 	$('.prize_list .get_prize_btn').width(prizeItemWidth*2+dw+4).height(prizeItemWidth+2).css({'top':prizeItemWidth+dw,'left':prizeItemWidth+dw,'line-height':prizeItemWidth+'px'});	
 }
 function drawPrize(getUrl){
+	if(!(check_subscribe())){
+		return false;
+	}
 	var thePrizeJson;
 	var runIndex = 0;
 	var runTotal = 0;
 	var prizeCount = $('.prize_list .item').size();
+	var thePrizeId=0;
 	if(isuseable==1){
 		return;
 	}
@@ -29,7 +43,7 @@ function drawPrize(getUrl){
 		thePrizeJson = data;
 		thePrizeType = data.award_type;
 		thePrizeId = data.award_id;
-	})
+	});
 	var interval = setInterval(function(){
 					if(runIndex < prizeCount){
 						runIndex++;
@@ -44,24 +58,33 @@ function drawPrize(getUrl){
 						var json = thePrizeJson;
 						if(json){
 							if(json.status == 0){
-								$.Dialog.confirm('提示',json.msg);
+//								$.Dialog.confirm('提示',json.msg);
+								$.Dialog.confirm('提示',json.msg,function(){
+//									window.location.reload();
+									window.location.href=json.jump_url;
+								});
 							}else{
 								$.Dialog.confirm('中奖啦',json.msg,"",json.jump_url);
 							}
 						}else{
 							$.Dialog.fail('程序罢工');
 						}
+					}else if(runTotal*200>6000 && thePrizeJson.status==0 && $('.prize_list .item').eq(runIndex).data('prizeid')==thePrizeId){
+						clearInterval(interval);
+						$.Dialog.confirm('提示',thePrizeJson.msg,function(){
+							window.location.reload();
+						});
 					}
-		},250)
+		},250);
 }
 $(function() {
-	console.log()
+//	console.log()
 	if(jplist && jplist.length>0){
 		var html = "";
 		for(i = 0;i<10;i++){
 			if(i<jplist.length){
 				var jp = jplist[i];
-				console.log(jp);
+//				console.log(jp);
 				html = html + '<div class="item item_'+(i+1)+'" data-prizeid = "'+jp.award_id+'" data-name="'+jp.title+'"><img src="'+jp.picUrl+'"/></div>'	
 			}else{
 				html = html + '<div class="item item_'+(i+1)+'" data-prizeid = "0" data-name="谢谢参与"><img src="'+default_pic+'"/></div>'	
@@ -72,6 +95,4 @@ $(function() {
 	}else{
 		$.Dialog.fail('没有配置产品!');
 	}
-	
-		
 });

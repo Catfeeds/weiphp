@@ -28,6 +28,8 @@ class WishCardContentController extends BaseController{
 		$list_data = $this->_get_model_list ( $this->model );
 		$this->assign ( $list_data );
 		$templateFile = $this->model ['template_list'] ? $this->model ['template_list'] : '';
+		$this->assign('search_key','content');
+		$this->assign('search_url',U('lists'));
 		$this->display ( $templateFile );
 	}
 	function add() {

@@ -358,6 +358,7 @@ $(function(){
     $(window).resize(function(){
         var winW = $(window).width();
         var winH = $(window).height();
+		/*
         $(".upload-img-box").click(function(){
         	//如果没有图片则不显示
         	if($(this).find('img').attr('src') === undefined){
@@ -393,6 +394,7 @@ $(function(){
         $("body").on("click", "#uploadPop .close-pop", function(){
             $(this).parent().remove();
         });
+		*/
     }).resize();
 
     // 缩放图片
@@ -436,7 +438,7 @@ $(function(){
 		$('img',listPicZoom).attr('src','');
 	})
 })
-var addToBlackBtn;
+var addToBlackBtn,uploadObj;
 function showAddToBlack(x,y,t,url){
 	if(!addToBlackBtn){
 		addToBlackBtn = $("<div id='addToBlackBtn'><a href='javascript:;' style='background:#44b549;color:#fff;padding:2px 4px;' class='btn'>添加至黑名单</a></div>");
@@ -573,12 +575,6 @@ function parseSecondToMinAndSecond2(value){
 }
 //上传图片组件
 function initUploadImg(opts){
-	if(opts && opts.width && opts.height){
-		width = opts.width;
-		height = opts.height;
-	}else{
-		width = height = 100;
-	}
 	$(".upload-img-view").dragsort({
 	    itemSelector: ".upload-pre-item22", dragSelector: ".upload-pre-item22", dragBetween: false, placeHolderTemplate: "<div class='upload-pre-item22'></div>",dragSelectorExclude:'em',dragEnd: function() {$(".upload-pre-item22").attr('style','')}
 	});
@@ -587,84 +583,23 @@ function initUploadImg(opts){
 		$uploadDom = opts.uploadDom;
 	}
 	$uploadDom.each(function(index, obj) {
-		setTimeout(function(){
-			var name = $(obj).attr('rel');
-			var is_mult = $(obj).hasClass('mult');
-			$('#upload_picture_'+name).uploadify({
-				"height"          : height,
-				"swf"             : STATIC+"/uploadify/uploadify.swf",
-				"fileObjName"     : "download",
-				"buttonText"      : "上传图片",
-				"uploader"        : UPLOAD_PICTURE,
-				"width"           : width,
-				'cancelImg'		  : 'JS/jquery.uploadify-v2.1.0/cancel.png',
-				'removeTimeout'	  : 1,
-				'fileTypeExts'	  : '*.jpg; *.png; *.gif;',
-				"onUploadSuccess" : function(file, data, response) {
-					//console.log(22);
-					//console.log($('#cover_id_'+name).parent().find('.upload-img-box'));
-					$('#cover_id_'+name).parent().find('.upload-img-box').show();
-					onUploadImsSuccess(file, data, name, is_mult,opts);
-				},
-				"onUploadError" : function(file, data, response) {
-					//console.log(33);
-					//console.log(data);
-				   // onUploadImsSuccess(file, data, name, is_mult);
-				}
-			});
-		},400);
+		$(obj).click(function(){
+			uploadImgDialog(obj,opts);
+		});
 		
 	});
 	
 }
-
-function onUploadImsSuccess(file, data, name, is_mult,opts){
-	var data = $.parseJSON(data);
-	var src = '';
-	if(opts){
-		var width = opts.width;
-		var height = opts.height;
-	}else{
-		var width = height = 100;
-	}
-	if(data.status){
-		$('#cover_id_'+name).val(data.id);
-		src = data.url || ROOT + data.path;
-		
-		if(is_mult){
-			$addImg = $('<div class="upload-pre-item22"><img width="100" height="100" src="' + src + '"/>'
-				+'<input type="hidden" name="'+name+'[]" value="'+data.id+'"/><em onClick="if(confirm(\'确认删除？\')){$(this).parent().remove();}">&nbsp;</em></div>');
-			$("#mutl_picture_"+name).append($addImg);
-			
-			
-			$("#mutl_picture_"+name).dragsort('destroy');
-			$("#mutl_picture_"+name).dragsort({
-			    itemSelector: ".upload-pre-item22", dragSelector: ".upload-pre-item22", dragBetween: false, placeHolderTemplate: "<div class='upload-pre-item22'></div>",dragSelectorExclude:'em',dragEnd: function() {$(".upload-pre-item22").attr('style','')}
-		    });
-		}else{										
-			$('#cover_id_'+name).parent().find('.upload-img-box').html(
-				'<div class="upload-pre-item2" style="width:'+width+'px;height:'+height+'px;max-height:'+height+'px"><img width="'+width+'" height="'+height+'" src="' + src + '"/></div><em class="edit_img_icon">&nbsp;</em>'
-			);
-			
-			$('.weixin-cover-pic').attr('src',src);
-		}
-		//外部回调函数
-		if(!(opts && opts.callback)){
-			var callback = $('#cover_id_'+name).data('callback');
-			if(callback){
-				eval(callback+'(\''+name+'\','+data.id+',\''+src+'\')');
-			}
-		}else{
-			opts.callback(name,data.id,src);
-		}
-	} else {
-		updateAlert(data.info);
-		setTimeout(function(){
-			$('#top-alert').find('button').click();
-			$(that).removeClass('disabled').prop('disabled',false);
-		},1500);
-	}
+function uploadImgDialog(obj,opts){
+	var maxCount = parseInt($(obj).data('max'));
+	var field = $(obj).attr('rel');
+	uploadObj = obj;
+	$uploadHtml = '<div><div class="upload_dialog" style="height:520px;overflow-y:hidden;overflow-x:hidden;"><div><iframe id="goodsIframe" name="goodsIframe" style="height:520px;width:100%; border:none" border="0" src="'+UPLOAD_DIALOG_URL+'&max='+maxCount+'&field='+field+'"></iframe></div></div></div>';
+	$.Dialog.open("上传图片",{width:800,height:560},$uploadHtml);
 }
+
+
+
 //上传附件组件
 function initUploadFile(callback){
 	$(".upload_file").each(function(index, obj) {
@@ -861,7 +796,14 @@ function simpleColorPicker(_this,callback){
 	}
 	/* 选择图文素材 */
 	function openSelectAppMsg(dataUrl,callback,title){
-		var $contentHtml = $('<div class="appmsg_dialog" style="padding:10px; max-height:560px;overflow-y:auto;overflow-x:hidden;"><ul class="mt_10"><center><br/><br/><br/><img src="'+IMG_PATH+'/loading.gif"/></center></ul></div>');
+		var count=1;
+		if(count==1){
+			dataUrl = dataUrl+'&isAjax=ajax&isRadio=1';
+		}else{
+			dataUrl = dataUrl+'&isAjax=1';
+		}
+		var $contentHtml = $('<div class="appmsg_dialog" style="padding:10px; max-height:560px;overflow-y:auto;overflow-x:hidden;">'+
+			'<iframe id="usersIframe" name="usersIframe" style="height:530px;width:100%; border:none" border="0" src="'+dataUrl+'"><ul class="mt_10"><center><br/><br/><br/><img src="'+IMG_PATH+'/loading.gif"/></center></ul></iframe></div>');
 		$.Dialog.open(title?title:"选择图文素材",{width:1000,height:640},$contentHtml);
 		$.ajax({
 			url:dataUrl,
@@ -875,10 +817,45 @@ function simpleColorPicker(_this,callback){
 					itemSelector : '.appmsg_li'
 					//columnWidth : 308
 				  });
-				$('li',$contentHtml).on('click',function(){
+				$('iframe').load(function () {
+				$("iframe").contents().find("li").on('click',function(){
 					callback(this);
 				});
+			});
 			}
+		})
+	}
+		/* 选择文本素材 */
+	function openSelectAppText(dataUrl,callback,title){
+		var count=1;
+		if(count==1){
+			dataUrl = dataUrl+'&isAjax=ajax&isRadio=1';
+		}else{
+			dataUrl = dataUrl+'&isAjax=1';
+		}
+		var $contentHtml = $('<div><div class="goods_dialog" style="padding:10px; height:530px;overflow-y:hidden;overflow-x:hidden;"><div class="mt_10"><iframe id="usersIframe" name="usersIframe" style="height:530px;width:100%; border:none" border="0" src="'+dataUrl+'"></iframe></div></div><div class="btn_bar"><a href="javascript:;" class="btn confirm_btn">确定</a>&nbsp;&nbsp;<a href="javascript:;" class="border-btn cancel_btn">取消</a></div></div>');
+		$.Dialog.open(title?title:"选择文本素材",{width:1000,height:640},$contentHtml);
+		
+		$('.cancel_btn',$contentHtml).click(function(){
+			$.Dialog.close();
+		})
+		$('.confirm_btn',$contentHtml).click(function(){
+			var trs = $(window.frames["usersIframe"].document,$contentHtml).find("table tr");
+			var usresList = new Array();
+			//var obj = new Object();
+			trs.each(function(index, element) {
+				if($(element).find(".ids").prop("checked")){
+					usresList.id = $(element).find("input").val();
+					usresList.content = $(element).find('td[type="content"]').text();
+					//usresList.push(obj);
+				}
+            });
+			if(usresList.length>count){
+				alert("只能选择"+count+"个选项");
+				return;
+			}
+			callback(usresList);
+			$.Dialog.close();
 		})
 	}
 	function initCopyBtn(id){
@@ -889,11 +866,12 @@ function simpleColorPicker(_this,callback){
 		  } );
 		} );
 	}
+	/*
 	function uploadImgDialog(maxNum,callback){
 		var $contentHtml = $('<div class="upload_img_dialog"><div class="mult_imgs">'+
                 '<div class="upload-img-view" id="mutl_picture_temp_upload">'+
                 '</div>'+
-                '<div class="controls uploadrow2 mult" title="点击上传图片" rel="temp_upload">'+
+                '<div class="controls uploadrow2" data-max="9" title="点击上传图片" rel="temp_upload">'+
                   '<input type="file" id="upload_picture_temp_upload">'+
                 '</div>'+
             '</div><div class="btn_bar"><a href="javascript:;" class="btn confirm_btn">确定</a>&nbsp;&nbsp;<a href="javascript:;" class="border-btn cancel_btn">取消</a></div></div>');
@@ -935,6 +913,7 @@ function simpleColorPicker(_this,callback){
 			$.Dialog.close();
 		})
 	}
+	*/
 	/* 选择商品 */
 	function openSelectGoods(dataUrl,callback){
 		var $contentHtml = $('<div><div class="goods_dialog" style="padding:10px; height:530px;overflow-y:hidden;overflow-x:hidden;"><div class="mt_10"><iframe id="goodsIframe" name="goodsIframe" style="height:530px;width:100%; border:none" border="0" src="'+dataUrl+'&isAjax=ajax"></iframe></div></div><div class="btn_bar"><a href="javascript:;" class="btn confirm_btn">确定</a>&nbsp;&nbsp;<a href="javascript:;" class="border-btn cancel_btn">取消</a></div></div>');
@@ -1100,31 +1079,33 @@ function simpleColorPicker(_this,callback){
 	}
 	//banner
 	//通用banner
-	function banner(isAuto,delayTime){
-		var screenWidth = $('.app-content').width();
-		var count = $('.banner li').size();
-		$('.banner ul').width(screenWidth*count);
-		$('.banner ul').height(screenWidth/2);
-		$('.banner').height(screenWidth/2);
-		$('.banner li').width(screenWidth).height(screenWidth/2);
-		$('.banner li img').width(screenWidth).height(screenWidth/2);
-		$('.banner li .title').css({'width':'98%','padding-left':'2%'})
+	function banner(id,isAuto,delayTime,wh){
+		if($(id).find('ul').html()==undefined)return;
+		if(!wh)wh = 2;
+		var screenWidth = $(id).width();
+		var count = $(id).find('li') .size();
+		$(id).find('ul').width(screenWidth*count);
+		$(id).find('li').height(screenWidth/wh);
+		$(id).height(screenWidth/wh);
+		$(id).find('li').width(screenWidth).height(screenWidth/wh);
+		$(id).find('li img').width(screenWidth).height(screenWidth/wh);
+		$(id).find('li .title').css({'width':'98%','padding-left':'2%'})
 		// With options
-		$('.banner li .title').each(function(index, element) {
+		$(id).find('li .title').each(function(index, element) {
             $(this).text($(this).text().length>15?$(this).text().substring(0,15)+" ...":$(this).text());
         });
-		var flipsnap = Flipsnap('.banner ul');
+		var flipsnap = Flipsnap(id+' ul');
 		flipsnap.element.addEventListener('fstouchend', function(ev) {
-			$('.identify em').eq(ev.newPoint).addClass('cur').siblings().removeClass('cur');
+			$(id).find('.identify em').eq(ev.newPoint).addClass('cur').siblings().removeClass('cur');
 		}, false);
-		$('.identify em').eq(0).addClass('cur')
+		$(id).find('.identify em').eq(0).addClass('cur')
 		if(isAuto){
 			var point = 1;
 			setInterval(function(){
 				//console.log(point);
 				flipsnap.moveToPoint(point);
-				$('.identify em').eq(point).addClass('cur').siblings().removeClass('cur');
-				if(point+1==$('.banner li').size()){
+				$(id).find('.identify em').eq(point).addClass('cur').siblings().removeClass('cur');
+				if(point+1==$(id).find('li').size()){
 					point=0;
 				}else{
 					point++;
@@ -1132,6 +1113,53 @@ function simpleColorPicker(_this,callback){
 				
 				},delayTime)
 		}
+	}
+	//多图banner
+	function mutipicBanner(id,isAuto,delayTime,num){
+		if($(id).find('ul').html()==undefined)return;  
+		var screenWidth = $(id).width();
+		var count = $(id).find('li') .size();
+		var aNew=Math.ceil(count/num-1)  ;
+		$(id).find('ul').width(screenWidth*count/num);
+		$(id).find('li').width(screenWidth/num*0.9375)
+		$(id).find('li').css('marginLeft',screenWidth/num*0.03125+'px') //li的margin
+		$(id).find('li').css('marginRight',screenWidth/num*0.03125+'px')
+		$(id).find('li').css('marginTop',screenWidth/num*0.03125+'px')
+		$(id).find('li .title').css({'width':'98%','padding-left':'2%'})
+		// With options
+		$(id).find('li .title').each(function(index, element) {
+            $(this).text($(this).text().length>15?$(this).text().substring(0,15)+" ...":$(this).text());
+        });  
+    	var points='';
+		for (var i = 0; i <= aNew; i++) {			
+			
+			points += '<em></em>';
+		};	
+		$(id).find('.pointer').html(points);
+		var flipsnap = Flipsnap(id+' ul',{
+			distance:screenWidth ,
+			maxPoint: Math.ceil(count/num-1) 
+		});
+		flipsnap.element.addEventListener('fstouchend', function(ev) {
+			$(id).find('.mutipic_banner_identify em').eq(ev.newPoint).addClass('cur').siblings().removeClass('cur');
+		}, false);
+		$(id).find('.mutipic_banner_identify em').eq(0).addClass('cur')
+		if(isAuto){
+			var point = 1;
+			setInterval(function(){
+				//console.log(point);
+				flipsnap.moveToPoint(point);
+				$(id).find('.mutipic_banner_identify em').eq(point).addClass('cur').siblings().removeClass('cur');
+				if(point+1==$(id).find('li').size()){
+					point=0;
+				}else{
+					point++;
+					}
+				
+				},delayTime)
+		}
+		//console.log($(id).html())
+		
 	}
 	function moneyFormat(value){
 		var float = parseFloat(value);
@@ -1147,21 +1175,86 @@ function simpleColorPicker(_this,callback){
 		var $contentHtml = $('<div><div class="goods_dialog" style="padding:0 10px;height:'+h+'px;overflow:hidden"><div class="mt_10"><iframe id="goodsIframe" name="goodsIframe" style="height:'+h+'px;width:100%; border:none" border="0" src="'+url+'&isAjax=ajax"></iframe></div></div></div>');
 		$.Dialog.open(title,{width:w,height:h+40},$contentHtml);
 	}
+	//danmu
+	/* 弹幕 */
+	function initDanmu(flyBox,height){
+		flyBox.danmu({
+			left: 0,  
+			top:'auto',  //区域的起始位置x坐标
+			bottom: 'auto' ,  //区域的起始位置y坐标
+			height: height, //区域的高度 
+			width:  flyBox.width(), //区域的宽度 
+			zindex :10, //div的css样式zindex
+			speed:60000, //弹幕速度，飞过区域的毫秒数 
+			//danmuss:danmuss, //danmuss对象，运行时的弹幕内容 
+		});
+		flyBox.danmu('danmu_start');
+		queryComment(flyBox,0);
+		setInterval(function(){
+			queryComment(flyBox,1);
+		},1000*10)
+	}
+	//请求评论
+	function queryComment(flyBox,flag){
+		var getUrl = flyBox.data('url');
+		$.get(getUrl,function(data){
+			if(data){
+				if(data.length>10){
+					for(var i=0;i<10;i++){
+						var json = data[i];
+						var content = json.content;
+//						content = content.length>30?content.substring(0,30):content;
+						var picUrl = json.headimgurl||json.headimgurl!=""?json.headimgurl:IMG_PATH+"/default_head.png";
+						var time = flag==0?i*25:flyBox.data("nowtime")+i*25;
+						var a_danmu={ "text":content,"picUrl":picUrl, "color":"#fff" ,"position":"0","time":time,'name':json.name};
+						flyBox.danmu("add_danmu",a_danmu);
+					}
+					setTimeout(function(){
+						for(var i=10;i<data.length;i++){
+							var json = data[i];
+							var content = json.content;
+							content = content.length>30?content.substring(0,30):content;
+							var picUrl = json.headimgurl||json.headimgurl!=""?json.headimgurl:IMG_PATH+"/default_head.png";
+							var time = flyBox.data("nowtime")+i*25;
+							
+							var a_danmu={ "text":content,"picUrl":picUrl, "color":"#fff" ,"position":"0","time":time,'name':json.name};
+							flyBox.danmu("add_danmu",a_danmu);
+						}
+					},1000*6);
+				}else{
+					for(var i=0;i<data.length;i++){
+							var json = data[i];
+							var content = json.content;
+//							content = content.length>30?content.substring(0,30):content;
+							var picUrl = json.headimgurl||json.headimgurl!=""?json.headimgurl:IMG_PATH+"/default_head.png";
+							var time = flyBox.data("nowtime")+i*25;
+							var a_danmu={ "text":content,"picUrl":picUrl, "color":"#fff" ,"position":"0","time":time,'name':json.name};
+						
+							flyBox.danmu("add_danmu",a_danmu);
+					}
+				}
+				
+			}
+		})
+	}
 	var WeiPHP = {
 		chooseWishTemplateDialog:chooseWishTemplateDialog,
 		chooseWishContentDialog:chooseWishContentDialog,
 		openSelectAppMsg:openSelectAppMsg,
+		openSelectAppText:openSelectAppText,
 		initCopyBtn:initCopyBtn,
 		uploadImgDialog:uploadImgDialog,
 		openSelectGoods:openSelectGoods,
 		openSelectShops:openSelectShops,
 		openSelectUsers:openSelectUsers,
 		initBanner:banner,
+		initMutipicBanner:mutipicBanner,
 		moneyFormat:moneyFormat,
 		selectSingleUser:selectSingleUser,
 		selectMutiUser:selectMutiUser,
 		openSubmitDialog:openSubmitDialog,
-		openSelectLists:openSelectLists
+		openSelectLists:openSelectLists,
+		initDanmu:initDanmu
 		
 	}
 	$.extend({WeiPHP:WeiPHP});

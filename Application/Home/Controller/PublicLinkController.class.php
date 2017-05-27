@@ -18,7 +18,7 @@ class PublicLinkController extends HomeController {
 	function lists() {
 	    $nav[0]['title']='返回';
 	    $nav[0]['url']=U('Home/Public/lists', array (
-					'from' => 5 
+					'from' => 50 
 		));
 	    $nav[0]['class']='current';
 	    $this->assign('nav',$nav);

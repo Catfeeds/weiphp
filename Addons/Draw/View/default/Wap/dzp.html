@@ -11,14 +11,18 @@
             </div>
             <div id="inner-cont" style="z-index:1000">
                 <div id="inner"> 
+                <php> if($info['status']=='进行中') { </php>
                     <canvas style="background:url({:ADDON_PUBLIC_PATH}/start.png) no-repeat; background-size:100% 100%;" width="80" height="106" id="startbtn" data-src="" ></canvas> 
+                    <php> } else { </php>
+                    <canvas style="background:url({:ADDON_PUBLIC_PATH}/start.png) no-repeat; background-size:100% 100%;" onClick="checkEvent()" width="80" height="106" ></canvas>
+                    <php> } </php>
                 </div>
             </div>
         </div>
         <div class="prize_content">
         	<div class="tips_div">
         	 <eq name='has_prize' value='1'>
-            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;你还有奖品未领取</a>
+            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;查看中奖奖品</a>
             </eq>
             </div>
             <div class="content_item">
@@ -83,11 +87,17 @@
     
     <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/jquery.easing.min.js"></script>
     <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/jQueryRotate.2.2.js"></script>
-    <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initDzp.js"></script>
     <script>
+    var has_subscribe = "{$has_subscribe}";
     var jplist={$jplist};
     var joinurl="{$joinurl}";
     var zpimg ="{:ADDON_PUBLIC_PATH}/pan.png";
+    var title='{$public_info.public_name}';
+    var qrcode='{$qrcode}';
+    var games_id='{$info.id}';
+    var checkurl="{:U('ajaxCheckCount')}";
+    var checkstatus=1;
+    var msg='';
 	//分享
 	$.WeiPHP.initWxShare({
 		title:'{$shareData.title}',
@@ -95,7 +105,30 @@
 		link:'{$shareData.link}',
 		imgUrl:'{$shareData.imgUrl}?v={:SITE_VERSION}'
 	});
+	function checkEvent(){
+		var status = '{$info.status}';
+		$.Dialog.confirm('提示','活动'+status);
+	}
+	$.Dialog.loading();
+	checkCount(); 
+	function checkCount(){
+		$.ajax({
+		    type:'POST',
+		    async:false,
+		    url:checkurl,
+		    data:{'games_id':games_id},
+		    success:function(dd){
+		    	$.Dialog.close();
+		    	checkstatus = dd.status;
+				if(dd.status == 0){
+					msg = dd.msg;
+				}
+			}
+		});
+		
+	}
 	</script>
+	<script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initDzp.js?v=15"></script>
     <include file="Public/mobile_foot"/>
 </body>
 </html>

@@ -20,10 +20,10 @@ border-radius: 6px;margin-left: 5px;width: 12px;height: 12px;background: #fff;}
 <div class="container">
     
     <ul class="small_pic_list">
-    <volist name="list_data" id="vo">
+    <volist name="lists" id="vo">
     	<li>
-        	<a href="{:U('detail', 'id='.$vo[id])}">
-            	<notempty name="vo.cover"><img src="{$vo.cover|get_cover_url}"/></notempty>
+        	<a href="{$vo.url}">
+            	<notempty name="vo.cover"><img src="{$vo.cover|get_square_url=200}"/></notempty>
                 <h6>{$vo.title}</h6>
                 <p>{$vo.intro}</p>
                 <span class="colorless">{$vo.cTime|time_format}</span>

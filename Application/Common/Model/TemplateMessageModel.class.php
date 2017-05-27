@@ -9,7 +9,9 @@ use Think\Model;
  */
 class TemplateMessageModel extends Model {
 	protected $tableName = 'user';
-	/* 礼包领取通知消息模板 */
+	/* 礼包领取通知消息模板 OPENTM200977411
+	 * 线上templateid  c1n1Ry0Le6m7JfDSjeHrRs-m2YFYjR8k7BWoezFjqlk
+	 * */
 	public function replyGiftNotice($uid, $name,$first='',$orderId='',$remark='',$url='',$templateId='') {
 		$first == '' && $first='您推荐的爱心分享已被领取';
 		$orderId=='' && $orderId=time_format(time(),'YmdHis');
@@ -30,7 +32,9 @@ class TemplateMessageModel extends Model {
 		return $this->_replyData ( $uid, $param, $templateId,$url);
 	}
 	
-	/* 礼包领取失败通知消息模板 */
+	/* 礼包领取失败通知消息模板TM00384 
+	 *  线上templateid  5kb99T5UeEcFu_krkngLn_hnjvXEHZ1jcwYzC9uBk8I
+	 * */
 	public function replyGiftFail($uid, $actName,$reason,$giftName='',$remark='',$first='',$url='',$templateId='') {
 	   
 	    $first == '' && $first='亲爱的用户：';
@@ -56,7 +60,9 @@ class TemplateMessageModel extends Model {
 	    return $this->_replyData ( $uid, $param, $templateId,$url);
 	}
 	
-	/* 优惠券领取成功通知 */
+	/* 优惠券领取成功通知  OPENTM200474379 
+	 * 0gxG83GSMpf8ymCDILnKtcOF5zSMQRjde0hYs9iO27M
+	 * */
 	public function replyCouponSuccess($uid, $couponName,$snCode,$endTime,$remark='',$first='',$url='',$templateId='') {
 	
 	    $first == '' && $first='恭喜您领到一张优惠券！';
@@ -81,7 +87,9 @@ class TemplateMessageModel extends Model {
 	    return $this->_replyData ( $uid, $param, $templateId,$url);
 	}
 	
-	/* 获得代金券通知 */
+	/* 获得代金券通知 TM00483
+	 * -MBKvo7SQTKmpVVZDs4-egGe6JDyHuv9SrsSZhRrPBA
+	 * */
 	public function replyShopCouponSuccess($uid, $couponMoney,$endTime,$remark='',$first='',$url='',$templateId='') {
 	
 	    $first == '' && $first='尊敬的客户，您已获得'.$couponMoney.' 代金券';
@@ -103,7 +111,9 @@ class TemplateMessageModel extends Model {
 	    return $this->_replyData ( $uid, $param, $templateId,$url);
 	}
 	
-	/* 返现到账通知 */
+	/* 返现到账通知 OPENTM205223929
+	 * rb-7hIQFr6P6hYxYPfzvHEaVivE-TSAX9n-T1cinzSM
+	 * */
 	public function replyReturnMoney($uid, $money,$content,$remark='',$first='',$url='',$templateId='') {
 	
 	    $first == '' && $first='尊敬的用户您好，您的一笔返现已到账。';

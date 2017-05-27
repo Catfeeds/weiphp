@@ -205,6 +205,7 @@ class ModelController extends AdminController {
 		$id = empty ( $model_id ) ? I ( 'get.id' ) : $model_id;
 		$type = empty ( $export_type ) ? I ( 'get.type', 0, 'intval' ) : $export_type;
 		empty ( $id ) && $this->error ( '参数不能为空！' );
+		$px = C ( 'DB_PREFIX' );
 		
 		// 模型信息
 		$map ['id'] = $id;
@@ -212,21 +213,21 @@ class ModelController extends AdminController {
 		
 		// 模型字段
 		$map2 ['model_id'] = $id;
-		$list = D ( 'Attribute' )->where ( $map2 )->order('id asc')->select ();
+		$list = D ( 'Attribute' )->where ( $map2 )->order ( 'id asc' )->select ();
 		
 		// 模型数据表
 		$name = get_table_name ( $model ['id'] );
 		$return_sql || $data = M ( parse_name ( $name, true ) )->select ();
 		$name = strtolower ( $name );
 		if ($type == 1) {
-			$sql = "DELETE FROM `wp_attribute` WHERE model_id = (SELECT id FROM wp_model WHERE `name`='{$model['name']}' ORDER BY id DESC LIMIT 1);\r\n";
-			$sql .= "DELETE FROM `wp_model` WHERE `name`='{$model['name']}' ORDER BY id DESC LIMIT 1;\r\n";
-			$sql .= "DROP TABLE IF EXISTS `wp_" . strtolower ( $name ) . "`;";
+			$sql = "DELETE FROM `{$px}attribute` WHERE `model_name`='{$model['name']}';\r\n";
+			$sql .= "DELETE FROM `{$px}model` WHERE `name`='{$model['name']}' ORDER BY id DESC LIMIT 1;\r\n";
+			$sql .= "DROP TABLE IF EXISTS `{$px}" . strtolower ( $name ) . "`;";
 			$path = $is_all ? RUNTIME_PATH . 'uninstall/' . $model ['name'] . '.sql' : RUNTIME_PATH . 'uninstall.sql';
 		} else {
 			// 获取索引表
 			$index = '';
-			$index_list = M ()->query ( "SHOW INDEX FROM wp_{$name}" );
+			$index_list = M ()->query ( "SHOW INDEX FROM {$px}{$name}" );
 			foreach ( $index_list as $vo ) {
 				if ($vo ['Key_name'] == 'PRIMARY')
 					continue;
@@ -269,7 +270,7 @@ class ModelController extends AdminController {
 			}
 			
 			$sql .= <<<sql
-CREATE TABLE IF NOT EXISTS `wp_{$name}` (
+CREATE TABLE IF NOT EXISTS `{$px}{$name}` (
 {$create_table}{$key}{$index}
 ) ENGINE={$model['engine_type']} DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci CHECKSUM=0 ROW_FORMAT=DYNAMIC DELAY_KEY_WRITE=0;\r\n
 sql;
@@ -289,7 +290,7 @@ sql;
 					$field .= "`$k`,";
 					$value .= "'" . str_replace ( $search, $replace, $v ) . "',";
 				}
-				$sql .= "INSERT INTO `wp_{$name}` (" . rtrim ( $field, ',' ) . ') VALUES (' . rtrim ( $value, ',' ) . ");\r\n";
+				$sql .= "INSERT INTO `" . $px . "{$name}` (" . rtrim ( $field, ',' ) . ') VALUES (' . rtrim ( $value, ',' ) . ");\r\n";
 			}
 			
 			unset ( $model ['id'] );
@@ -299,7 +300,7 @@ sql;
 				$field .= "`$k`,";
 				$value .= "'" . str_replace ( $search, $replace, $v ) . "',";
 			}
-			$sql .= 'INSERT INTO `wp_model` (' . rtrim ( $field, ',' ) . ') VALUES (' . rtrim ( $value, ',' ) . ');' . "\r\n";
+			$sql .= 'INSERT INTO `' . $px . 'model` (' . rtrim ( $field, ',' ) . ') VALUES (' . rtrim ( $value, ',' ) . ');' . "\r\n";
 			
 			// dump($list);
 			foreach ( $list as $k => $vo ) {
@@ -311,9 +312,10 @@ sql;
 					$field .= "`$k`,";
 					$value .= "'" . str_replace ( $search, $replace, $v ) . "',";
 				}
-				$sql .= 'INSERT INTO `wp_attribute` (' . rtrim ( $field, ',' ) . ') VALUES (' . rtrim ( $value, ',' ) . ');' . "\r\n";
+				$sql .= 'INSERT INTO `' . $px . 'attribute` (' . rtrim ( $field, ',' ) . ') VALUES (' . rtrim ( $value, ',' ) . ');' . "\r\n";
 			}
-			$sql .= 'UPDATE `wp_attribute` SET model_id= (SELECT MAX(id) FROM `wp_model`) WHERE model_id=0;';
+			
+			$sql .= 'UPDATE `' . $px . 'attribute` a, ' . $px . 'model m SET a.model_id = m.id WHERE a.model_name=m.`name`;';
 			
 			$path = $is_all ? RUNTIME_PATH . 'install/' . $model ['name'] . '.sql' : RUNTIME_PATH . 'install.sql';
 		}

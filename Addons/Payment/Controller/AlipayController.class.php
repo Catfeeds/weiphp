@@ -43,10 +43,10 @@ class AlipayController extends AddonsController {
 		
 		$token=$_GET['token'];
 		$openid=$_GET['wecha_id'];
-		
+		$aimid = $_GET['aim_id'];
 		
 		//
-		$from = isset ( $_GET ['from'] ) ? $_GET ['from'] : 'shop';
+		$from = isset ( $_GET ['from'] ) ? $_GET ['from'] : 'Payment:__Weixin_payOK';
 // 		if($from!='shop'){
 // 			$from=$this->doFromStr($from);
 // 		}
@@ -108,6 +108,7 @@ class AlipayController extends AddonsController {
 				'price' => $price,
 				'token' => $token,
 				'wecha_id' => $openid,
+				'aim_id'=>$aimid,
 				'paytype' => $alipayConfig ['paytype'] 
 		);
 		if ($alipayConfig ['paytype'] == 'Weixin') {

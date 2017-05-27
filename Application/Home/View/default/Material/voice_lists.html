@@ -9,10 +9,10 @@
       
         <div class="table-striped">
         <div style="padding-bottom: 20px;padding-left: 15px;">
-        <a class="btn" href="{:U('voice_add')}">新 增</a>
+        <a class="btn" href="{:U('voice_add',array('mdm'=>I('mdm')))}">新 增</a>
         <php>if(C('MATERIAL')) { </php> 
-                <a class="btn" href="{:U('syc_voice_to_wechat')}">一键上传素材到微信素材库</a>
-                <a class="btn" href="{:U('syc_file_from_wechat')}">一键下载微信素材库到本地</a>
+                <a class="btn" href="{:U('syc_voice_to_wechat',array('mdm'=>$_GET['mdm']))}">一键上传素材到微信素材库</a>
+                <a class="btn" href="{:U('syc_file_from_wechat',array('mdm'=>$_GET['mdm']))}">一键下载微信素材库到本地</a>
          <php> } </php>
         </div>     
         
@@ -22,13 +22,14 @@
                 	<div class="picture_item">
                         <div class="sound_item" onClick="playSound('sound_{$vo.id}',this);">
                             <img class="icon_sound" src="__IMG__/icon_sound.png"/>
-                            <p class="audio_name">{$vo.title}<span class="fr colorless">{$vo.file_info.playtime}</span></p>
+                            <p class="audio_name ellipsis">{$vo.title}</p>
+                            <span class="fr colorless">{$vo.file_info.playtime}</span>
                             <p class="ctime colorless">{$vo.cTime|time_format}</p>
                             <audio id="sound_{$vo.id}" src="{$vo.file_id|get_file_url}"></audio>
                         </div>
                         <div class="picture_action item_three_action">
-                            <a href="{$vo.file_id|get_file_url}">下载</a>
-                             <a href="{:U('voice_edit',array('id'=>$vo[id]))}">编辑</a>
+                            <a href="{$vo.file_info.path}">下载</a>
+                             <a href="{:U('voice_edit',array('id'=>$vo[id],'mdm'=>$_GET['mdm']))}">编辑</a>
                             <a href="javascript:;" onclick="del({$vo.id}, this)">删除</a>	
                         </div>
                     </div>

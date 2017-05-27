@@ -127,7 +127,7 @@ class Model {
 		if (empty ( $this->fields )) {
 			// 如果数据表字段没有定义则自动获取
 			if (C ( 'DB_FIELDS_CACHE' )) {
-				$db = $this->dbName ?  : C ( 'DB_NAME' );
+                $db   =  $this->dbName?$this->dbName:C('DB_NAME');
 				$fields = F ( '_fields/' . strtolower ( $db . '.' . $this->tablePrefix . $this->name ) );
 				if ($fields) {
 					$this->fields = $fields;

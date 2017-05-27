@@ -180,6 +180,7 @@
 			 }
 			$.post("{:addons_url('Comment://Wap/add')}",{'aim_table':'business_card','aim_id':aim_id,'content':content,'truename':truename,'mobile':mobile,'uid':uid},function(d){
 				if(d.result=='success'){
+					
 					alert('提交成功');
 					$("input[name='truename']").val('');
 					$("input[name='mobile']").val('');

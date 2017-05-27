@@ -42,7 +42,7 @@ class ManagerMenuModel extends Model {
 		}
 		
 		// 侧边栏数据
-		foreach ( $menus as $m ) {
+		foreach ( $menus as $k => $m ) {
 			if ($m ['menu_type'] == 0) {
 				continue;
 			}
@@ -51,7 +51,12 @@ class ManagerMenuModel extends Model {
 			$param ['top'] = $cate ['pid'] = intval ( $m ['pid'] );
 			
 			if ($m ['url_type'] == 0) {
-				$cate ['url'] = $addonList [$m ['addon_name']] ['addons_url'];
+				if (isset ( $addonList [$m ['addon_name']] )) {
+					$cate ['url'] = $addonList [$m ['addon_name']] ['addons_url'];
+				} else {
+					unset ( $menus [$k] );
+					continue;
+				}
 			} elseif (strpos ( $m ['url'], 'http://' ) !== false || strpos ( $m ['url'], 'https://' ) !== false) {
 				$cate ['url'] = $m ['url'];
 			} elseif (strpos ( $m ['url'], '://' ) !== false) {
@@ -67,7 +72,7 @@ class ManagerMenuModel extends Model {
 			empty ( $m ['addon_name'] ) || $res ['default_data'] [$cate ['addon_name']] = $param;
 		}
 		// 顶部栏数据
-		foreach ( $menus as $m ) {
+		foreach ( $menus as $k => $m ) {
 			if ($m ['menu_type'] != 0) {
 				continue;
 			}
@@ -76,7 +81,14 @@ class ManagerMenuModel extends Model {
 			$cate ['pid'] = 0;
 			
 			if ($m ['url_type'] == 0) {
-				$cate ['url'] = $addonList [$m ['addon_name']] ['addons_url'];
+				
+				if (isset ( $addonList [$m ['addon_name']] )) {
+					$cate ['url'] = $addonList [$m ['addon_name']] ['addons_url'];
+				} else {
+					unset ( $menus [$k] );
+					continue;
+				}
+				
 				if (empty ( $cate ['url'] ) && ! empty ( $res ['core_side_menu'] [$m ['id']] )) {
 					$cate ['url'] = $res ['core_side_menu'] [$m ['id']] [0] ['url'];
 				}

@@ -117,6 +117,7 @@ class Upload {
      * @param 文件信息数组 $files ，通常是 $_FILES数组
      */
     public function upload($files='') {
+       
         if('' === $files){
             $files  =   $_FILES;
         }
@@ -124,7 +125,7 @@ class Upload {
             $this->error = '没有上传的文件！';
             return false;
         }
-
+        
         /* 检测上传根目录 */
         if(!$this->uploader->checkRootPath($this->rootPath)){
             $this->error = $this->uploader->getError();
@@ -156,9 +157,9 @@ class Upload {
             /* 获取上传文件后缀，允许上传无后缀文件 */
             $file['ext']    =   pathinfo($file['name'], PATHINFO_EXTENSION);
             /* 文件上传检测 */
-//             if (!$this->check($file)){
-//                 continue;
-//             }
+            if (!$this->check($file)){
+                continue;
+            }
             /* 获取文件hash */
             if($this->hash){
                 $file['md5']  = md5_file($file['tmp_name']);
@@ -252,7 +253,7 @@ class Upload {
         $driver = $driver ? : ($this->driver       ? : C('FILE_UPLOAD_TYPE'));
         $config = $config ? : ($this->driverConfig ? : C('UPLOAD_TYPE_CONFIG'));
         $class = strpos($driver,'\\')? $driver : 'Think\\Upload\\Driver\\'.ucfirst(strtolower($driver));
-        $this->uploader = new $class($config);
+        $this->uploader = new $class($config,$this->config['rootPath']);
         if(!$this->uploader){
             E("不存在上传驱动：{$name}");
         }
@@ -274,11 +275,11 @@ class Upload {
             $this->error = '未知上传错误！';
         }
 
-        /* 检查是否合法上传 */
-        if (!is_uploaded_file($file['tmp_name'])) {
-            $this->error = '非法上传文件！';
-            return false;
-        }
+        /* 检查是否合法上传 WEIPHP内部也有调用上传图片的功能，因此先临时关闭此检查 */
+//         if (!is_uploaded_file($file['tmp_name'])) {
+//             $this->error = '非法上传文件！';
+//             return false;
+//         }
 
         /* 检查文件大小 */
         if (!$this->checkSize($file['size'])) {

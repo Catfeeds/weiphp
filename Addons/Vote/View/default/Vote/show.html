@@ -78,30 +78,27 @@ $(function(){
 		var overtime="{$overtime}";
 		 if($(this).hasClass('disable')){
 			 if(overtime=='1'){
-				 $.Dialog.fail("该投票已过期");
+				 $.Dialog.confirm("提示","该投票已过期");
 			}else{
-			 	$.Dialog.fail("你已经投过票了");
+			 	$.Dialog.confirm("提示","你已经投过票了");
 			}
 		   return;	
 		  }else{
-			  $.Dialog.confirmBox('温馨提示?','确认要投该选项吗?',{rightCallback:function(){
-				 
-				  $(".choice_list li").addClass('disable');
-				  $(this).find("input").prop("checked", true);
-				  var url = $('#form1').attr('action');
-				  var param = $('#form1').serializeArray();
-				  $.post(url,param,function(data){
-			
-						//投票成功 
-				  })
-				  $(this).find('img').css('border-color','#c07b36');
-				  $(this).find('.count_num').html((parseInt($(this).find('.count_num').text())+1));
-				  var totalCount = parseInt($('#totalCount').text());
-				  $('#totalCount').text(totalCount+1);
-				  //重新算进度条
-				  initProgressBar();
-			  }})
-			}
+			  $(".choice_list li").addClass('disable');
+			  $(this).find("input").prop("checked", true);
+			  var url = $('#form1').attr('action');
+			  var param = $('#form1').serializeArray();
+			  $.post(url,param,function(data){
+		
+					//投票成功 
+			  })
+			  $(this).find('img').css('border-color','#c07b36');
+			  $(this).find('.count_num').html((parseInt($(this).find('.count_num').text())+1));
+			  var totalCount = parseInt($('#totalCount').text());
+			  $('#totalCount').text(totalCount+1);
+			  //重新算进度条
+			  initProgressBar();
+	      }
 	 });
 	 /*
 	if (typeof WeixinJSBridge == "undefined"){

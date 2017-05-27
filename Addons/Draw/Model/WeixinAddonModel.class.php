@@ -28,13 +28,13 @@ class WeixinAddonModel extends WeixinModel{
 				'Description' => $data ['intro']
 		);
 		switch($data['game_type']){
-			case 1:$articles [0] ['PicUrl'] = SITE_URL.'/Addons/Draw/View/default/Public/guaguale_cover.jpg';
+			case 1:$articles [0] ['PicUrl'] = $data['cover']?get_cover_url($data['cover']):SITE_URL.'/Addons/Draw/View/default/Public/guaguale_cover.jpg';
 			break;
-			case 2:$articles [0] ['PicUrl'] =    SITE_URL.'/Addons/Draw/View/default/Public/dzp_cover.jpg';
+			case 2:$articles [0] ['PicUrl'] =    $data['cover']?get_cover_url($data['cover']):SITE_URL.'/Addons/Draw/View/default/Public/dzp_cover.jpg';
 			break;
-			case 3:$articles [0] ['PicUrl'] =     SITE_URL.'/Addons/Draw/View/default/Public/zjd_cover.jpg';
+			case 3:$articles [0] ['PicUrl'] =     $data['cover']?get_cover_url($data['cover']):SITE_URL.'/Addons/Draw/View/default/Public/zjd_cover.jpg';
 			break;
-			case 4:$articles [0] ['PicUrl'] =    SITE_URL.'/Addons/Draw/View/default/Public/nine_cover.jpg';
+			case 4:$articles [0] ['PicUrl'] =    $data['cover']?get_cover_url($data['cover']):SITE_URL.'/Addons/Draw/View/default/Public/nine_cover.jpg';
 			break;
 		}
 		

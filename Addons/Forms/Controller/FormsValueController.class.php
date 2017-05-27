@@ -61,7 +61,7 @@ class FormsValueController extends BaseController {
 				if (is_array ( $extra ) && ! empty ( $extra )) {
 					$attr [$vo ['name']] ['extra'] = $extra;
 				}
-			} elseif ($vo ['type'] == 'cascade' || $vo ['type'] == 'dynamic_select') {
+			} elseif ($vo ['type'] == 'cascade' || $vo ['type'] == 'dynamic_select' || $vo ['type'] == 'dynamic_checkbox') {
 				$attr [$vo ['name']] ['extra'] = $vo ['extra'];
 			}
 		}

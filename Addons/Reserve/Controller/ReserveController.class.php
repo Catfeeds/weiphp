@@ -35,13 +35,15 @@ class ReserveController extends AddonsController {
 				$vo ['start_time'] = '到 ' . time_format ( $vo ['start_time'] ) . ' 结束';
 			}
 			
-			$vo ['status_title'] = $vo ['status'] == 0 ? '已禁用' : '已启用';
+			$vo ['status_text'] = $vo ['status'] == 0 ? '已禁用' : '已启用';
 		}
 		
 		/* 查询记录总数 */
 		$count = M ( $name )->where ( $map )->count ();
 		
 		$list_data ['list_data'] = $data;
+		$token = get_token ();
+		$this->assign ( 'token', $token );
 		
 		// 分页
 		if ($count > $row) {
@@ -68,7 +70,8 @@ class ReserveController extends AddonsController {
 		$model = $this->getModel ( 'reserve' );
 		
 		if (IS_POST) {
-			$this->checkDate();
+			$_POST ['status'] = 1; // 活动默认启动
+			$this->checkDate ();
 			$act = empty ( $id ) ? 'add' : 'save';
 			$Model = D ( parse_name ( get_table_name ( $model ['id'] ), 1 ) );
 			// 获取模型的字段信息
@@ -163,7 +166,7 @@ class ReserveController extends AddonsController {
 			if (empty ( $save ['name'] ))
 				continue;
 			
-			$save ['money'] = intval ( $data ['money'] [$key] );
+			$save ['money'] = round ( floatval ( $data ['money'] [$key] ), 2 );
 			$save ['max_limit'] = intval ( $data ['max_limit'] [$key] );
 			$save ['init_count'] = intval ( $data ['init_count'] [$key] );
 			
@@ -266,7 +269,7 @@ class ReserveController extends AddonsController {
 			
 			if ($Model->create () && $res = $Model->$act ()) {
 				// 增加积分
-				add_credit ( 'reserve' );
+				add_credit ( 'Reserve' );
 				
 				$param ['reserve_id'] = $this->reserve_id;
 				$param ['id'] = $act == 'add' ? $res : $id;
@@ -291,19 +294,18 @@ class ReserveController extends AddonsController {
 		
 		$this->display ();
 	}
-	function checkDate(){
+	function checkDate() {
 		// 判断时间选择是否正确
-		
-		 if (strtotime ( I ( 'post.start_time' ) ) > strtotime ( I ( 'post.end_time' ) )) {
-			$this->error ( '开始时间不能大于结束时间' );
+		$start_time = intval ( strtotime ( I ( 'post.start_time' ) ) );
+		$end_time = intval ( strtotime ( I ( 'post.end_time' ) ) );
+		if ($start_time > 0 && $end_time > 0 && $start_time >= $end_time) {
+			$this->error ( '开始时间不能大于或等于结束时间' );
 		}
-		if(!I('post.name')){
-			$this->error('预约项必须');
-			
+		if (! I ( 'post.name' )) {
+			$this->error ( '预约项必须' );
 		}
-		if(!I('post.attr_title')){
-			$this->error('字段必须');
+		if (! I ( 'post.attr_title' )) {
+			$this->error ( '字段必须' );
 		}
 	}
-	
 }

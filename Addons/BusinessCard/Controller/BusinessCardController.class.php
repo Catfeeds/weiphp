@@ -35,12 +35,12 @@ class BusinessCardController extends AddonsController {
 	    $data=M('business_card')->where($map)->find();
 // 	    $id = I ( 'id' );
 	
-	    // »ñÈ¡Êý¾Ý
+	    // èŽ·å–æ•°æ®
 // 	    $data = M ( get_table_name ( $model ['id'] ) )->find ( $id );
 	    $data || $act='add';
 	    // $token = get_token ();
 	    // if (isset ( $data ['token'] ) && $token != $data ['token'] && defined ( 'ADDON_PUBLIC_PATH' )) {
-	    // $this->error ( '·Ç·¨·ÃÎÊ£¡' );
+	    // $this->error ( 'éžæ³•è®¿é—®ï¼' );
 	    // }
 	
 	    
@@ -48,24 +48,24 @@ class BusinessCardController extends AddonsController {
 	        $_POST['uid']=$this->mid;
 	        $_POST['token']=get_token();
 	        $Model = D ( parse_name ( get_table_name ( $model ['id'] ), 1 ) );
-	        // »ñÈ¡Ä£ÐÍµÄ×Ö¶ÎÐÅÏ¢
+	        // èŽ·å–æ¨¡åž‹çš„å­—æ®µä¿¡æ¯
 	        $Model = $this->checkAttr ( $Model, $model ['id'] );
 	        if ($act=='edit'){
 	            if ($Model->create () && $Model->save ()) {
-	                // Çå¿Õ»º´æ
+	                // æ¸…ç©ºç¼“å­˜
 	                method_exists ( $Model, 'clear' ) ;
 	                //     			$url=  '<script language=javascript>history.go(-1);</script>';
-	                $this->success ( '±£´æ' . $model ['title'] . '³É¹¦£¡');
+	                $this->success ( 'ä¿å­˜' . $model ['title'] . 'æˆåŠŸï¼');
 	            } else {
 	                $this->error ( $Model->getError () );
 	            }
 	        }else {
 	            if ($Model->create () && $id = $Model->add ()) {
 	                 
-	                // Çå¿Õ»º´æ
+	                // æ¸…ç©ºç¼“å­˜
 	                method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'add' );
 	                 
-	                $this->success ( 'Ìí¼Ó' . $model ['title'] . '³É¹¦£¡');
+	                $this->success ( 'æ·»åŠ ' . $model ['title'] . 'æˆåŠŸï¼');
 	            } else {
 	                $this->error ( $Model->getError () );
 	            }

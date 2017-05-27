@@ -7,76 +7,53 @@ use Addons\WeiSite\Controller\BaseController;
 class TemplateController extends BaseController {
 	function _initialize() {
 		parent::_initialize ();
-		
-		// 子导航
-		$action = strtolower ( _ACTION );
-		
-		$res ['title'] = '首页模板';
-		$res ['url'] = addons_url ( 'WeiSite://template/index' );
-		$res ['class'] = $action == 'index' ? 'cur' : '';
-		$nav [] = $res;
-		
-		$res ['title'] = '二级分类模板';
-		$res ['url'] = addons_url ( 'WeiSite://template/subcate' );
-		$res ['class'] = $action == 'subcate' ? 'cur' : '';
-		$nav [] = $res;
-		
-		$res ['title'] = '图文列表模板';
-		$res ['url'] = addons_url ( 'WeiSite://template/lists' );
-		$res ['class'] = $action == 'lists' ? 'cur' : '';
-		$nav [] = $res;
-		
-		$res ['title'] = '图文内容模板';
-		$res ['url'] = addons_url ( 'WeiSite://template/detail' );
-		$res ['class'] = $action == 'detail' ? 'cur' : '';
-		$nav [] = $res;
-		
-		$res ['title'] = '底部菜单模板';
-		$res ['url'] = addons_url ( 'WeiSite://template/footer' );
-		$res ['class'] = $action == 'footer' ? 'cur' : '';
-		$nav [] = $res;
-		
-		$this->assign ( 'sub_nav', $nav );
 	}
 	
 	// 首页模板
 	function index() {
-		// 使用提示
-		$normal_tips = '点击选中下面模板即可实时切换模板，请慎重点击。选择后可点击<a target="_blank" href="' . addons_url ( 'WeiSite://WeiSite/index' ) . '">这里</a>进行预览';
-		$this->assign ( 'normal_tips', $normal_tips );
-		
 		$this->_getTemplateByDir ();
 		
+		$this->assign ( 'next_url', addons_url ( 'WeiSite://Slideshow/lists' ) );
 		$this->display ();
 	}
 	// 二级分类
 	function subcate() {
 		// 使用提示
 		$this->_getTemplateByDir ( 'TemplateSubcate' );
-		
 		$this->display ( 'index' );
+	}
+	function list_subcate() {
+	    $isAjax = I ( 'isAjax' );
+	    $isRadio = I ( 'isRadio' );
+	    // 使用提示
+	    $this->_getTemplateByDir ( 'TemplateSubcate' );
+	    $this->assign('isRadio',$isRadio);
+	    $this->display ( 'ajax_index' );
+	    
 	}
 	// 分类列表模板
 	function lists() {
 		$this->_getTemplateByDir ( 'TemplateLists' );
 		
-		$this->display ( 'index' );
+		$this->assign ( 'next_url', addons_url ( 'WeiSite://Template/detail' ) );
+		
+		$this->display ();
 	}
 	// 详情模板
 	function detail() {
 		$this->_getTemplateByDir ( 'TemplateDetail' );
 		
-		$this->display ( 'index' );
+		$this->assign ( 'next_url', addons_url ( 'WeiSite://Cms/lists' ) );
+		
+		$this->display ();
 	}
 	// 底部菜单模板
 	function footer() {
-		// 使用提示
-		$normal_tips = '底部菜单的数据请在上面的“底部导航”的页面里增加';
-		$this->assign ( 'normal_tips', $normal_tips );
-		
 		$this->_getTemplateByDir ( 'TemplateFooter' );
 		
-		$this->display ( 'index' );
+		$this->assign ( 'next_url', addons_url ( 'WeiSite://Footer/lists' ) );
+		
+		$this->display ();
 	}
 	
 	// 保存切换的模板
@@ -84,6 +61,7 @@ class TemplateController extends BaseController {
 		$act = I ( 'post.type' );
 		$config ['template_' . $act] = I ( 'post.template' );
 		D ( 'Common/AddonConfig' )->set ( _ADDONS, $config );
+		echo 1;
 	}
 	
 	// 获取目录下的所有模板
@@ -123,16 +101,15 @@ class TemplateController extends BaseController {
 			$tempList [] = $res;
 			unset ( $res );
 		}
-		closedir ( $dir );
 		
+		closedir ( $dir );
 		// 兼容pigcms
-		if ($type != 'TemplateFooter' && file_exists ( ONETHINK_ADDON_PATH . _ADDONS . '/View/default/pigcms/index.Tpl.php' )) {
+		if ($type != 'TemplateFooter' && $type != 'TemplateLists' && $type != 'TemplateSubcate' && file_exists ( ONETHINK_ADDON_PATH . _ADDONS . '/View/default/pigcms/index.Tpl.php' )) {
 			if ($type == 'TemplateDetail') {
-				$pigcms_temps = require_once ONETHINK_ADDON_PATH . _ADDONS . '/View/default/pigcms/cont.Tpl.php';
+// 				$pigcms_temps = require_once ONETHINK_ADDON_PATH . _ADDONS . '/View/default/pigcms/cont.Tpl.php';
 			} else {
 				$pigcms_temps = require_once ONETHINK_ADDON_PATH . _ADDONS . '/View/default/pigcms/index.Tpl.php';
 			}
-			
 			foreach ( $pigcms_temps as $p ) {
 				$res ['dirName'] = $p ['tpltypename'];
 				$res ['title'] = '模板' . $p ['tpltypeid'];

@@ -12,17 +12,17 @@ class BaseController extends AddonsController {
 		$controller = strtolower ( _CONTROLLER );
 		
 		$res ['title'] = '图文回复';
-		$res ['url'] = addons_url ( 'CustomReply://CustomReply/lists' );
+		$res ['url'] = addons_url ( 'CustomReply://CustomReply/lists' ,$this->get_param);
 		$res ['class'] = $controller == 'customreply' ? 'current' : '';
 		$nav [] = $res;
 		
 		$res ['title'] = '多图文设置';
-		$res ['url'] = addons_url ( 'CustomReply://CustomReplyMult/lists' );
+		$res ['url'] = addons_url ( 'CustomReply://CustomReplyMult/lists' ,$this->get_param);
 		$res ['class'] = $controller == 'customreplymult' ? 'current' : '';
 		$nav [] = $res;
 		
 		$res ['title'] = '文本回复';
-		$res ['url'] = addons_url ( 'CustomReply://CustomReplyText/lists' );
+		$res ['url'] = addons_url ( 'CustomReply://CustomReplyText/lists' ,$this->get_param);
 		$res ['class'] = $controller == 'customreplytext' ? 'current' : '';
 		$nav [] = $res;
 		

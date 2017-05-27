@@ -79,7 +79,7 @@ class CategoryController extends HomeController {
 	function inputData() {
 		$module = I ( 'get.module' );
 		if (IS_POST) {
-			$attach = I ( 'attach', 0 );
+			$attach = I ( 'attach', 0, 'intval' );
 			if (empty ( $attach ) || ! is_numeric ( $attach )) {
 				$this->error ( '上传文件ID无效！' );
 			}

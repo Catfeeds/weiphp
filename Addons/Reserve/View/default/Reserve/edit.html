@@ -61,7 +61,7 @@
         </div>            
       <div class="form-item cf">
         <label class="item-label"><span class="need_flag">*</span>活动宣传图片<span class="check-tips">图片高度控制在200px-400px之间</span></label>
-        <div class="controls uploadrow2" title="点击修改图片" rel="cover">
+        <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="cover">
           <input type="file" id="upload_picture_cover">
           <input type="hidden" name="cover" id="cover_id_cover" value="{$data.cover}"/>
           <div class="upload-img-box" rel="img">
@@ -111,7 +111,7 @@
               <volist name="option_list" id="cd">
                 <tr class="list_tr2" rel="{$key}">
                     <td align="center"><input type="text" value="{$cd.name}" class="form-control" name="name[{$key}]" style="width:150px"></td>
-                    <td align="center"><input type="number" value="{$cd.money}" class="form-control" name="money[{$key}]" style="width:120px" placeholder="为空时表示免费"></td>
+                    <td align="center"><input type="text" value="{$cd.money}" class="form-control" name="money[{$key}]" style="width:120px" placeholder="为空时表示免费"></td>
                     <td align="center"><input type="number" value="{$cd.max_limit}" class="form-control" name="max_limit[{$key}]" style="width:130px" placeholder="为空时表示不限制"></td>
                     <td align="center"><input type="number" value="{$cd.init_count}" class="form-control" name="init_count[{$key}]" style="width:100px"></td>
                     <td align="center">{$cd.join_count|default=0}

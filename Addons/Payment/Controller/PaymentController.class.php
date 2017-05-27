@@ -96,6 +96,8 @@ class PaymentController extends BaseController {
 		// $normal_tips = '支持微信支付、财付通（WAP接口或者即时到帐接口）和支付宝支付（即时到帐接口）。请填写真实信息，否则支付中可能会出现错误<br/>&nbsp;&nbsp;&nbsp;&nbsp;
 		// <a href="' . U ( 'testpay' ) . '">测试支付功能</a>';
 		// $this->assign ( 'normal_tips', $normal_tips );
+		$normal_tips='注意：请在微信公众号配置 微信支付授权目录（http://域名/WxpayAPI/）。 <br/>1.打开微信公众平台,点击侧栏‘微信支付’ <br/>2.在微信支付里的 ‘开发配置’ 添加 ‘支付授权目录’';
+		$this->assign('normal_tips',$normal_tips);
 		$token = get_token ();
 		
 		// 获取模型信息
@@ -554,6 +556,9 @@ class PaymentController extends BaseController {
 	    $price=I('price');
 	    $aimId=I('aim_id');
 	    $from=I('from');
+	    if ($from == 'reserve'){
+	    	$fromUrl = 'Reserve:__Wap_payOK';
+	    }
 	    $title=I('title');
 	    $publicInfo=get_token_appinfo();
 	    $orderNumber= date ( 'YmdHis' ) . substr ( uniqid (), 4 );
@@ -561,7 +566,7 @@ class PaymentController extends BaseController {
 	    $openid=get_openid();
 	    $param = array (
 	        'aim_id'=>$aimId,
-	        'from' => $from,
+	        'from' => $fromUrl,
 	        'orderName' => $title,
 	        'orderNumber' => $orderNumber,
 	        'price' => $price,

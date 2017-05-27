@@ -60,7 +60,11 @@
                         <case value="dynamic_select">
                         <div id="dynamic_select_{$field.name}"></div>
                         {:hook('dynamic_select', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
-                        </case>                                                
+                        </case>
+                        <case value="dynamic_checkbox">
+                        <div id="dynamic_checkbox_{$field.name}"></div>
+                        {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case>                                                                          
                         <case value="radio">
                           <volist name=":parse_field_attr($field['extra'])" id="vo">
                             <label class="radio"> <input type="radio" value="{$key}" name="{$field.name}" 

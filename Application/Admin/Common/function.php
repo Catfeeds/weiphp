@@ -135,6 +135,18 @@ function get_attribute_type($type = '') {
 					'动态下拉菜单',
 					'varchar(100) NULL' 
 			),
+			'dynamic_checkbox' => array (
+					'动态多选菜单',
+					'varchar(100) NULL' 
+			),	
+			'material' => array (
+					'素材选择器',
+					'varchar(50) NULL' 
+			),
+			'prize' => array (
+					'奖品选择器',
+					'varchar(255) NULL' 
+			),						
 			'news' => array (
 					'图文素材选择器',
 					'int(10) NULL' 

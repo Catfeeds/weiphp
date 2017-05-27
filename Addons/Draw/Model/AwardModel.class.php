@@ -14,6 +14,7 @@ class AwardModel extends Model{
         if ($info === false || $update) {
             $info = ( array ) (empty ( $data ) ? $this->find ( $id ) : $data);
             if (count($info)!=0){
+                $info['award_title']='';
                 $model=getModelByName($this->tableName);
                 $info['img_url']=get_cover_url($info['img'],100,100);
                 $info['type_name']=get_name_by_status($info['award_type'], 'award_type', $model['id']);
@@ -27,7 +28,7 @@ class AwardModel extends Model{
             	    $coupon=D('Addons://Coupon/Coupon')->getInfo($info['coupon_id']);
             	    $info['award_title']=$coupon['title'];
             	    $info['coupon_num']=$coupon['num'];
-            	}else if ($info['award_type']==3){
+            	}else if ($info['award_type']==3 &&  is_install("ShopCoupon")){
             	    $coupon=D('Addons://ShopCoupon/Coupon')->getInfo($info['coupon_id']);
             	    $info['coupon_num']=$coupon['num'];
             	    $info['award_title']=$coupon['title'];

@@ -32,10 +32,11 @@ class LuckyFollowModel extends Model {
                 $v['grade']=$awardData[$v['award_id']]['grade'];
                 $v['award_name']=$awardData[$v['award_id']]['name'];
                 $v['img']=$awardData[$v['award_id']]['img'];
+                $v['card_id']=$awardData[$v['award_id']]['card_id'];
             }
             $address_id=intval($v['address']);
             if ($address_id){
-                $address=D ( 'Addons://Shop/Address' )->getInfo($address_id);
+                $address=D ( 'Common/Address' )->getInfo($address_id);
                 $v['address']=$address['address'];
                 $v['truename']=$address['truename'];
                 $v['mobile']=$address['mobile'];
@@ -103,53 +104,6 @@ class LuckyFollowModel extends Model {
         return $i;
     }
     //
-    
-    ////////////////////////////////////////////////////////////////
-// 	function getInfo($id, $update = false, $data = array()) {
-// 		$key = 'LuckyFollow_getInfo_' . $id;
-// 		$info = S ( $key );
-// 		if ($info === false || $update) {
-// 			$info = ( array ) (empty ( $data ) ? $this->find ( $id ) : $data);
-// 			$award = D ( 'Addons://Draw/Award' )->getInfo ( $info ['award_id'] );
-// 			$info ['prizeid'] = $info ['award_id'];
-// 			$info ['award_id'] = $award ['name'];
-// 			$info ['sportsid'] = $info ['sport_id'];
-			
-// 			// $sport=M('sports')->find($info['sport_id']);
-// 			// $sportsdao = D ( 'Addons://Sports/Sports' );
-// 			// $home_team = $dao->getInfo ( $info ['home_team'] );
-// 			// $visit_team = $dao->getInfo ( $info ['visit_team'] );
-// 			$sport = D ( 'Addons://Sports/Sports' )->getInfo ( $info ['sport_id'] );
-			
-// 			// $sport ['home_team'] = $home_team ['title'];
-// 			// $sport ['visit_team'] = $visit_team ['title'];
-// 			// $info['sport_id'] = $sport ['home_team'] . ' <br/><center>VS</center>' . $sport ['visit_team'];
-// 			$info ['sport_id'] = $sport ['vs_team'];
-			
-// 			$follow = get_followinfo ( $info ['follow_id'] );
-			
-// 			// $info['nick_name']=$follow['nickname'];
-// 			// $info['headimgurl']=url_img_html($follow['headimgurl']);
-// 			$info ['nickname'] = url_img_html ( $follow ['headimgurl'] ) . '<br/>' . $follow ['nickname'];
-// 			$info ['nickname2'] = $follow ['nickname'];
-// 			$info ['headimgurl'] = $follow ['headimgurl'];
-// 			$info ['truename'] = $follow ['truename'];
-// 			$info ['mobile'] = $follow ['mobile'];
-// 			$info ['area'] = $follow ['province'] . $follow ['city'];
-// 			$info ['address'] = $info ['area'];
-// 			$info ['score'] = $follow ['score'];
-// 			// 擂鼓数
-// 			$drumData = $this->getDrumCount ( $info ['follow_id'] );
-// 			$info ['drum_count'] = intval ( $drumData [$info ['sportsid']] );
-			
-// 			$param ['state'] = $info ['state'];
-// 			$param ['id'] = $id;
-// 			$url = addons_url ( "Draw://LuckyFollow/changeState", $param );
-// 			$info ['state'] = $info ['state'] == 0 ? "<a href='$url'>未兑换</a>" : '已兑换';
-// 		}
-// 		S ( $key, $info, 86400 );
-// 		return $info;
-// 	}
 	
 	// 根据奖品id，获取中奖者列表
 	function getlistByAwardId($awardid, $update = false) {

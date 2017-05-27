@@ -247,6 +247,14 @@ str;
 					unset ( $list [$k] );
 			}
 		}
+		$title = I ( 'title' );
+		if (! empty ( $title )) {
+			foreach ( $list as $k => $v ) {
+				if (stripos ( $v ['name'], $title ) === false && stripos ( $v ['title'], $title ) === false) {
+					unset ( $list [$k] );
+				}
+			}
+		}
 		
 		$request = ( array ) I ( 'request.' );
 		$total = $list ? count ( $list ) : 1;
@@ -430,7 +438,7 @@ str;
 	 * 保存插件设置
 	 */
 	public function saveConfig() {
-		$id = ( int ) I ( 'id' );
+		$id = I ( 'id', 0, 'intval' );
 		$config = I ( 'config' );
 		$flag = M ( 'addons' )->where ( "id={$id}" )->setField ( 'config', json_encode ( $config ) );
 		if ($flag !== false) {

@@ -381,17 +381,24 @@ class AdminController extends Controller {
         if(is_string($model)){
             $model  =   M($model);
         }
-
         $OPT        =   new \ReflectionProperty($model,'options');
         $OPT->setAccessible(true);
-
         $pk         =   $model->getPk();
         if($order===null){
             //order置空
         }else if ( isset($REQUEST['_order']) && isset($REQUEST['_field']) && in_array(strtolower($REQUEST['_order']),array('desc','asc')) ) {
             $options['order'] = '`'.$REQUEST['_field'].'` '.$REQUEST['_order'];
         }elseif( $order==='' && empty($options['order']) && !empty($pk) ){
-            $options['order'] = $pk.' desc';
+            if (is_array($pk)){
+                $pkstr='';
+                foreach ($pk as $p){
+                    $pkstr .= $p.' desc,';
+                }
+                $options['order'] = substr($pkstr, 0,strlen($pkstr)-1);
+            }else{
+                $options['order'] = $pk.' desc';
+            }
+           
         }elseif($order){
             $options['order'] = $order;
         }
@@ -421,7 +428,6 @@ class AdminController extends Controller {
         $options['limit'] = $page->firstRow.','.$page->listRows;
 
         $model->setProperty('options',$options);
-
         return $model->field($field)->select();
     }
 
@@ -440,7 +446,7 @@ class AdminController extends Controller {
                     if(isset($attrList[$key])){
                         $extra      =   $attrList[$key]['extra'];
                         $type       =   $attrList[$key]['type'];
-                        if('select'== $type || 'checkbox' == $type || 'radio' == $type || 'bool' == $type) {
+                        if('select'== $type || 'checkbox' == $type || 'dynamic_checkbox' == $type || 'radio' == $type || 'bool' == $type) {
                             // 枚举/多选/单选/布尔型
                             $options    =   parse_field_attr($extra);
                             if($options && array_key_exists($val,$options)) {

@@ -90,7 +90,11 @@
                         <case value="dynamic_select">
                         <div id="dynamic_select_{$field.name}"></div>
                         {:hook('dynamic_select', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
-                        </case>                        
+                        </case>
+                        <case value="dynamic_checkbox">
+                        <div id="dynamic_checkbox_{$field.name}"></div>
+                        {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case>                                                  
                         <case value="radio">
                           <volist name=":parse_field_attr($field['extra'])" id="vo">
                             <label class="radio"> <input type="radio" value="{$key}" name="{$field.name}" 
@@ -157,7 +161,7 @@
             <eq name='reserve.status' value='0'>
               <button class="gray_btn"  type="button" target-form="form-horizontal">活动未开启</button>
         	<else />
-            <button class="home_btn submit-btn mb_10 mt_10" id="submit" type="button" target-form="form-horizontal">确 定</button>
+            <button class="home_btn submit-btn mb_10 mt_10" id="submit" type="button" target-form="form-horizontal">提交预约</button>
               </eq>
             </div>
         </form>
@@ -176,9 +180,9 @@
 </script>
  <block name="script">
  <link href="{:SITE_URL}/Public/static/datetimepicker/css/datetimepicker.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
-  <php>if(C('COLOR_STYLE')=='blue_color') echo '
-    <link href="{:SITE_URL}/Public/static/datetimepicker/css/datetimepicker_blue.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
-    ';</php>
+  <php>if(C('COLOR_STYLE')=='blue_color') { </php>
+    <link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
+  <php> } </php>
   <link href="{:SITE_URL}/Public/static/datetimepicker/css/dropdown.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
   <script type="text/javascript" src="{:SITE_URL}/Public/static/datetimepicker/js/bootstrap-datetimepicker.min.js"></script> 
   <script type="text/javascript" src="{:SITE_URL}/Public/static/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={:SITE_VERSION}" charset="UTF-8"></script>

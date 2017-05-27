@@ -3,7 +3,7 @@
  *(**************************** 通用对话框************************* 
  */
 (function(){
-	var elemDialog, elemOverlay, elemContent, elemTitle,
+	var elemDialog, elemOverlay, elemContent, elemTitle,options,
 		inited = false,
 		body = document.compatMode && document.compatMode !== 'BackCompat' ?
 					document.documentElement : document.body,
@@ -46,6 +46,9 @@
 		elemDialog.fadeOut();
 		if(elemOverlay)elemOverlay.fadeOut();
 		elemContent.empty();
+		if(options.closeCallback){
+			options.closeCallback();
+		}
 		//$('select').show();
 	}
 	
@@ -56,7 +59,8 @@
 		elemTitle.html(title);
 		}
 	function setOpts(opts){
-		elemDialog.css(opts);
+		options = opts;
+		elemDialog.css({width:opts.width,height:opts.height});
 		elemDialog.css("margin-left",-opts.width/2);
 		elemDialog.css("margin-top",-opts.height/2);
 		}

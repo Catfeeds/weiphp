@@ -9,20 +9,20 @@ class GamesController extends AddonsController {
 		parent::_initialize ();
 		$controller = strtolower ( _CONTROLLER );
 		$res ['title'] = '抽奖游戏';
-		$res ['url'] = addons_url ( 'Draw://Games/lists' );
+		$res ['url'] = addons_url ( 'Draw://Games/lists',$this->get_param );
 		$res ['class'] = $controller == 'games' ? 'current' : '';
 		$nav [] = $res;
-		
+
 		$res ['title'] = '奖品库管理';
-		$res ['url'] = addons_url ( 'Draw://Award/lists' );
+		$res ['url'] = addons_url ( 'Draw://Award/lists' ,$this->get_param);
 		$res ['class'] = $controller == 'award' ? 'current' : '';
 		$nav [] = $res;
-		
+
 		$res ['title'] = '中奖人列表';
-		$res ['url'] = addons_url ( 'Draw://LuckyFollow/games_lucky_lists' );
+		$res ['url'] = addons_url ( 'Draw://LuckyFollow/games_lucky_lists',$this->get_param );
 		$res ['class'] = $controller == 'luckyfollow' ? 'current' : '';
 		$nav [] = $res;
-		
+
 		$this->assign ( 'nav', $nav );
 	}
 	function lists() {
@@ -35,10 +35,10 @@ class GamesController extends AddonsController {
 		$list_data = $this->_get_model_list ( $model, 0, 'id desc', true );
 // 		判断该活动是否已经设置投票调查
 		$dao = D ( 'Addons://Draw/Games' );
-        
+
 		foreach ( $list_data ['list_data'] as &$vo ) {
 		    if ($vo['status']==0){
-		        $vo['status']=='已关闭';
+		        $vo['status']='已关闭';
 		    }else{
 		        if ($vo ['start_time'] > NOW_TIME) {
 		            $vo ['status'] = '未开始';
@@ -50,7 +50,7 @@ class GamesController extends AddonsController {
 		    }
 		    $vo['attend_num']=$dao->getAttendNum($vo['id']);
 		    $winUrl=addons_url("Draw://LuckyFollow/games_lucky_lists",array('games_id'=>$vo['id']));
-            $vo['winners_list']="<a href='".$winUrl."' >中奖人列表</a>"	   ; 
+            $vo['winners_list']="<a href='".$winUrl."' >中奖人列表</a>"	   ;
 		}
 		if ($isAjax) {
 		    $this->assign('isRadio',$isRadio);
@@ -64,61 +64,73 @@ class GamesController extends AddonsController {
 	function edit() {
 		$model = $this->getModel ( 'lottery_games' );
 		$id = I ( 'id' );
-		
+
 		// 获取数据
 		$data = M ( get_table_name ( $model ['id'] ) )->find ( $id );
 		$data || $this->error ( '数据不存在！' );
 		if (IS_POST) {
-			$this->checkTime ( strtotime ( $_POST ['start_time'] ), strtotime ( $_POST ['end_time'] ), $id );
+			//$this->checkTime ( strtotime ( $_POST ['start_time'] ), strtotime ( $_POST ['end_time'] ), $id );
+			$this->checkAward($_POST);
 			$Model = D ( parse_name ( get_table_name ( $model ['id'] ), 1 ) );
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $model ['id'] );
-			$res=$this->_add_award($id, $_POST);
-			if ($Model->create () && $Model->save () || $res) {
-			   
+			$res = false;
+			$Model->create () && $res=$Model->save ();
+			if ($res !== false) {
+			    $this->_add_award($id, $_POST);
 			    $this->_saveKeyword ( $model, $id );
 				// 清空缓存
 				method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'edit' );
 				D ( 'Games' )->getInfo ( $id, true );
+				D('Addons://Draw/LotteryGamesAwardLink')->getGamesAwardlists($id,true);
 				$this->success ( '保存' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'], $this->get_param ) );
-			} else {
+		    }else {
 				$this->error ( $Model->getError () );
 			}
 		} else {
 			$fields = get_model_attribute ( $model ['id'] );
-			$awardList=D('Addons://Draw/LotteryGamesAwardLink')->getGamesAwardlists($id);
-			$this->assign('award_list',$awardList);
+			$awardList = D ( 'Addons://Draw/LotteryGamesAwardLink' )->getGamesAwardlists ( $id, true );
+			// dump($awardList);exit;
+			$this->assign ( 'award_list', $awardList );
+			// var_dump($awardList);
 			$this->assign ( 'fields', $fields );
 			$this->assign ( 'data', $data );
-			
+			//var_dump($data);
+
 			$this->display ();
 		}
 	}
 	function add() {
+		$where['token'] =get_token();
+		$res =M('sport_award')->where($where)->select();
+		$this->assign('award',$res);
 		$model = $this->getModel ( 'lottery_games' );
 		if (IS_POST) {
-			$this->_add_award($id, $_POST);
-			$this->checkTime ( strtotime ( $_POST ['start_time'] ), strtotime ( $_POST ['end_time'] ) );
-			
+			//$this->checkTime ( strtotime ( $_POST ['start_time'] ), strtotime ( $_POST ['end_time'] ) );
+			$this->checkAward($_POST);
 			$Model = D ( parse_name ( get_table_name ( $model ['id'] ), 1 ) );
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $model ['id'] );
+// 			$this->_add_award($id, $_POST);
 			if ($Model->create () && $id = $Model->add ()) {
-			    //$this->_add_award($id, $_POST);
-			    $this->_saveKeyword ( $model, $id );
+			    $this->_add_award($id, $_POST);
+				$this->_saveKeyword ( $model, $id );
 				// 清空缓存
 				method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'add' );
-				
-				$this->success ( '添加' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'], $this->get_param ) );
+			    $this->success ( '添加' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'], $this->get_param ) );
 			} else {
 				$this->error ( $Model->getError () );
 			}
 		} else {
 			$fields = get_model_attribute ( $model ['id'] );
 			$this->assign ( 'fields', $fields );
-			
+
 			$this->display ();
 		}
+	}
+	function del(){
+		$this->model =$this->getModel('lottery_games');
+		parent::common_del($this->model);
 	}
 	// 判断时间是否重叠
 	function checkTime($startTime, $endTime, $id = 0) {
@@ -144,37 +156,17 @@ class GamesController extends AddonsController {
 	}
 	function _add_award($gameId,$postData){
 	    $awardIdArr=$postData['award_id'];
-	    if (empty($awardIdArr)){
-	        $this->error('请添加奖品');
-	    }
+
 	    $gradeArr=$postData['grade'];
 	    $numArr=$postData['num'];
 	    $maxCountArr=$postData['max_count'];
 	    $awardDao=D ( 'Addons://Draw/Award' );
 	    $map['games_id']=$gameId;
 	    $map['token']= get_token();
-	    
+
 	    $lotteryData=M('lottery_games_award_link')->where($map)->getFields('award_id,id,grade,num,max_count');
 	    foreach ($awardIdArr as $awardId){
-	        $award=$awardDao->getInfo($awardId);
-	        if (!$gradeArr[$awardId]){
-	            $this->error($award['name'].' 的等级名称不能为空');
-	        }
-	        if (!$numArr[$awardId]){
-	            $this->error($award['name'].' 的奖品数量不能为空');
-	        }
-	        if (!$maxCountArr[$awardId]){
-	            $this->error($award['name'].' 的最多抽奖数必须大于1');
-	        }
-	        if ($numArr[$awardId]<0){
-	            $this->error($award['name'].' 的奖品数量不能小于0');
-	        }
-	        if ($maxCountArr[$awardId]<$numArr[$awardId]){
-	            $this->error($award['name'].' 的最多抽奖数不能小于奖品数量');
-	        }
-	        if ($award['coupon_num'] && $award['coupon_num'] <$numArr[$awardId]){
-	            $this->error($award['name'].' 的奖品数量不能超过赠送券的数量 '.$award['coupon_num']);
-	        }
+
 	        if ($lotteryData[$awardId]){
 	            //保存
 	            $saveData['grade']=$gradeArr[$awardId];
@@ -183,7 +175,7 @@ class GamesController extends AddonsController {
 	            $map['award_id']=$awardId;
 	            $res=M('lottery_games_award_link')->where($map)->save($saveData);
 	        }else{
-	            //添加 
+	            //添加
 	            $addData['games_id']=$gameId;
 	            $addData['award_id']=$awardId;
 	            $addData['token']=$map['token'];
@@ -196,7 +188,7 @@ class GamesController extends AddonsController {
 	    if (!empty($addDatas)){
 	        $res=M('lottery_games_award_link')->addAll($addDatas);
 	    }
-	    
+
 	    foreach ($lotteryData as $key=>$v){
 	        if (!in_array($key, $awardIdArr)){
 	            $ids[]=$v['id'];
@@ -210,7 +202,7 @@ class GamesController extends AddonsController {
 	        $awardList=D('Addons://Draw/LotteryGamesAwardLink')->getGamesAwardlists($gameId,true);
 	    }
 	    return $res;
-	    
+
 	}
 	/* 预览 */
 	function preview(){
@@ -218,5 +210,45 @@ class GamesController extends AddonsController {
 	    $url = addons_url('Draw://Wap/index',array('games_id'=>$id));
 	    $this->assign('url', $url);
 	    $this->display(SITE_PATH . '/Application/Home/View/default/Addons/preview.html');
+	}
+	function checkAward($postData){
+		if(!I('post.start_time')){
+			$this->error('请选择开始时间');
+				}
+		if(!I('post.end_time')){
+			$this->error('请选择结束时间');
+		}
+		if(I('post.start_time')>=I('post.end_time')){
+			$this->error('开始时间不能大于或等于结束时间');
+		}
+		if(empty($postData['award_id'])){
+			$this->error('请添加奖品');
+		}
+		if(I('post.day_attend_limit')>I('post.attend_limit') && I('post.attend_limit')!=='0'){
+			$this->error('每人每天抽奖次数不能大于总共的抽奖次数');
+		}
+		$gradeArr=$postData['grade'];
+		$numArr=$postData['num'];
+		$maxCountArr=$postData['max_count'];
+		$awardDao=D ( 'Addons://Draw/Award' );
+		$awardIdArr=$postData['award_id'];
+		foreach ($awardIdArr as $awardId){
+			$award=$awardDao->getInfo($awardId);
+			if (!$gradeArr[$awardId]){
+				$this->error($award['name'].' 的等级名称不能为空');
+			}
+			if (!$numArr[$awardId]){
+				$this->error($award['name'].' 的奖品数量不能为空');
+			}
+			if (!$maxCountArr[$awardId]){
+				$this->error($award['name'].' 的最多抽奖数必须大于1');
+			}
+			if ($numArr[$awardId]<0){
+				$this->error($award['name'].' 的奖品数量不能小于0');
+			}
+			if ($maxCountArr[$awardId]<$numArr[$awardId]){
+				$this->error($award['name'].' 的最多抽奖数不能小于奖品数量');
+			}
+	}
 	}
 }

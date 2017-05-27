@@ -27,13 +27,16 @@
 .b_hot_line{ text-align:center; font-size:50px; padding:0 0;}
 .copyright{ text-align:center; line-height:60px; font-size:12px; color:#888;}
 /* 帮助文档 */
-.about_wrap{ min-height:700px;}
+.about_wrap{ min-height:700px; box-shadow: 0 3px 5px #999; padding: 10px 8px 0 13px; margin: 60px auto 20px; background: #fff; border-radius: 5px; position: relative;}
 .about_content{ margin-bottom:30px; }
-.about_content h4{ font-size:18px; border-left:5px solid #090; margin-bottom:20px; padding-left:10px;}
+.about_content h4{ font-size:18px; border-left:5px solid #090; margin-bottom:10px; padding-left:10px;}
 .about_content h6{ font-size:16px; line-height:40px; padding-left:15px;}
 .about_content .num{ display:inline-block; width:20px; height:20px; line-height:20px; text-align:center; border-radius:12px; border:2px solid #44b549; color:#44b549; margin-right:10px;}
 .about_content img{ border:1px solid #ccc; margin:15px 0; max-width:99%;}
-.about_content p{ padding:6px 0; line-height:24px;padding-left:15px;}
+.about_content p{ padding:10px 0; line-height:24px;padding-left:15px;}
+.error_warp{text-align: center;margin-top: 10%;}
+.error_warp .error{height: 200px; background: url(../images/blank_pic.png) no-repeat center;background-size:20%; }
+.error_warp p{font-size: 26px;color:#999;}
 /* fixed */
 .main-im { position: fixed; left: 10px; bottom: 20px; z-index: 100; width: 110px; height: 282px; }
 .main-im .qq-a { display: block; width: 106px; height: 116px; font-size: 14px; color: #0484cd; text-align: center; position: relative; }
@@ -94,7 +97,9 @@
 } 
 /* 登录 */
 .login_box{width:300px; float:right; margin:80px 0 0; color:#666; padding:10px 30px 30px; background:#fff;}
-.login_box h6{ line-height:50px; font-size:18px;}
+.login_box h6{ line-height:50px; font-size:18px; text-align:center}
+.login_box #qrCode{ text-align:center;}
+.login_box .o_p{ text-align:center}
 .form_title{text-align:center; color:#ccc; font-size:16px; display:none}
 .login_box .form_body{ margin-top:10px;}
 .login_box .control-label{ display:none}
@@ -186,7 +191,7 @@ background-clip: none;
 .sidenav_parent img{ width:20px; height:20px; margin-right:5px; vertical-align:-5px;}
 /* 主栏 */
 .no_side_main_body{margin:0 auto; width:1200px; min-height:600px;}
-.main_body{ margin:0 auto; width:998px; min-height:600px;}
+.main_body{ margin:0 auto; width:1000px; min-height:600px;}
 .admin_container{ margin:36px auto; width:1200px; background:#fff; border:1px solid #d9dadc;position:relative; }
 .admin_container .main_body{ display:table-cell; vertical-align:top; }
 .empty_container{ padding:100px 0; text-align:center}
@@ -248,9 +253,12 @@ font-size: 20px;}
 .setting_step{ height:44px; border:1px solid #eee; margin:30px 0; background:#fff}
 .setting_step .step{ background:#ffffff url(../images/step.png) no-repeat right 0; float:left; text-align:center; line-height:44px; color:#666; width:160px; height:44px;}
 .app_setting .step{ width:399px;}
+.content_step .step{ width:239px;}
+.content_step_2 .step{ width:479px;}
+.content_step{margin:0 20px; border:1px solid #ddd;}
 .app_setting .step:last-child{ background:#fff}
-.setting_step .step_cur_1{ background:#44b549 url(../images/step.png) no-repeat right -88px; float:left; color:#fff}
-.app_setting .step:last-child.step_cur_1{ background:#44b549}
+.setting_step .step_cur_1{ background:#363434 url(../images/step.png) no-repeat right -88px; float:left; color:#fff}
+.app_setting .step:last-child.step_cur_1{ background:#363434}
 .setting_step .step_cur{ background:#fff url(../images/step.png) no-repeat right -44px; float:left;color:#666}
 
 .help_content{ margin:20px 0; background:#fff; padding:15px;}
@@ -383,7 +391,7 @@ font-size: 20px;}
 .main_apps li img{ border-radius:10px; width:80px; height:80px; }
 .main_apps li .desc{ padding:0 30px 10px 90px;}
 .main_apps li .name{ font-size:15px; font-weight:bold;}
-.main_apps li .intro{ font-size:14px; color:#888;}
+.main_apps li .intro{height: 140px; font-size:14px; color:#888;overflow-y:auto; }
 .main_notice{ background:#f3f3f3; border:1px solid #eee; padding:15px;}
 .main_notice p{ padding:5px 0;}
 .main_notice a{ color:#666;}
@@ -394,6 +402,7 @@ font-size: 20px;}
 .normal_dialog .close{ position:absolute; top:0; right:0; height:40px; line-height:40px; padding:0 10px; background:#ddd; font-size:12px; color:#000; border:none;}
 .normal_dialog .content{ padding:15px;}
 .normal_dialog .btn_wrap{ margin-bottom:15px; text-align:center; margin-top:15px;}
+.content .check-item{display: inline-block;}
 /* 图文消息 */
 .material_list{ margin:0 -14px; overflow:hidden; zoom:1; padding:15px 0;}
 .material_list li{ width:308px;border:1px solid #ddd; float:left; margin:9px; list-style:none; position:relative}
@@ -429,7 +438,7 @@ font-size: 20px;}
 .material_form .edit_area{ float:left; width:500px; margin-left:30px; display:inline; border:1px solid #ddd; padding:15px; position:relative; min-height:300px;}
 .material_form .edit_area .area_arrow{ position:absolute; top:60px; left:-30px; width:30px; height:30px; background:url(../images/area_arrow.png) no-repeat; z-index:100;}
 .picture_list{ overflow:hidden; zoom:1}
-.picture_list li{ float:left; margin-right:15px;}
+.picture_list li{ float:left; margin-right:15px;margin-bottom: 15px;}
 .picture_item{ border:1px solid #ddd;}
 .picture_item .main_img{padding:15px; width:180px; height:120px; overflow:hidden;}
 .picture_item .main_img img{ min-height:120px;}
@@ -516,6 +525,7 @@ font-size: 20px;}
 .app_editor .wput{ width:540px;}
 .app_editor .tips{ font-size:12px; color:#888}
 .app_editor .pt_8{ padding-top:4px;}
+.app_editor .edit_tips{ border:1px solid #F60; background:#fcf1e2; color:#F60; padding:10px; margin:10px 0; float:left; width:500px; border-radius:5px;}
 .app_editor input[type="radio"],.app_editor input[type="checkbox"]{ vertical-align:text-top; margin-right:3px;}
 .color_picker{ width:50px; height:28px; border:1px solid #ccc; cursor:pointer}
 .add_goods_btn{ width:50px; height:50px; background:#444 url(../images/add.png) no-repeat; background-size:100% 100%; cursor:pointer; float:left;}

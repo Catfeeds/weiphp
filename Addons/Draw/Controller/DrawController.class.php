@@ -16,14 +16,14 @@ class DrawController extends AddonsController {
 		// $nav[] = $res;
 		
 		$res ['title'] = '奖品管理';
-		$res ['url'] = addons_url ( 'Draw://Award/lists' );
+		$res ['url'] = addons_url ( 'Draw://Award/lists',$this->get_param );
 		$res ['class'] = $controller == 'award' ? 'current' : '';
 		$nav [] = $res;
 		
 		$this->assign ( 'nav', $nav );
 	}
 	function lists() {
-		$url = addons_url ( 'Draw://Award/lists' );
+		$url = addons_url ( 'Draw://Award/lists' ,$this->get_param);
 		redirect ( $url );
 		
 		// $model = $this->getModel('luck_draw');

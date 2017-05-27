@@ -29,31 +29,33 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 		$('#fixedContainer').height($(window).height()-navHeight);	
 	}
 	//通用banner
-	function banner(isAuto,delayTime){
-		var screenWidth = $('.container').width();
-		var count = $('.banner li').size();
-		$('.banner ul').width(screenWidth*count);
-		$('.banner ul').height(screenWidth/2);
-		$('.banner').height(screenWidth/2);
-		$('.banner li').width(screenWidth).height(screenWidth/2);
-		$('.banner li img').width(screenWidth).height(screenWidth/2);
-		$('.banner li .title').css({'width':'98%','padding-left':'2%'})
+	function banner(id,isAuto,delayTime,wh){
+		if($(id).find('ul').html()==undefined)return;
+		if(!wh)wh = 2;
+		var screenWidth = $(id).width();
+		var count = $(id).find('li') .size();
+		$(id).find('ul').width(screenWidth*count);
+		$(id).find('li').height(screenWidth/wh);
+		$(id).height(screenWidth/wh);
+		$(id).find('li').width(screenWidth).height(screenWidth/wh);
+		$(id).find('li img').width(screenWidth).height(screenWidth/wh);
+		$(id).find('li .title').css({'width':'98%','padding-left':'2%'})
 		// With options
-		$('.banner li .title').each(function(index, element) {
+		$(id).find('li .title').each(function(index, element) {
             $(this).text($(this).text().length>15?$(this).text().substring(0,15)+" ...":$(this).text());
         });
-		var flipsnap = Flipsnap('.banner ul');
+		var flipsnap = Flipsnap(id+' ul');
 		flipsnap.element.addEventListener('fstouchend', function(ev) {
-			$('.identify em').eq(ev.newPoint).addClass('cur').siblings().removeClass('cur');
+			$(id).find('.identify em').eq(ev.newPoint).addClass('cur').siblings().removeClass('cur');
 		}, false);
-		$('.identify em').eq(0).addClass('cur')
+		$(id).find('.identify em').eq(0).addClass('cur')
 		if(isAuto){
 			var point = 1;
 			setInterval(function(){
 				//console.log(point);
 				flipsnap.moveToPoint(point);
-				$('.identify em').eq(point).addClass('cur').siblings().removeClass('cur');
-				if(point+1==$('.banner li').size()){
+				$(id).find('.identify em').eq(point).addClass('cur').siblings().removeClass('cur');
+				if(point+1==$(id).find('li').size()){
 					point=0;
 				}else{
 					point++;
@@ -62,20 +64,64 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 				},delayTime)
 		}
 	}
+	//多图banner num=列数
+	function mutipicBanner(id,isAuto,delayTime,num){
+		if($(id).find('ul').html()==undefined)return;  
+		var screenWidth = $(id).width();
+		var count = $(id).find('li') .size();
+		var aNew=Math.ceil(count/num-1)  ;
+		$(id).find('ul').width(screenWidth*count/num);
+		$(id).find('li').width(screenWidth/num*0.9375)
+		$(id).find('li').css('marginLeft',screenWidth/num*0.03125+'px') //li的margin
+		$(id).find('li').css('marginRight',screenWidth/num*0.03125+'px')
+		$(id).find('li').css('marginTop',screenWidth/num*0.03125+'px')
+		$(id).find('li .title').css({'width':'98%','padding-left':'2%'})
+		// With options
+		$(id).find('li .title').each(function(index, element) {
+            $(this).text($(this).text().length>15?$(this).text().substring(0,15)+" ...":$(this).text());
+        });  
+    	var points='';
+		for (var i = 0; i <= aNew; i++) {			
+			
+			points += '<em></em>';
+		};	
+		$(id).find('.pointer').html(points);
+		var flipsnap = Flipsnap(id+' ul',{
+			distance:screenWidth ,
+			maxPoint: Math.ceil(count/num-1) 
+		});
+		flipsnap.element.addEventListener('fstouchend', function(ev) {
+			$(id).find('.mutipic_banner_identify em').eq(ev.newPoint).addClass('cur').siblings().removeClass('cur');
+		}, false);
+		$(id).find('.mutipic_banner_identify em').eq(0).addClass('cur')
+		if(isAuto){
+			var point = 1;
+			setInterval(function(){
+				//console.log(point);
+				flipsnap.moveToPoint(point);
+				$(id).find('.mutipic_banner_identify em').eq(point).addClass('cur').siblings().removeClass('cur');
+				if(point+1==$(id).find('li').size()){
+					point=0;
+				}else{
+					point++;
+					}
+				
+				},delayTime)
+		}
+		
+	}
 	//相册效果
 	function gallery(container,slideContainer){
 		var screenWidth = $('.container').width();
 		var count = $(container).find('li').size();
-		var picWidth = screenWidth/5*3;
-		var paddingleft = screenWidth/5;
-		$(container).find('ul').width(picWidth*count);
-		$(container).find('ul').css('padding-left',paddingleft);
-		$(container).find('ul').height(screenWidth/2);
-		$(container).height(picWidth);
-		$(container).find('li').css({'padding':10,width:picWidth-20,height:picWidth-20});
+		$(container).find('ul').width(screenWidth*count);		
+		$(container).find('ul').height(screenWidth);
+		$(container).height(screenWidth);
+		$(container).find('li').css({width:screenWidth,height:screenWidth});
 		$(container).find('li img').width("100%").height("100%");
+		if ($('.identify em').size()==1) {$('.identify em').hide()}
 		var flipsnap = Flipsnap(slideContainer,{
-			distance: picWidth
+			distance: screenWidth
 		});
 		flipsnap.element.addEventListener('fstouchend', function(ev) {
 			$(container).find('.identify em').eq(ev.newPoint).addClass('cur').siblings().removeClass('cur');
@@ -158,7 +204,7 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 	}
 	function showSubscribeTips(opts){
 		if(opts.qrcode.length>5){
-			var tempHtml = $('<div class="shareTips"><div class="tips_concern"></div><div class="qrcode"><img src="'+opts.qrcode+'"/><p>也可以长按二维码关注公众号</p></div><a class="close" href="javascript:;"></a></div>');
+			var tempHtml = $('<div class="shareTips"><div class="tips_concern"></div><div class="qrcode"><img src="'+opts.qrcode+'"/><p>长按二维码关注公众号</p></div><a class="close" href="javascript:;"></a></div>');
 		}else{
 			var tempHtml = $('<div class="shareTips"><div class="tips_concern"></div><a class="close" href="javascript:;"></a></div>');
 		}
@@ -268,7 +314,6 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 			isShowProgressTips: 0, // 默认为1，显示进度提示
 			success: function (res) {
 				$('textarea').val();
-				
 				$.get(SITE_URL+"/index.php?s=/Home/Weixin/downloadPic/media_id/"+res.serverId+".html",function(data){
 					$.Dialog.close();
 					if(data.result=="success"){
@@ -283,6 +328,8 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 						if(localIds.length>0){
 							wxUploadImg(localIds,name,target);
 						}
+					}else{
+						alert('上传图片失败，请通知管理员处理');
 					}
 				})
 			}
@@ -327,9 +374,11 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 	//是否正在加载
 	var isLoading = false;
 	//拉取时间戳参数 页码或lastId
+	//var ids;
 	var lastId = 0;
 	var minId =0;
 	var maxId = 0;
+	var pageIds ='';
 	//类型 0按页码 1按lastId
 	var loadType = 0;
 	//请求地址
@@ -342,11 +391,13 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 	var domContainer;
 	//加载数据
 	function loadMoreContent(){
-		
+		$('.contentItem').each(function(){
+			pageIds+= $(this).data('goodsids')+',';
+		});
 		isLoading = true;
 		$('.moreLoading').show();
 		$('.noMore').hide();
-		$.get(loadUrl,{"count":pageCount,"lastId":lastId,'minId':minId,'maxId':maxId},function(data){
+		$.get(loadUrl,{"count":pageCount,"lastId":lastId,'minId':minId,'maxId':maxId,'pageIds':pageIds},function(data){
 				
 			if($.trim(data)==""||data.indexOf('default_png')>0){
 				hasMore = false;
@@ -440,6 +491,7 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 		doAjaxSubmit:doAjaxSubmit,
 		setRandomColor:setRandomColor,
 		initBanner:banner,
+		initMutipicBanner:mutipicBanner,
 		gallery:gallery,
 		squarePicSlide:squarePicSlide,
 		initFixedLayout:initFixedLayout,
@@ -453,16 +505,22 @@ var WeiPHP_RAND_COLOR = ["#ff6600","#ff9900","#99cc00","#33cc00","#0099cc","#339
 			maxId = opts.maxId || 0;
 			loadType = opts.loadType || 0;
 			loadUrl = opts.loadUrl;
+			pageIds = opts.pageids;
 			domClass = opts.domClass || "contentItem";
 			domContainer = opts.domContainer || "container";
-			$(window).scroll( function() { 
+			$(window).scroll( function() {
 				if(!isLoading && hasMore){
 					if(loadType==0){
 						lastId++; 
 					}else{
 						minId = getListMinId(domClass);
 						maxId = getListMaxId(domClass);
-						lastId = $('.'+domClass).last().data('lastid');
+						
+						
+						
+						if(!lastId){
+							lastId = $('.'+domClass).last().data('lastid');
+						}
 					}
 					totalheight = parseFloat($(window).height()) + parseFloat($(window).scrollTop());  
 					if ($(document).height() <= totalheight+50){

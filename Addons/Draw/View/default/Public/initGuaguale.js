@@ -1,3 +1,12 @@
+ function check_subscribe(){
+    	//var has_subscribe = 1;
+    	if(has_subscribe=="0"){
+    	    $.WeiPHP.showSubscribeTips({'title':title,'qrcode': qrcode});
+    		return false;	
+    	}else{
+    		return true;
+    	}
+    }
 function checkCanvas(){
 	try {
 		document.createElement('canvas').getContext('2d');
@@ -87,7 +96,7 @@ function guaguaDone(ctx,width,height,prizeUrl){
 		$.get(prizeUrl,function(json){
 			$(container).css({'background-image':'url('+json.img+') '});
 			if(json.status == 0){
-				$.Dialog.confirm('提示',json.msg,"",window.location.href);
+				$.Dialog.confirm('提示',json.msg,"",json.jump_url);
 				
 			}else{
 				$.Dialog.confirm('中奖啦',json.msg,"",json.jump_url);

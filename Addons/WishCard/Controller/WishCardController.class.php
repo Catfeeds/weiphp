@@ -10,6 +10,7 @@ class WishCardController extends BaseController{
 		$map ['token'] = get_token ();
 		$model = $this->getModel('wish_card');
 		if (IS_POST) {
+		    $this->checkName($_POST);
 			$Model = D ( parse_name ( get_table_name ( $model ['id'] ), 1 ) );
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $model ['id'] );
@@ -26,6 +27,7 @@ class WishCardController extends BaseController{
 		$map ['token'] = get_token ();
 		$model = $this->getModel();
 		if (IS_POST) {
+		    $this->checkName($_POST);
 			$Model = D ( parse_name ( get_table_name ( $model ['id'] ), 1 ) );
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $model ['id'] );
@@ -49,6 +51,20 @@ class WishCardController extends BaseController{
 		$cateFile = I('cateFile');
 		$data = $this -> _getTemplateByDir($cateFile);
 		$this -> ajaxReturn($data,'JSON');
+	}
+	private function checkName($data){
+	    if (!$data['send_name']){
+	        $this->error('发送人必须填写');
+	    }
+	    if (!$data['receive_name']){
+	        $this->error('接收人必须填写');
+	    }
+	    if (!$data['content']){
+	        $this->error('祝福语内容必须填写');
+	    }
+	    if (!$data['template']){
+	        $this->error('请选择模板');
+	    }
 	}
 	
 }

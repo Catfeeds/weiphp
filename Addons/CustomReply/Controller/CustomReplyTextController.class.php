@@ -49,7 +49,7 @@ class CustomReplyTextController extends BaseController{
 				// 清空缓存
 				method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'edit' );
 	
-				$this->success ( '保存' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'] ) );
+				$this->success ( '保存' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'] ,$this->get_param) );
 			} else {
 				$this->error ( $Model->getError () );
 			}
@@ -96,7 +96,7 @@ class CustomReplyTextController extends BaseController{
 				// 清空缓存
 				method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'edit' );
 	
-				$this->success ( '添加' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'] ) );
+				$this->success ( '添加' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'],$this->get_param ) );
 			} else {
 				$this->error ( $Model->getError () );
 			}

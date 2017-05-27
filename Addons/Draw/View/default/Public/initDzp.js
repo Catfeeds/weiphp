@@ -1,4 +1,13 @@
- $(function() {
+ function check_subscribe(){
+    	//var has_subscribe = 1;
+    	if(has_subscribe=="0"){
+    	    $.WeiPHP.showSubscribeTips({'title':title,'qrcode': qrcode});
+    		return false;	
+    	}else{
+    		return true;
+    	}
+    }
+$(function() {
 				if(typeof(jplist) == "undefined"){jplist={};}
  
 				$("#wheelcanvas").rotate({
@@ -11,6 +20,21 @@
                 var isStart = false;
                 function lottery() {
                     var start = function() {
+                    	if(!(check_subscribe())){
+                    		return false;
+                    	}
+                    	if(checkstatus == 0){
+                    		$.Dialog.confirm('提示',msg);
+                    		return false;
+                    	}
+                    	
+//                    	$.post(checkurl,{'games_id':games_id},function(dd){
+//            				if(dd.status == 0){
+//            					$.Dialog.confirm('提示',dd.msg);
+//            					return false;
+//            				}
+//            			})
+            			
                         if (isStart) {
                             return false;
                         }
@@ -25,7 +49,6 @@
 								isStart = false;
                             },
                             success: function(json) {
-								
 									$("#wheelcanvas").rotate({
 										duration: 10000,
 										angle: -90,
@@ -37,6 +60,19 @@
 											}else{
 												$.Dialog.confirm('中奖啦',json.msg,"",json.jump_url);
 											}
+												$.ajax({
+													    type:'POST',
+													    async:false,
+													    url:checkurl,
+													    data:{'games_id':games_id},
+													    success:function(dd){
+													    	checkstatus = dd.status;
+															if(dd.status == 0){
+																msg = dd.msg;
+															}
+														}
+													});
+		
 											isStart = false;
 										}
 									});

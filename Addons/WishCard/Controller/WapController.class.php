@@ -60,7 +60,7 @@ class WapController extends BaseController{
 				$isMake = 1;
 			}
 		}else{
-			$id = I('id');
+			$id = I ( 'id', 0, 'intval' );
 			$data = $Model -> find($id);
 			$Model -> where('id='.$id)->setInc('read_count',1); //统计浏览数加1 
 			$isMake = 0;

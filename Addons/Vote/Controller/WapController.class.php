@@ -13,15 +13,23 @@ class WapController extends AddonsController {
 		// 投票活动信息
 		$voteInfo = D ( 'Addons://Vote/ShopVote' )->getInfo ( $voteId );
 		// 判断是否过期
+		$page_title =$voteInfo['title'];
+		$this->assign('page_title',$page_title);
 		if ($this->_is_overtime ( $voteInfo )) {
-			// 过期
+			// 过期 未开始
+			if (! empty ( $voteInfo ['start_time'] ) && $voteInfo ['start_time'] > NOW_TIME)
 			$isOvertime = 1;
+		
+			if (! empty ( $voteInfo ['end_time'] ) && $voteInfo ['end_time'] <= NOW_TIME)
+			$isOvertime = -1;
 		} else {
 			$isOvertime = 0;
 		}
 		
 		$this->_options ( $voteInfo );
-		
+		//dump($voteInfo);exit;
+		$voteInfo['remark'] = str_replace("\r\n"," ",$voteInfo['remark']);
+		//dump($voteInfo);exit;
 		$this->assign ( 'vote_info', $voteInfo );
 		$this->assign ( 'overtime', $isOvertime );
 		$this->display ();
@@ -32,7 +40,7 @@ class WapController extends AddonsController {
 		if (! empty ( $voteInfo ['start_time'] ) && $voteInfo ['start_time'] > NOW_TIME)
 			return ture;
 		
-		if (! empty ( $voteInfo ['end_date'] ) && $voteInfo ['end_time'] <= NOW_TIME)
+		if (! empty ( $voteInfo ['end_time'] ) && $voteInfo ['end_time'] <= NOW_TIME)
 			return ture;
 		
 		return false;
@@ -56,7 +64,7 @@ class WapController extends AddonsController {
 		}
 		$count = count ( $voteLog );
 		// dump ( $voteLog );exit;
-		if ($count >= $limitNum || $is_in) {
+		if (($limitNum !=0 && $count >= $limitNum) || $is_in) {
 			return true;
 		}
 		return false;
@@ -69,10 +77,22 @@ class WapController extends AddonsController {
 		$verify = I('verify');
 		
 		$voteInfo = D ( 'Addons://Vote/ShopVote' )->getInfo ( $voteId );
-		if ($this->_is_overtime ( $voteInfo )) {
+		if (!$GLOBALS ['is_wap']) {
 			// $this->error ( "请在指定的时间内投票" );
 			
-			$ajax_result ['error'] = '投票活动时间已经过期';
+			$ajax_result ['error'] = '电脑端不能投票';
+			$this->ajaxReturn ( $ajax_result );
+			return false;
+		}
+		if ($this->_is_overtime ( $voteInfo )) {
+			// $this->error ( "请在指定的时间内投票" );
+			if (! empty ( $voteInfo ['start_time'] ) && $voteInfo ['start_time'] > NOW_TIME)
+			$ajax_result ['error'] = '投票活动未开始';
+		
+			if (! empty ( $voteInfo ['end_time'] ) && $voteInfo ['end_time'] <= NOW_TIME)
+			$ajax_result ['error'] = '投票活动已结束';
+			
+			
 			$this->ajaxReturn ( $ajax_result );
 			return false;
 		}
@@ -125,16 +145,23 @@ class WapController extends AddonsController {
 		
 		// 投票活动信息
 		$voteInfo = D ( 'Addons://Vote/ShopVote' )->getInfo ( $voteId );
+		$page_title =$voteInfo['title'];
+		$this->assign('page_title',$page_title);
 		// 判断是否过期
 		if ($this->_is_overtime ( $voteInfo )) {
 			// 过期
+			if (! empty ( $voteInfo ['start_time'] ) && $voteInfo ['start_time'] > NOW_TIME)
 			$isOvertime = 1;
+		
+			if (! empty ( $voteInfo ['end_time'] ) && $voteInfo ['end_time'] <= NOW_TIME)
+			$isOvertime = -1;
 		} else {
 			$isOvertime = 0;
 		}
 		
 		$this->_options ( $voteInfo, $optId );
 		
+		$voteInfo['remark'] = str_replace("\r\n"," ",$voteInfo['remark']);
 		$this->assign ( 'vote_info', $voteInfo );
 		$this->assign ( 'overtime', $isOvertime );
 		$this->display ();
@@ -160,7 +187,7 @@ class WapController extends AddonsController {
 			$limitNum = $voteInfo ['multi_num'];
 		}
 		// 判断用户是否已经完成全部投票
-		if ($limitNum > $vote_count) {
+		if ($limitNum==0 || $limitNum > $vote_count) {
 			$finish_vote = 0;
 		}
 		

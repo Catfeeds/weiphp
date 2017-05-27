@@ -7,7 +7,7 @@
       <include file="Addons/_nav" />
       <div class="tab-content"> 
         <!-- 表单 -->
-        <php> $post_url || $post_url = U('edit?model='.$model['id'], $get_param);</php>
+        <php>$post_url || $post_url = U('edit?model='.$model['id'], $get_param);</php>
         <form id="form" action="{$post_url}" method="post" class="form-horizontal form-center">
           
               <volist name="fields" id="field">
@@ -74,7 +74,19 @@
                         <case value="dynamic_select">
                         <div id="dynamic_select_{$field.name}"></div>
                         {:hook('dynamic_select', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
-                        </case>   
+                        </case>
+                        <case value="dynamic_checkbox">
+                        <div id="dynamic_checkbox_{$field.name}"></div>
+                        {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case> 
+                        <case value="material">
+                        <div id="material_{$field.name}"></div>
+                        {:hook('material', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case>
+                        <case value="prize">
+                        <div id="prize_{$field.name}"></div>
+                        {:hook('prize', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case>                                                    
                         <case value="news">
                         <div id="news_{$field.name}"></div>
                         {:hook('news', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
@@ -115,7 +127,7 @@
                             {:hook('adminArticleEdit', array('name'=>$field['name'],'value'=>$data[$field['name']]))} </label>
                         </case>
                         <case value="picture">
-                          <div class="controls uploadrow2" title="点击修改图片" rel="{$field.name}">
+                          <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="{$field.name}">
                             <input type="file" id="upload_picture_{$field.name}">
                             <input type="hidden" name="{$field.name}" id="cover_id_{$field.name}" value="{$data[$field['name']]}"/>
                             <div class="upload-img-box">
@@ -139,7 +151,7 @@
                                     </volist>
                                   </notempty>
                                 </div>
-                                <div class="controls uploadrow2 mult" title="点击上传图片" rel="{$field.name}">
+                                <div class="controls uploadrow2" data-max="9" title="点击上传图片" rel="{$field.name}">
                                   <input type="file" id="upload_picture_{$field.name}">
                                 </div>
                             </div>
@@ -245,12 +257,17 @@
     <link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
     ';</php>
   <link href="__STATIC__/datetimepicker/css/dropdown.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.min.js"></script> 
+  <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={:SITE_VERSION}" charset="UTF-8"></script> 
   <script type="text/javascript">
   $(function(){
+	var UploadFileExts = "{$UploadFileExts}";
 	initUploadImg();
-	initUploadFile();
+	if(UploadFileExts!=""){
+		initUploadFile(function(){},UploadFileExts);
+	}else{
+		initUploadFile();
+	}
    
    $('.time').datetimepicker({
         format: 'yyyy-mm-dd hh:ii',
@@ -276,6 +293,16 @@
 	});
 	
 	$('.toggle-data').bind("click",function(){ change_event(this) });
+	$('select').change(function(){
+		$('.toggle-data').each(function(){
+			var data = $(this).attr('toggle-data');
+			if(data=='') return true;		
+			
+			 if($(this).is(":selected") || $(this).is(":checked")){
+				 change_event(this)
+			 }
+		});
+	});
 });
 </script> 
 </block>

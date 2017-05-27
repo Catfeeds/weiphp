@@ -42,31 +42,34 @@ class FileModel extends Model{
 	 */
 	public function upload($files, $setting, $driver = 'Local', $config = null){
 		/* 上传文件 */
+	    
 		$setting['callback'] = array($this, 'isFile');
 		$Upload = new \Think\Upload($setting, $driver, $config);
 		$info   = $Upload->upload($files);
+
 		/* 设置文件保存位置 */
 		$this->_auto[] = array('location', 'Ftp' === $driver ? 1 : 0, self::MODEL_INSERT);
 		if($info){ //文件上传成功，记录文件信息
 		    $fileData=$this->getFields('md5,id');
 			foreach ($info as $key => &$value) {
-			    
+			    if (isset($fileData[$value['md5']])){
+			        $value['id']=$fileData[$value['md5']];
+// 			        $this->error='上传文件的内容已存在！';
+// 			        return false;
+// 			       unset($info[$key]);
+			    }
 				/* 已经存在文件记录 */
 				if(isset($value['id']) && is_numeric($value['id'])){
 					$value['path'] = substr($setting['rootPath'], 1).$value['savepath'].$value['savename'];	//在模板里的url路径
+					$fsave['savename']=$value['savename'];
+					$fsave['savepath']=$value['savepath'];
+					$this->where(array('id'=>$value['id']))->save($fsave);
+					$skey = 'File_' . $value['id'];
+					S ( $key ,null);
 					continue;
 				}
 
 				$value['path'] = substr($setting['rootPath'], 1).$value['savepath'].$value['savename'];	//在模板里的url路径
-				if ($fileData[$value['md5']]){
-				    // 			        $this->error='上传文件的内容已存在！';
-				    // 			        return false;
-				    $map['id']=$fileData[$value['md5']];
-				    $this->where($map)->save($value);
-// 				    unset($info[$key]);
-                    $value['id']=$map['id'];		    
-				    continue;
-				}
 				/* 记录文件信息 */
 				if($this->create($value) && ($id = $this->add())){
 					$value['id'] = $id;

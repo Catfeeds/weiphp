@@ -51,9 +51,10 @@ class WapController extends AddonsController {
 				exit ( $content ['errmsg'] );
 			}
 			
-			$url = 'https://api.weixin.qq.com/sns/userinfo?access_token=' . $content ['access_token'] . '&openid=' . $content ['openid'] . '&lang=zh_CN';
-			$data = file_get_contents ( $url );
+			$suburl = 'https://api.weixin.qq.com/cgi-bin/user/info?access_token=' . get_access_token () . '&openid=' . $content ['openid'] . '&lang=zh_CN';
+			$data = file_get_contents ( $suburl );
 			$data = json_decode ( $data, true );
+			$subscribe = $data ['subscribe'];
 			
 			if (! empty ( $data ['errmsg'] )) {
 				exit ( $data ['errmsg'] );
@@ -64,6 +65,9 @@ class WapController extends AddonsController {
 			
 			$uid = D ( 'Common/Follow' )->init_follow ( $content ['openid'], $info ['token'] );
 			D ( 'Common/User' )->updateInfo ( $uid, $data );
+			if ($subscribe) {
+				D ( 'Common/Follow' )->set_subscribe ( $content ['openid'], 1 );
+			}
 			
 			$url = Cookie ( '__forward__' );
 			if ($url) {
@@ -226,7 +230,9 @@ class WapController extends AddonsController {
 			redirect ( U ( 'bind' ) );
 		}
 		// 商城版的直接在商城个人中心里
-		redirect ( addons_url ( 'Shop://Wap/user_center' ) );
+		if (is_install ( 'Shop' )) {
+			redirect ( addons_url ( 'Shop://Wap/user_center' ) );
+		}
 		
 		$info = get_followinfo ( $this->mid );
 		$this->assign ( 'info', $info );
@@ -301,5 +307,128 @@ class WapController extends AddonsController {
 		
 		// 商家中心
 		$this->display ();
+	}
+	
+	// 检查公众号基础功能
+	function check() {
+		$map ['token'] = I ( 'token' );
+		$info = M ( 'public' )->where ( $map )->find ();
+		$type = $info ['type'];
+		
+		// 获取微信权限节点
+		$map2 ['type_' . $type] = 1;
+		$auth = M ( 'public_auth' )->where ( $map2 )->getFields ( 'name,title' );
+		
+		$res ['msg'] = '';
+		// 获取access_token
+		$access_token = get_access_token ( $token );
+		if (empty ( $access_token )) {
+			addAutoCheckLog ( 'access_token', 'access_token获取失败', $info ['token'] );
+		} else {
+			addAutoCheckLog ( 'access_token', '', $info ['token'] );
+		}
+		
+		$url = 'https://api.weixin.qq.com/cgi-bin/getcallbackip?access_token=' . $access_token;
+		$res = wp_file_get_contents ( $url );
+		$res = json_decode ( $res, true );
+		if ($res ['errcode'] == '40001') {
+			addAutoCheckLog ( 'access_token_check', $res ['errcode'] . ': ' . $res ['errmsg'], $info ['token'] );
+		} else {
+			addAutoCheckLog ( 'access_token_check', '', $info ['token'] );
+		}
+		
+		// 收发消息
+		$xml = '<xml><ToUserName><![CDATA[' . $info ['token'] . ']]></ToUserName>
+<FromUserName><![CDATA[oikassyZe6bdupvJ2lq-majc_rUg]]></FromUserName>
+<CreateTime>1464254617</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[自动检测]]></Content>
+<MsgId>6288925693437624122</MsgId>
+</xml>';
+		
+		$param ['id'] = $info ['id'];
+		$param ['signature'] = 'd3e1ce50d26db638e6a03e1c8bf6b23b4fdbdd87';
+		$param ['timestamp'] = '1464254754';
+		$param ['nonce'] = '407622025';
+		$url = U ( 'home/weixin/index', $param );
+		
+		$res = $this->curl_data ( $url, $xml );
+		if (strpos ( $res, 'auto_check' )) {
+			addAutoCheckLog ( 'massage', '', $info ['token'] );
+		} else {
+			addAutoCheckLog ( 'massage', '收发消息失败', $info ['token'] );
+		}
+		
+		$nextUrl = U ( 'check2', array (
+				'token' => $info ['token'] 
+		) );
+		$this->assign ( 'nextUrl', $nextUrl );
+		$this->display ();
+	}
+	function check2() {
+		$token = I ( 'token' );
+		
+		// get_openid
+		$callback = GetCurUrl ();
+		$openid = OAuthWeixin ( $callback, $token, true );
+		if (empty ( $openid ) || $openid == '-1' || $openid == '-2') {
+			addAutoCheckLog ( 'openid', '获取openid失败', $token );
+		} else {
+			addAutoCheckLog ( 'openid', '', $token );
+		}
+		
+		addAutoCheckLog ( 'jsapi', '', $token );
+		
+		$this->display ();
+	}
+	function check3() {
+		$token = I ( 'token' );
+		$msg = I ( 'msg' );
+		addAutoCheckLog ( 'jsapi', $msg, $token );
+	}
+	function curl_data($url, $param) {
+		set_time_limit ( 0 );
+		$ch = curl_init ();
+		if (class_exists ( '/CURLFile' )) { // php5.5跟php5.6中的CURLOPT_SAFE_UPLOAD的默认值不同
+			curl_setopt ( $ch, CURLOPT_SAFE_UPLOAD, true );
+		} else {
+			if (defined ( 'CURLOPT_SAFE_UPLOAD' )) {
+				curl_setopt ( $ch, CURLOPT_SAFE_UPLOAD, false );
+			}
+		}
+		curl_setopt ( $ch, CURLOPT_URL, $url );
+		curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, "POST" );
+		curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, FALSE );
+		curl_setopt ( $ch, CURLOPT_SSL_VERIFYHOST, FALSE );
+		curl_setopt ( $ch, CURLOPT_HTTPHEADER, $header );
+		curl_setopt ( $ch, CURLOPT_USERAGENT, 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)' );
+		curl_setopt ( $ch, CURLOPT_FOLLOWLOCATION, 1 );
+		curl_setopt ( $ch, CURLOPT_AUTOREFERER, 1 );
+		curl_setopt ( $ch, CURLOPT_POSTFIELDS, $param );
+		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
+		$res = curl_exec ( $ch );
+		$flat = curl_errno ( $ch );
+		if ($flat) {
+			$data = curl_error ( $ch );
+			addWeixinLog ( $flat, 'post_data flat' );
+			addWeixinLog ( $data, 'post_data msg' );
+		}
+		
+		curl_close ( $ch );
+		
+		return $res;
+	}
+	function check_res_ajax() {
+		$map ['token'] = I ( 'token' );
+		$list = M ( 'public_check' )->where ( $map )->order ( 'id asc' )->select ();
+		foreach ( $list as $vo ) {
+			$res [$vo ['na']] ['msg'] = $vo ['msg'];
+		}
+		
+		if (empty ( $res )) {
+			echo 0;
+		} else {
+			echo json_encode ( $res );
+		}
 	}
 }

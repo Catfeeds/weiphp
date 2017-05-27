@@ -11,6 +11,16 @@ class FooterController extends BaseController {
 		parent::_initialize ();
 	}
 	public function lists() {
+		$has_data = 1;
+		$file = ONETHINK_ADDON_PATH . _ADDONS . '/View/default/TemplateFooter/' . $this->config ['template_footer'] . '/info.php';
+		if (file_exists ( $file )) {
+			$info = require_once $file;
+			if (isset ( $info ['has_data'] ) && $info ['has_data'] == 0) {
+				$has_data = 0;
+			}
+		}
+		$this->assign ( 'has_data', $has_data );
+		
 		// 解析列表规则
 		$list_data = $this->_list_grid ( $this->model );
 		$fields = $list_data ['fields'];
@@ -66,7 +76,7 @@ class FooterController extends BaseController {
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $this->model ['id'] );
 			if ($Model->create () && $Model->save ()) {
-				$this->success ( '保存' . $this->model ['title'] . '成功！', U ( 'lists?model=' . $this->model ['name'] ) );
+				$this->success ( '保存' . $this->model ['title'] . '成功！', U ( 'lists?model=' . $this->model ['name'], $this->get_param ) );
 			} else {
 				$this->error ( $Model->getError () );
 			}
@@ -115,7 +125,7 @@ class FooterController extends BaseController {
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $this->model ['id'] );
 			if ($Model->create () && $id = $Model->add ()) {
-				$this->success ( '添加' . $this->model ['title'] . '成功！', U ( 'lists?model=' . $this->model ['name'] ) );
+				$this->success ( '添加' . $this->model ['title'] . '成功！', U ( 'lists?model=' . $this->model ['name'], $this->get_param ) );
 			} else {
 				$this->error ( $Model->getError () );
 			}

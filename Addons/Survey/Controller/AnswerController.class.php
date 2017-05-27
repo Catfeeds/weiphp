@@ -8,7 +8,7 @@ class AnswerController extends AddonsController {
 	var $model;
 	var $survey_id;
 	function _initialize() {
-		parent::_initialize ();
+		parent::_initialize();
 		
 		$this->model = $this->getModel ( 'survey_answer' );
 		
@@ -44,9 +44,15 @@ class AnswerController extends AddonsController {
 		
 		$list = M ( $name )->where ( $map )->order ( 'id DESC' )->group ( 'uid' )->selectPage ();
 		foreach ( $list ['list_data'] as &$vo ) {
-			$user = getUserInfo ( $vo ['uid'] );
-			
-			$vo ['truename'] = $user ['nickname'];
+
+			$user = get_userinfo ( $vo ['uid'] );
+
+//dump($user);die();
+			if (empty ( $user['id'] )) {
+				$user = get_followinfo ( $vo ['uid']  );
+			}
+		
+			$vo ['truename'] = $user ['truename'];
 			$vo ['mobile'] = $user ['mobile'];
 		}
 		

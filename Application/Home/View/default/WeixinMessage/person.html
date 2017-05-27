@@ -93,7 +93,7 @@
                              	<a class="action_item face" href="javascript:;" title="表情">&nbsp;</a>
                                 <a class="action_item link" href="javascript:;" title="连接">&nbsp;</a>
                                 <div class="action_item picture" href="javascript:;" title="图片">
-                                	<div class="controls uploadrow2" title="点击修改图片" rel="pic">
+                                	<div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="pic">
                                       <input type="file" id="upload_picture_pic">
                                       <input type="hidden" name="pic" id="cover_id_pic" value="0"/>
                                       <div class="upload-img-box">
@@ -251,6 +251,7 @@ function set_status(id, field, val){
 	   location.reload();
    })	
 }
+
 $(function(){
 	//初始化上传图片插件
 	initUploadImg({width:308,height:200,callback:function(){

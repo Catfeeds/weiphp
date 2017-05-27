@@ -13,7 +13,7 @@ class SnController extends AddonsController {
 		$controller = strtolower ( _CONTROLLER );
 		
 		$res ['title'] = '优惠券';
-		$res ['url'] = addons_url ( 'Coupon://Coupon/lists' );
+		$res ['url'] = addons_url ( 'Coupon://Coupon/lists' ,$this->get_param );
 		$res ['class'] = $controller == 'coupon' ? 'current' : '';
 		$nav [] = $res;
 		

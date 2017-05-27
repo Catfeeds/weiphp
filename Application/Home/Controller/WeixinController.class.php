@@ -52,6 +52,7 @@ class WeixinController extends HomeController {
 		
 		// 所有安装过的微信插件
 		$addon_list = ( array ) D ( 'Addons' )->getWeixinList ( false, $token_status );
+//addWeixinLog ( '2', $addon_list );
 		/**
 		 * 微信事件转化成特定的关键词来处理
 		 * event可能的值：
@@ -87,12 +88,18 @@ class WeixinController extends HomeController {
 			S ( 'user_status_' . $openid, null ); // 可设置规定只能接收某些值，如果用户输入的内容不是规定的值，则放弃当前状态,支持正则和数组两种规定方式
 		}
 		
+//addWeixinLog ( '1-1', $key );
+//addWeixinLog ( '1-2', $addons[$key] );
+//addWeixinLog ( '1-3', $user_status );
 		if (! isset ( $addons [$key] ) && $user_status) {
+//addWeixinLog ( '1-4', $user_status ['addon'] );
 			$addons [$key] = $user_status ['addon'];
 			$keywordArr = $user_status ['keywordArr'];
 			S ( 'user_status_' . $openid, null );
 		}
+//addWeixinLog ( '1-5', $addons [$key] );
 		if (! isset ( $addons [$key] )) {
+//addWeixinLog ( '1-5-1', $addons [$key] );
 			$map ['keyword'] = $key;
 			$map ['from_type'] = array (
 					'neq',
@@ -139,10 +146,13 @@ class WeixinController extends HomeController {
 				}
 			}
 		}
+//addWeixinLog ( '1-6', $addons [$key] );
 		// 通过插件标识名、插件名或者自定义关键词来定位处理的插件
 		if (! isset ( $addons [$key] )) {
+//addWeixinLog ( '1-6-1', $addons [$key] );
 			$keyword_cache = F ( 'keyword_cache' );
 			if ($keyword_cache === false || APP_DEBUG) {
+//addWeixinLog ( '1-6-2', $addons [$key] );
 				foreach ( $addon_list as $k => $vo ) {
 					$keyword_cache [$vo ['name']] = $k;
 					$keyword_cache [$vo ['title']] = $k;
@@ -157,13 +167,17 @@ class WeixinController extends HomeController {
 					F ( 'keyword_cache', $keyword_cache );
 				}
 			}
+//addWeixinLog ( '1-6-3', $addons [$key] );
 			foreach ( $keyword_cache as $k => $val ) {
+//addWeixinLog ( '1-6-3', $k );
+//addWeixinLog ( '1-6-3', $val );
 				$addons [$k] = $val;
 			}
 			// addWeixinLog($addons,'textman2');
 			// addWeixinLog($addons,'textman');
 		}
 		
+//addWeixinLog ( '1-6-4', $addons [$key] );
 		// 通过精准关键词来定位处理的插件 token=0是插件安装时初始化的模糊关键词，所有公众号都可以用
 		if (! empty ( $forbit_addon )) {
 			$like ['addon'] = array (
@@ -175,8 +189,10 @@ class WeixinController extends HomeController {
 				'exp',
 				"='0' or token='{$this->token}'" 
 		);
+//addWeixinLog ( '1-7', $addons [$key] );
 		// 完全匹配
 		if (! isset ( $addons [$key] )) {
+//addWeixinLog ( '1-8', $addons [$key] );
 			$like ['keyword'] = $key;
 			$like ['keyword_type'] = 0;
 			$keywordArr = M ( 'keyword' )->where ( $like )->order ( 'id desc' )->find ();
@@ -187,6 +203,7 @@ class WeixinController extends HomeController {
 		}
 		// 随机匹配（前提是关键词是完全匹配）
 		if (! isset ( $addons [$key] )) {
+//addWeixinLog ( '1-8-1', $key );
 			$like ['keyword'] = $key;
 			$like ['keyword_type'] = 5;
 			$keywordArr = M ( 'keyword' )->where ( $like )->order ( 'RAND()' )->find ();
@@ -197,6 +214,7 @@ class WeixinController extends HomeController {
 		}
 		// 通过模糊关键词来定位处理的插件
 		if (! isset ( $addons [$key] )) {
+//addWeixinLog ( '1-8-2', $addons [$key] );
 			unset ( $like ['keyword'] );
 			$like ['keyword_type'] = array (
 					'exp',
@@ -207,9 +225,11 @@ class WeixinController extends HomeController {
 				$this->_contain_keyword ( $keywordInfo, $key, $addons, $keywordArr );
 			}
 		}
+//addWeixinLog ( '1-9', $addons [$key] );
 		// 通过通配符，查找默认处理方式
 		// by 肥仔聪要淡定 2014.6.8
 		if (! isset ( $addons [$key] )) {
+//addWeixinLog ( '1-9-1', $addons [$key] );
 			unset ( $like ['keyword_type'] );
 			$like ['keyword'] = '*';
 			$keywordArr = M ( 'keyword' )->where ( $like )->order ( 'id desc' )->find ();
@@ -220,6 +240,7 @@ class WeixinController extends HomeController {
 		}
 		// 以上都无法定位插件时，如果开启了智能聊天，则默认使用智能聊天插件
 		if (! isset ( $addons [$key] ) && isset ( $addon_list ['Chat'] )) {
+//addWeixinLog ( '1-9-2', $addons [$key] );
 			// 您问我答插件特殊处理
 			$YouaskServiceconfig = getAddonConfig ( 'YouaskService' ); // 获取后台插件的配置参数
 			if ($YouaskServiceconfig ['state'] == 1) {
@@ -229,6 +250,7 @@ class WeixinController extends HomeController {
 			}
 		}
 		
+//addWeixinLog ( '1-10', $addons [$key] );
 		// 以上都无法定位插件时，如果开启了未识别回答，则默认使用未识别回答插件
 		if (! isset ( $addons [$key] ) && isset ( $addon_list ['NoAnswer'] )) {
 			$addons [$key] = 'NoAnswer';
@@ -244,6 +266,7 @@ class WeixinController extends HomeController {
 		// addWeixinLog($keywordArr,'textmankey');
 		$model->reply ( $data, $keywordArr );
 		
+//addWeixinLog ( '1-11', $addons [$key] );
 		// 运营统计
 		// tongji ( $addons [$key] );
 	}

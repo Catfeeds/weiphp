@@ -28,7 +28,7 @@
                 <label class="item-label">
                        商家LOGO<span class="check-tips"></span>
                 </label>
-                <div class="controls uploadrow2" title="点击修改图片" rel="shop_logo">
+                <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="shop_logo">
                   <input type="file" id="upload_picture_shop_logo">
                   <input type="hidden" name="shop_logo" id="cover_id_shop_logo" value="{$data.shop_logo}"/>
                   <notempty name="data.shop_logo">
@@ -85,7 +85,7 @@
                 <label class="item-label">
                        优惠券图片<span class="check-tips">建议图片宽度640px，高300px</span>
                 </label>
-                <div class="controls uploadrow2" title="点击修改图片" rel="background">
+                <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="background">
                   <input type="file" id="upload_picture_background">
                   <input type="hidden" name="background" id="cover_id_background" value="{$data.background}"/>
                    

@@ -1,0 +1,3 @@
+<?php
+//000000000000a:22:{s:2:"id";s:1:"1";s:3:"uid";s:1:"1";s:11:"public_name";s:15:"玺玺工作室";s:9:"public_id";s:15:"gh_27777931839c";s:6:"wechat";s:13:"XIXI_WORKSHOP";s:13:"interface_url";N;s:12:"headface_url";N;s:4:"area";N;s:12:"addon_config";s:29:"{"Wecome":{"stype":"text:1"}}";s:12:"addon_status";N;s:5:"token";s:15:"gh_27777931839c";s:6:"is_use";s:1:"0";s:4:"type";s:1:"0";s:5:"appid";s:18:"wxf7c397aaefb3c174";s:6:"secret";s:32:"6abfa86d1b8185ce8062e58f28aeff28";s:8:"group_id";s:1:"0";s:14:"encodingaeskey";s:43:"9bVzqkza3F8tuvdRJIpRHPkUm9eydUbFnkkVseTLlJ8";s:8:"tips_url";N;s:6:"domain";N;s:7:"is_bind";s:1:"0";s:5:"cTime";N;s:24:"authorizer_refresh_token";N;}
+?>

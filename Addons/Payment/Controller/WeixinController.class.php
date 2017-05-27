@@ -23,6 +23,11 @@ class WeixinController extends AddonsController
         $paymentSet = $pay_config_db->where(array(
             'token' => $this->token
         ))->find();
+        $paymentSet['wxappid']=trim($paymentSet['wxappid']);
+        $paymentSet['wxpaysignkey']=trim($paymentSet['wxpaysignkey']);
+        $paymentSet['wxappsecret']=trim($paymentSet['wxappsecret']);
+        $paymentSet['wxmchid']=trim($paymentSet['wxmchid']);
+        
         if ($paymentSet['wx_cert_pem'] && $paymentSet['wx_key_pem']){
             $ids[]=$paymentSet['wx_cert_pem'];
             $ids[]=$paymentSet['wx_key_pem'];
@@ -45,7 +50,6 @@ class WeixinController extends AddonsController
        
         session('paymentinfo', $this->payConfig);
     }
-    
     // 处理from URL字符串
     // private function doFromStr($from){
     // if($from){
@@ -150,14 +154,21 @@ class WeixinController extends AddonsController
         $input->SetOpenid($openId);
         
         $order = \WxPayApi::unifiedOrder($input);
-        
+        if ($order['return_code'] == 'FAIL'){
+        	$this->error('参数出现错误！');
+        	exit();
+        }
 //         echo '<font color="#f00"><b>统一下单支付单信息</b></font><br/>';
          //dump($order);
 //         die;
         $jsApiParameters = $tools->GetJsApiParameters($order);
        //  dump($jsApiParameters);
-		 
-        $returnUrl = addons_url('Payment://Weixin/payOK');
+        $from = $_GET ['from'];
+        $fromstr = str_replace ( '_', '/', $from );
+        $returnUrl = addons_url ( $fromstr );
+        if (empty($returnUrl)){
+        	$returnUrl = addons_url('Payment://Weixin/payOK');
+        }
         header('Location:' . SITE_URL . '/WxpayAPI/unifiedorder.php?jsApiParameters=' . $jsApiParameters . '&returnurl=' . $returnUrl . '&totalfee=' . $_GET['price'] . '&paymentId=' . $paymentId);
         
         // echo $jsApiParameters;

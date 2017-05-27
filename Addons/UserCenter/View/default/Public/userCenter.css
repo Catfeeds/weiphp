@@ -30,3 +30,17 @@ body,.body{ background:#eee}
 .bind_form .form-item{ padding:10px 10px 0;margin:0;}
 .bind_form .form-item input[type="text"]{ margin:0; width:100%}
 .bind_form .bind_tips{ color:#888; padding:10px; font-size:12px; line-height:16px;}
+/*  check */
+.check_box,.check_done{ text-align:center; padding:150px 0;}
+.check_done .btn{ width:40%; margin:20px auto;}
+.check_done img{ border:2px solid #44b549; border-radius:100%; margin-bottom:10px;}
+@-webkit-keyframes rotate {
+  from {-webkit-transform:rotate(0deg);}
+  to {-webkit-transform:rotate(360deg);}
+}
+.check_box img {
+  -webkit-animation-name: rotate;
+  -webkit-animation-duration: 1.5s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+}

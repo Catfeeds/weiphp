@@ -24,10 +24,15 @@
 </style>
   <div class="span9 page_message">
   <section id="contents"> <include file="Addons/_nav" />
+  
+        <empty name='award'>
+      <div class="empty_container"><p>您还没有创建奖品,<a target='_blank' href="{:U('addon/Draw/Award/add',array('rt_id'=>I('rt_id'),'mdm'=>I('mdm')))}">您需要先增加奖品</a></p></div>
+    
+    <else />
     <div class="tab-content"> 
       <!-- 表单 -->
       <php> $post_url || $post_url = U('add?model='.$model['id'], $get_param);</php>
-      <form id="form" action="{$post_url}" method="post" class="form-horizontal form-center">
+      <form id="form" action="{$post_url}" method="post" class="form-horizontal form-center" style="width:90%">
         <volist name="fields" id="field">
           <if condition="$field['is_show'] == 4">
             <input type="hidden" class="text" name="{$field.name}" value="{:I($field[name], $field[value])}">
@@ -97,6 +102,10 @@
                   <div id="dynamic_select_{$field.name}"></div>
                   {:hook('dynamic_select', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
                   </case>
+                  <case value="dynamic_checkbox">
+                  <div id="dynamic_checkbox_{$field.name}"></div>
+                  {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                  </case>                     
                   <case value="news">
                   <div id="news_{$field.name}"></div>
                   {:hook('news', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
@@ -145,7 +154,7 @@
                       {:hook('adminArticleEdit', array('name'=>$field['name'],'value'=>$field['value']))} </label>
                   </case>
                   <case value="picture">
-                    <div class="controls uploadrow2" title="点击修改图片" rel="{$field.name}">
+                    <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="{$field.name}">
                       <input type="file" id="upload_picture_{$field.name}">
                       <input type="hidden" name="{$field.name}" id="cover_id_{$field.name}"/>
                       <div class="upload-img-box">
@@ -171,7 +180,7 @@
                             </volist>
                           </notempty>
                         </div>
-                        <div class="controls uploadrow2 mult" title="点击上传图片" rel="{$field.name}">
+                        <div class="controls uploadrow2" data-max="9" title="点击上传图片" rel="{$field.name}">
                           <input type="file" id="upload_picture_{$field.name}">
                         </div>
                     </div>
@@ -283,7 +292,7 @@
       		<!-- 预览 -->
         <include file="Addons/weixinPreview" />  
     </div>
-    
+    </empty>
     
   </section>
   </div>
@@ -383,9 +392,9 @@ $(function(){
 });
   
 //添加地址
-  var addnewShopUrl = "{:addons_url('Draw://Award/add?model=sport_award')}";
+  var addnewShopUrl = "{:addons_url('Draw://Award/add/mdm/60464|60479?model=sport_award')}";
   function chooseAward(){
-  	var $shopHtml = $('<div class="chooseShopDialog"><ul><center><img src="__IMG__/loading.gif"/></center></ul><br/><a href="javascript:;" target="_blank" id="addNewShopBtn" class="border-btn">增加新奖品</a><div class="m15"><a href="javascript:;" class="btn" id="confirmBtn">确定</a></div></div>');
+  	var $shopHtml = $('<div class="chooseShopDialog"><ul><center><img src="__IMG__/loading.gif"/></center></ul><br/><div class="m15"><a href="javascript:;" class="btn" id="confirmBtn">确定</a></div></div>');
   	$.Dialog.open("添加奖品",{width:600,height:500},$shopHtml);
   	$('#addNewShopBtn',$shopHtml).click(function(){
   		window.open(addnewShopUrl);

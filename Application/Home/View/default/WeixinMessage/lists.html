@@ -93,7 +93,7 @@
                 </td>
                 <td valign="top">{$vo.CreateTime|time_format}</td>
                 <td valign="top">
-                <a href="{:U('person',array('openid'=>$vo[openid]))}">会话详情</a>
+                <a href="{:U('person',array('openid'=>$vo[openid],'mdm'=>I('mdm')))}">会话详情</a>
                 </td>
               </tr>
               </volist>

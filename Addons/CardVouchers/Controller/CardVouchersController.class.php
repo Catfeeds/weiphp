@@ -61,4 +61,19 @@ class CardVouchersController extends AddonsController {
 	        $this->display ();
 	    }
 	}
+	function list_data() {
+        //$page = I ( 'p', 1, 'intval' );
+        $map['token']=get_token();
+        $map['aim_table']='lottery_games';
+        $dao=D ( 'Addons://CardVouchers/CardVouchers' );
+        $list_data =$dao->where($map)->field('id')->order ( 'id DESC' )->select (  );
+       
+        foreach ($list_data as &$v){
+            $v=$dao->getInfo($v['id']);
+            $v['background']=get_cover_url($v['background']);
+        }
+        $list_data['list_data']=$list_data;
+//         dump ( $list_data );
+        $this->ajaxReturn( $list_data ,'JSON');
+    }
 }

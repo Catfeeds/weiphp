@@ -4,13 +4,13 @@
   <div class="container"> 
   		  <div class="get_prize">
               <div class="prize_list">
-                     <a class="get_prize_btn" href="javascript:;" onClick="drawPrize('{$joinurl}');">参与抽奖<img src="{:ADDON_PUBLIC_PATH}/arrow_icon.png"/></a> 
+                     <a class="get_prize_btn" href="javascript:;" onClick="checkEvent();">参与抽奖<img src="{:ADDON_PUBLIC_PATH}/arrow_icon.png"/></a> 
              </div>
          </div>
          <div class="prize_content">
         	<div class="tips_div">
             	<eq name='has_prize' value='1'>
-            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;你还有奖品未领取</a>
+            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;查看中奖奖品</a>
             	</eq>
             </div>
             <div class="content_item">
@@ -70,10 +70,12 @@
         
         <p class="copyright">{$system_copy_right}{$tongji_code}</p>
     </div>
-    
     <script>
 	var default_pic = "{:ADDON_PUBLIC_PATH}/ungeted_pic.png";
 	var jplist={$jplist};
+	 var has_subscribe = "{$has_subscribe}";
+	 var title='{$public_info.public_name}';
+	 var qrcode='{$qrcode}';
  	//分享
 	$.WeiPHP.initWxShare({
 		title:'{$shareData.title}',
@@ -81,8 +83,28 @@
 		link:'{$shareData.link}',
 		imgUrl:'{$shareData.imgUrl}?v={:SITE_VERSION}'
 	});
+	function checkEvent(){
+		var status = '{$info.status}';
+		if(status!='进行中'){
+			$.Dialog.confirm('提示','活动'+status);
+		}else{
+// 			var re=checkCount();
+// 			if(!re && re != undefined){
+// 				return false;
+// 			}
+		var games_id='{$info.id}';
+		$.post("{:U('ajaxCheckCount')}",{'games_id':games_id},function(dd){
+			if(dd.status == 0){
+				$.Dialog.confirm('提示',dd.msg);
+				return false;
+			}else{
+				drawPrize('{$joinurl}');
+			}
+		})
+		}
+	}
 	</script>
-    <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initNine.js"></script>
+     <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initNine.js?v=2"></script>
     <include file="Public/mobile_foot"/>
   </body>
 </html>

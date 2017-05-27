@@ -20,7 +20,7 @@ class MenuController extends AdminController {
      * @return none
      */
     public function index(){
-        $pid  = I('get.pid',0);
+        $pid  = I('get.pid',0, 'intval');
         if($pid){
             $data = M('menu')->where("id={$pid}")->field(true)->find();
             $this->assign('data',$data);
@@ -202,7 +202,7 @@ class MenuController extends AdminController {
             }
         }else{
             $this->meta_title = '批量导入后台菜单';
-            $pid = (int)I('get.pid');
+            $pid = I('get.pid', 0, 'intval');
             $this->assign('pid', $pid);
             $data = M('menu')->where("id={$pid}")->field(true)->find();
             $this->assign('data', $data);

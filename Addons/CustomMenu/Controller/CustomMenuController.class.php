@@ -17,11 +17,11 @@ class CustomMenuController extends AddonsController {
 		$map = $this->_search_map ( $model, $fields );
 		
 		$list_data ['list_data'] = $this->get_data ( $map );
-		foreach($list_data['list_data'] as &$v){
-			$v['type'] = get_name_by_status ( $v['type'], 'type', $model ['id'] );
+		foreach ( $list_data ['list_data'] as &$v ) {
+			$v ['type'] = get_name_by_status ( $v ['type'], 'type', $model ['id'] );
 		}
 		$this->assign ( $list_data );
-		//dump($list_data);
+		// dump($list_data);
 		
 		$this->display ();
 	}
@@ -45,8 +45,8 @@ class CustomMenuController extends AddonsController {
 			foreach ( $list as $key => $l ) {
 				if ($l ['pid'] != $p ['id'])
 					continue;
-				
-				//$l ['title'] = '├──' . $l ['title'];
+					
+					// $l ['title'] = '├──' . $l ['title'];
 				$two_arr [] = $l;
 				unset ( $list [$key] );
 			}
@@ -103,10 +103,9 @@ class CustomMenuController extends AddonsController {
 		foreach ( $tree ['button'] as $k => $d ) {
 			$tree2 ['button'] [] = $d;
 		}
-
+		
 		$tree = $this->json_encode_cn ( $tree2 );
 		$access_token = get_access_token ();
-		
 		file_get_contents ( 'https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=' . $access_token );
 		
 		$url = 'https://api.weixin.qq.com/cgi-bin/menu/create?access_token=' . $access_token;
@@ -138,12 +137,34 @@ class CustomMenuController extends AddonsController {
 		$id || $id = I ( 'id' );
 		
 		if (IS_POST) {
+		    if ($_POST['from_type'] == 1) {
+		        $sucaiTypeArr = wp_explode($_POST['sucai_type'], ':');
+		        if ($sucaiTypeArr[0] == 'text') {
+		            $_POST['keyword'] = 'custom_sucai_text_' .$sucaiTypeArr[1];
+		            $_POST['target_id'] = $sucaiTypeArr[1];
+		        } elseif ($sucaiTypeArr[0] == 'img') {
+		            $_POST['keyword'] = 'custom_sucai_image_'.$sucaiTypeArr[1];
+		            $_POST['target_id'] = $sucaiTypeArr[1];
+		        } elseif ($sucaiTypeArr[0] == 'news') {
+		            $_POST['keyword'] = 'custom_sucai_appmsg_' . $sucaiTypeArr[1];
+		            $_POST['target_id'] = $sucaiTypeArr[1];
+		        } elseif ($sucaiTypeArr[0] == 'voice') {
+		            $_POST['keyword'] = 'custom_sucai_voice_' . $sucaiTypeArr[1];
+		            $_POST['target_id'] = $sucaiTypeArr[1];
+		        } elseif ($sucaiTypeArr[0] == 'video') {
+		            $_POST['keyword'] = 'custom_sucai_video_' .$sucaiTypeArr[1];
+		            $_POST['target_id'] = $sucaiTypeArr[1];
+		        }
+		    }
 			$_POST = $this->_deal_post ( $_POST );
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $model ['id'] );
-			if ($Model->create () && $Model->save ()) {
-// 			    $this->_saveKeyword ( $model, $id );
-				$this->success ( '保存' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'] ) );
+			$res = false;
+			$Model->create () && $res = $Model->save ();
+			if ($res !== false) {
+				// $this->_saveKeyword ( $model, $id );
+				//$this->success ( '保存' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'], $this->get_param ) );
+			    $this->success ( '保存菜单成功！', U ( 'lists?model=' . $model ['name'], $this->get_param ) );
 			} else {
 				$this->error ( $Model->getError () );
 			}
@@ -178,27 +199,26 @@ class CustomMenuController extends AddonsController {
 				$this->error ( '非法访问！' );
 			}
 			
-// 			$addons_list = array (
-// 			    'Shop:微商城',
-// 			    'ShopCoupon:代金券',
-// 			    'Coupon:优惠券',
-// 			    'Card:会员卡',
-// 			    'HelpOpen:9+1红包',
-// 			    'Seckill:秒杀活动',
-// 			    'ShopVote:微投票',
-// 			    'SingIn:微签到',
-// 			    'Reserve:微预约',
-// 			    'Draw:游戏活动'
-// 			);
-// 			$addonStr=implode(chr(10), $addons_list);
-// 			foreach ($fields as $k=>&$f){
-// 			    if ($k=='addon'){
-// 			        $f['extra'].=chr(10).$addonStr;
-// 			    }
-// 			}
+			// $addons_list = array (
+			// 'Shop:微商城',
+			// 'ShopCoupon:代金券',
+			// 'Coupon:优惠券',
+			// 'Card:会员卡',
+			// 'HelpOpen:9+1红包',
+			// 'Seckill:秒杀活动',
+			// 'ShopVote:微投票',
+			// 'SingIn:微签到',
+			// 'Reserve:微预约',
+			// 'Draw:游戏活动'
+			// );
+			// $addonStr=implode(chr(10), $addons_list);
+			// foreach ($fields as $k=>&$f){
+			// if ($k=='addon'){
+			// $f['extra'].=chr(10).$addonStr;
+			// }
+			// }
 			$this->assign ( 'fields', $fields );
 			$this->assign ( 'data', $data );
-			
 			$this->assign ( 'normal_tips', '为了方便移植,可以用以下特殊字符代替常用地址参数：<br>
 				[website]: ' . SITE_URL . '<br>[publicid]: ' . get_token_appinfo ( '', 'id' ) . '<br>[token]: ' . get_token () . '<br>
 				用法例如：微网站：[website]/?s=/addon/WeiSite/WeiSite/index/publicid/[publicid]' );
@@ -211,14 +231,33 @@ class CustomMenuController extends AddonsController {
 		$Model = D ( parse_name ( get_table_name ( $model ['id'] ), 1 ) );
 		
 		if (IS_POST) {
-		  
+		    if ($_POST['from_type'] == 1) {
+                $sucaiTypeArr = wp_explode($_POST['sucai_type'], ':');
+                if ($sucaiTypeArr[0] == 'text') {
+                    $_POST['keyword'] = 'custom_sucai_text_' .$sucaiTypeArr[1];
+                    $_POST['target_id'] = $sucaiTypeArr[1];
+                } elseif ($sucaiTypeArr[0] == 'img') {
+                    $_POST['keyword'] = 'custom_sucai_image_'.$sucaiTypeArr[1];
+                    $_POST['target_id'] = $sucaiTypeArr[1];
+                } elseif ($sucaiTypeArr[0] == 'news') {
+                    $_POST['keyword'] = 'custom_sucai_appmsg_' . $sucaiTypeArr[1];
+                    $_POST['target_id'] = $sucaiTypeArr[1];
+                } elseif ($sucaiTypeArr[0] == 'voice') {
+                    $_POST['keyword'] = 'custom_sucai_voice_' . $sucaiTypeArr[1];
+                    $_POST['target_id'] = $sucaiTypeArr[1];
+                } elseif ($sucaiTypeArr[0] == 'video') {
+                    $_POST['keyword'] = 'custom_sucai_video_' .$sucaiTypeArr[1];
+                    $_POST['target_id'] = $sucaiTypeArr[1];
+                }
+            }
 			$_POST = $this->_deal_post ( $_POST );
-// 			dump($_POST);die;
+			// dump($_POST);die;
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $model ['id'] );
 			if ($Model->create () && $id = $Model->add ()) {
-// 			    $this->_saveKeyword ( $model, $id );
-				$this->success ( '添加' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'] ) );
+				// $this->_saveKeyword ( $model, $id );
+				//$this->success ( '添加' . $model ['title'] . '成功！', U ( 'lists?model=' . $model ['name'], $this->get_param ) );
+			    $this->success ( '添加菜单成功！', U ( 'lists?model=' . $model ['name'], $this->get_param ) );
 			} else {
 				$this->error ( $Model->getError () );
 			}
@@ -227,7 +266,7 @@ class CustomMenuController extends AddonsController {
 			$map ['token'] = get_token ();
 			$info = get_token_appinfo ( $map ['token'] );
 			
-			if (empty ( $info ['appid'] ) || empty ( $info ['secret'] )) {
+			if (empty ( $info ['appid'] )) {
 				$this->error ( '请先配置appid和secret', U ( 'home/Public/edit', 'id=' . $info ['id'] ) );
 			}
 			// 获取一级菜单
@@ -245,24 +284,24 @@ class CustomMenuController extends AddonsController {
 					}
 				}
 			}
-// 			$addons_list = array (
-// 				'Shop:微商城',
-// 				'ShopCoupon:代金券',
-// 				'Coupon:优惠券',
-// 				'Card:会员卡',
-// 				'HelpOpen:9+1红包',
-// 				'Seckill:秒杀活动',
-// 				'ShopVote:微投票',
-// 				'SingIn:微签到',
-// 				'Reserve:微预约',
-// 				'Draw:游戏活动' 
-// 		  );
-// 			$addonStr=implode(chr(10), $addons_list);
-// 			foreach ($fields as $k=>&$f){
-// 			    if ($k=='addon'){
-// 			        $f['extra'].=chr(10).$addonStr;
-// 			    }
-// 			}
+			// $addons_list = array (
+			// 'Shop:微商城',
+			// 'ShopCoupon:代金券',
+			// 'Coupon:优惠券',
+			// 'Card:会员卡',
+			// 'HelpOpen:9+1红包',
+			// 'Seckill:秒杀活动',
+			// 'ShopVote:微投票',
+			// 'SingIn:微签到',
+			// 'Reserve:微预约',
+			// 'Draw:游戏活动'
+			// );
+			// $addonStr=implode(chr(10), $addons_list);
+			// foreach ($fields as $k=>&$f){
+			// if ($k=='addon'){
+			// $f['extra'].=chr(10).$addonStr;
+			// }
+			// }
 			$this->assign ( 'fields', $fields );
 			$this->meta_title = '新增' . $model ['title'];
 			
@@ -273,7 +312,6 @@ class CustomMenuController extends AddonsController {
 			$this->display ();
 		}
 	}
-	
 	function _deal_post($data) {
 		// click:点击推事件 |keyword@show,url@hide
 		// scancode_push:扫码推事件 |keyword@show,url@hide
@@ -304,189 +342,278 @@ class CustomMenuController extends AddonsController {
 		$url = 'https://api.weixin.qq.com/cgi-bin/menu/get?access_token=' . get_access_token ();
 		$content = file_get_contents ( $url );
 	}
-	
-// 	function get_target(){
-// 	    $addon=I('addon_name');
-// 	    $public_info=get_token_appinfo();
-// 	    if ($addon == '0' ){
-// 	        $data['id']=0;
-// 	        $data['title']='请选择';
-// 	        $returnData[]=$data;
-// 	    }else {
-// 	        switch ($addon){
-// 	            case 'Shop':
-// 	                // 获取当前登录的用户的商城
-// 	                $map ['token'] = get_token ();
-// 	                $map ['manager_id'] = $this->mid;
-// 	                $currentShopInfo = M ( 'shop' )->where ( $map )->find ();
-// 	                $data['id']=$currentShopInfo['id'];
-// 	                $data['title']=$currentShopInfo['title'];
-// 	                $data['url']=addons_url('Shop://Wap/index',array('shop_id'=>$data['id'],'publicid'=>$public_info['id'],'uid'=>get_mid()));
-//                     $returnData[]=$data;
-// 	                break;
-// 	            case 'ShopCoupon':
-// 	                $data['id']='-1';
-// 	                $data['title']='代金券列表';
-// 	                $data['url']=addons_url('ShopCoupon://Wap/lists',array('publicid'=>$public_info['id']));
-// 	                $returnData[]=$data;
-// 	                break;
-// 	            case 'Coupon':
-// 	                $data['id']='-1';
-// 	                $data['title']='优惠券列表';
-// 	                $data['url']=addons_url('Coupon://Wap/lists',array('publicid'=>$public_info['id']));
-// 	                $returnData[]=$data;
-// 	                break;
-// 	            case 'Card':
-// 	                $data['id']='-1';
-// 	                $data['title']='微会员';
-// 	                $data['url']=addons_url('Card://Wap/index',array('publicid'=>$public_info['id']));
-// 	                $returnData[]=$data;
-// 	                break;
-// 	            case 'SingIn':
-// 	                $data['id']='-1';
-// 	                $data['title']='微签到';
-// 	                $data['url']=addons_url('Card://Wap/signin',array('publicid'=>$public_info['id']));
-// 	                $returnData[]=$data;
-// 	                break;
-// 	            default:
-// 	                $addon_name=$addon;
-// 	                $start_time='start_time';
-// 	                $end_time='end_time';
-// 	                $token='token';
-// 	                $status='';
-// 	                $status_val=1;
-// 	                $param_name='id';
-// 	                if ($addon == 'Vote'){
-// 	                    $param_name='vote_id';
-// 	                    $addon='ShopVote';
-// 	                }else if($addon =='HelpOpen'){
-// 	                    $status='status';
-// 	                }else if($addon == 'Reserve'){
-// 	                    $param_name='reserve_id';
-// 	                    $status='status';
-// 	                }else if($addon == 'Draw'){
-// 	                    $addon='Games';
-// 	                    $status='status';
-// 	                    $param_name='games_id';
-// 	                }
-// 	                $returnData=D('Addons://CustomMenu/CustomMenu')->getListData($addon_name,$addon,$start_time,$end_time,$token,$status,$status_val);
-// //                     dump($returnData);
-//                     $param['publicid']=$public_info['id'];
-//                     foreach ($returnData as &$v){
-//                         $param[$param_name]=$v['id'];
-//                         $v['url']=addons_url("$addon_name://Wap/index",$param);
-//                     }
-// 	                break;
-// 	        }
-// 	    }
-// 	    $this->ajaxReturn($returnData);
-// 	}
-	
-	function get_addons_lists_url(){
-	    $addonName=I('addon_name');
-	    $jumpUrl='';
-	    $public_info=get_token_appinfo();
-	    if($addonName=='Shop'){
-	        $url='';
-	        // 获取当前登录的用户的商城
-	        $map ['token'] = get_token ();
-	        $map ['manager_id'] = $this->mid;
-	        $currentShopInfo = M ( 'shop' )->where ( $map )->find ();
-	        $id=$currentShopInfo['id'];
-	        $jumpUrl=addons_url('Shop://Wap/index',array('shop_id'=>$id,'publicid'=>$public_info['id'],'uid'=>get_mid()));
-	    }else if($addonName=='WishCard'){
-	        $url='';
-	        $jumpUrl=addons_url('WishCard://Wap/card_type',array('publicid'=>$public_info['id']));
-	    }else{
-	        $url=addons_url("$addonName://$addonName/lists");
-	    }
-	    $data['url']=$url;
-	    $data['jump_url']=$jumpUrl;
-	    $this->ajaxReturn($data);
+	function get_target() {
+		$addon = I ( 'addon_name' );
+		$public_info = get_token_appinfo ();
+		if ($addon == '0') {
+			$data ['id'] = 0;
+			$data ['title'] = '请选择';
+			$returnData [] = $data;
+		} else {
+			switch ($addon) {
+//				case 'Shop' :
+//					// 获取当前登录的用户的商城
+//					$map ['token'] = get_token ();
+//					$map ['manager_id'] = $this->mid;
+//					$currentShopInfo = M ( 'shop' )->where ( $map )->find ();
+//					$data ['id'] = $currentShopInfo ['id'];
+//					$data ['title'] = $currentShopInfo ['title'];
+//					$data ['url'] = addons_url ( 'Shop://Wap/index', array (
+//							'shop_id' => $data ['id'],
+//							'publicid' => $public_info ['id'],
+//							'uid' => get_mid () 
+//					) );
+//					$returnData [] = $data;
+//					break;
+//				case 'ShopCoupon' :
+//					$data ['id'] = '-1';
+//					$data ['title'] = '代金券列表';
+//					$data ['url'] = addons_url ( 'ShopCoupon://Wap/lists', array (
+//							'publicid' => $public_info ['id'] 
+//					) );
+//					$returnData [] = $data;
+//					break;
+				case 'Coupon' :
+					$data ['id'] = '-1';
+					$data ['title'] = '优惠券列表';
+					$data ['url'] = addons_url ( 'Coupon://Wap/lists', array (
+							'publicid' => $public_info ['id'] 
+					) );
+					$returnData [] = $data;
+					break;
+				case 'Card' :
+					$data ['id'] = '-1';
+					$data ['title'] = '微会员';
+					$data ['url'] = addons_url ( 'Card://Wap/index', array (
+							'publicid' => $public_info ['id'] 
+					) );
+					$returnData [] = $data;
+					break;
+				case 'SingIn' :
+					$data ['id'] = '-1';
+					$data ['title'] = '微签到';
+					$data ['url'] = addons_url ( 'Card://Wap/signin', array (
+							'publicid' => $public_info ['id'] 
+					) );
+					$returnData [] = $data;
+					break;
+				default :
+					$addon_name = $addon;
+					$start_time = 'start_time';
+					$end_time = 'end_time';
+					$token = 'token';
+					$status = '';
+					$status_val = 1;
+					$param_name = 'id';
+					if ($addon == 'Vote') {
+						$param_name = 'vote_id';
+						$addon = 'ShopVote';
+					} else if ($addon == 'HelpOpen') {
+						$status = 'status';
+					} else if ($addon == 'Reserve') {
+						$param_name = 'reserve_id';
+						$status = 'status';
+					} else if ($addon == 'Draw') {
+						$addon = 'Games';
+						$status = 'status';
+						$param_name = 'games_id';
+					}
+					$returnData = D ( 'Addons://CustomMenu/CustomMenu' )->getListData ( $addon_name, $addon, $start_time, $end_time, $token, $status, $status_val );
+					// dump($returnData);
+					$param ['publicid'] = $public_info ['id'];
+					foreach ( $returnData as &$v ) {
+						$param [$param_name] = $v ['id'];
+						$v ['url'] = addons_url ( "$addon_name://Wap/index", $param );
+					}
+					break;
+			}
+		}
+		$this->ajaxReturn ( $returnData );
 	}
-	function get_addons_name(){
-        $jumpType=I('jump_type',0,'intval');
-        if ($jumpType == 1){
-            $data['key']='Shop';
-            $data['title']='微商城';
-            $datas[]=$data;
-            $data['key']='WishCard';
-            $data['title']='微贺卡';
-            $datas[]=$data;
-        }
-        $data['key']='Vote';
-        $data['title']='投票';
-        $datas[]=$data;
-        $data['key']='Survey';
-        $data['title']='微调研';
-        $datas[]=$data;
-        $data['key']='Scratch';
-        $data['title']='刮刮卡';
-        $datas[]=$data;
-        $data['key']='Xydzp';
-        $data['title']='大转盘';
-        $datas[]=$data;
-        $data['key']='Guess';
-        $data['title']='竞猜';
-        $datas[]=$data;
-        $data['key']='CardVouchers';
-        $data['title']='微信卡券';
-        $datas[]=$data;
-        $data['key']='Coupon';
-        $data['title']='优惠券';
-        $datas[]=$data;
-        $data['key']='RedBag';
-        $data['title']='微信红包';
-        $datas[]=$data;
-        $data['key']='Invite';
-        $data['title']='微邀约';
-        $datas[]=$data;
-        $this->ajaxReturn($datas);
+	function get_addons_lists_url() {
+		$addonName = I ( 'addon_name' );
+		$jumpUrl = '';
+		$public_info = get_token_appinfo ();
+		if ($addonName == 'Vote') {
+			$url = addons_url ( 'Vote://ShopVote/lists' );
+		} else if ($addonName == 'Draw') {
+			$url = addons_url ( 'Draw://Games/lists' );
+		} else if ($addonName == 'Shop') {
+			$url = '';
+			// 获取当前登录的用户的商城
+			$map ['token'] = get_token ();
+			$map ['manager_id'] = $this->mid;
+			$currentShopInfo = M ( 'shop' )->where ( $map )->find ();
+			$id = $currentShopInfo ['id'];
+			$jumpUrl = addons_url ( 'Shop://Wap/index', array (
+					'shop_id' => $id,
+					'publicid' => $public_info ['id'],
+					'uid' => get_mid () 
+			) );
+		} else if ($addonName == 'Card') {
+			$url = '';
+			$jumpUrl = addons_url ( 'Card://Wap/index', array (
+					'publicid' => $public_info ['id'] 
+			) );
+		} else if ($addonName == 'SingIn') {
+			$url = '';
+			$jumpUrl = addons_url ( 'Card://Wap/signin', array (
+					'publicid' => $public_info ['id'] 
+			) );
+		}else if($addonName == 'Weiba'){
+		    $url = '';
+		    $jumpUrl = addons_url ( 'Weiba://Wap/index', array (
+		        'publicid' => $public_info ['id']
+		    ) );
+		} else {
+			$url = addons_url ( "$addonName://$addonName/lists" );
+		}
+		$data ['url'] = $url;
+		$data ['jump_url'] = $jumpUrl;
+		$this->ajaxReturn ( $data );
 	}
-	function get_addon_jump_url(){
-	    $addonName=I('addon_name');
-	    $id=I('id');
-	    $jumpType=I('jump_type');
-	    $public_info=get_token_appinfo();
-	    $url='';
-	    switch ($addonName){
-	        case 'Shop':
-	            // 获取当前登录的用户的商城
-	            // 获取当前登录的用户的商城
-	            $map ['token'] = get_token ();
-	            $map ['manager_id'] = $this->mid;
-	            $currentShopInfo = M ( 'shop' )->where ( $map )->find ();
-	            $id=$currentShopInfo['id'];
-	            $url=addons_url('Shop://Wap/index',array('shop_id'=>$id,'publicid'=>$public_info['id'],'uid'=>get_mid()));
-	            break;
-	        case 'Coupon':
-	            if($jumpType==0){
-	                $url=addons_url('Coupon://Wap/lists',array('publicid'=>$public_info['id'],'id'=>$id));
-	            }else{
-	                $url=addons_url('Coupon://Wap/lists',array('publicid'=>$public_info['id']));
-	            }
-	            break;
-	        case 'WishCard':
-	            $url=addons_url('WishCard://Wap/card_type',array('publicid'=>$public_info['id']));
-	            break;
-	        case 'CardVouchers':
-	            $url=addons_url('CardVouchers://Wap/index',array('publicid'=>$public_info['id'],'id'=>$id));
-	            break;
-	        case 'RedBag':
-	            $url=addons_url('RedBag://Wap/index',array('publicid'=>$public_info['id'],'id'=>$id));
-	            break;
-	        case 'Invite':
-                $url=addons_url('Invite://Wap/index',array('publicid'=>$public_info['id'],'id'=>$id));
-                break;
-	        default:
-	            $param_name='id';
-	            if ( ! $url){
-	                $param['publicid']=$public_info['id'];
-	                $param[$param_name]=$id;
-	                $url=addons_url("$addonName://$addonName/index",$param);
-	            }
-	            break;
-	    }
-	    echo $url;
+	function get_addons_name() {
+		$jumpType = I ( 'jump_type', 0, 'intval' );
+		if ($jumpType == 1) {
+//			$data ['key'] = 'Shop';
+//			$data ['title'] = '微商城';
+//			$datas [] = $data;
+//			$data ['key'] = 'ShopCoupon';
+//			$data ['title'] = '代金券';
+//			$datas [] = $data;
+			$data ['key'] = 'Coupon';
+			$data ['title'] = '优惠券';
+			$datas [] = $data;
+			$data ['key'] = 'Card';
+			$data ['title'] = '会员卡';
+			$datas [] = $data;
+			$data ['key'] = 'HelpOpen';
+			$data ['title'] = '9+1红包';
+			$datas [] = $data;
+//			$data ['key'] = 'Seckill';
+//			$data ['title'] = '秒杀活动';
+//			$datas [] = $data;
+			$data ['key'] = 'Vote';
+			$data ['title'] = '微投票';
+			$datas [] = $data;
+			$data ['key'] = 'SingIn';
+			$data ['title'] = '微签到';
+			$datas [] = $data;
+			$data ['key'] = 'Reserve';
+			$data ['title'] = '微预约';
+			$datas [] = $data;
+			$data ['key'] = 'Draw';
+			$data ['title'] = '游戏活动';
+			$datas [] = $data;
+			$data ['key'] = 'Weiba';
+			$data ['title'] = '微社区';
+			$datas [] = $data;
+		} else {
+//			$data ['key'] = 'ShopCoupon';
+//			$data ['title'] = '代金券';
+//			$datas [] = $data;
+			$data ['key'] = 'Coupon';
+			$data ['title'] = '优惠券';
+			$datas [] = $data;
+			$data ['key'] = 'HelpOpen';
+			$data ['title'] = '9+1红包';
+			$datas [] = $data;
+//			$data ['key'] = 'Seckill';
+//			$data ['title'] = '秒杀活动';
+//			$datas [] = $data;
+			$data ['key'] = 'Vote';
+			$data ['title'] = '微投票';
+			$datas [] = $data;
+			$data ['key'] = 'Reserve';
+			$data ['title'] = '微预约';
+			$datas [] = $data;
+			$data ['key'] = 'Draw';
+			$data ['title'] = '游戏活动';
+			$datas [] = $data;
+			$data ['key'] = 'Weiba';
+			$data ['title'] = '微社区';
+			$datas [] = $data;
+		}
+		$this->ajaxReturn ( $datas );
+	}
+	function get_addon_jump_url() {
+		$addonName = I ( 'addon_name' );
+		$id = I ( 'id' );
+		$jumpType = I ( 'jump_type' );
+		$public_info = get_token_appinfo ();
+		$url = '';
+		switch ($addonName) {
+			case 'Shop' :
+				// 获取当前登录的用户的商城
+				// 获取当前登录的用户的商城
+				$map ['token'] = get_token ();
+				$map ['manager_id'] = $this->mid;
+				$currentShopInfo = M ( 'shop' )->where ( $map )->find ();
+				$id = $currentShopInfo ['id'];
+				
+				$url = addons_url ( 'Shop://Wap/index', array (
+						'shop_id' => $id,
+						'publicid' => $public_info ['id'],
+						'uid' => get_mid () 
+				) );
+				break;
+			case 'ShopCoupon' :
+			    if (is_install('ShopCoupon')){
+			        if ($jumpType == 0) {
+			            $url = addons_url ( 'ShopCoupon://Wap/index', array (
+			                'publicid' => $public_info ['id'],
+			                'id' => $id
+			            ) );
+			        } else {
+			            $url = addons_url ( 'ShopCoupon://Wap/lists', array (
+			                'publicid' => $public_info ['id']
+			            ) );
+			        }
+			    }
+				break;
+			case 'Coupon' :
+				if ($jumpType == 0) {
+					$url = addons_url ( 'Coupon://Wap/lists', array (
+							'publicid' => $public_info ['id'],
+							'id' => $id 
+					) );
+				} else {
+					$url = addons_url ( 'Coupon://Wap/lists', array (
+							'publicid' => $public_info ['id'] 
+					) );
+				}
+				
+				break;
+			case 'Card' :
+				$url = addons_url ( 'Card://Wap/index', array (
+						'publicid' => $public_info ['id'] 
+				) );
+				break;
+			case 'SingIn' :
+				$url = addons_url ( 'Card://Wap/signin', array (
+						'publicid' => $public_info ['id'] 
+				) );
+				break;
+			
+			default :
+				$addon_name = $addonName;
+				$param_name = 'id';
+				if ($addonName == 'Vote') {
+					$param_name = 'vote_id';
+				} else if ($addonName == 'Reserve') {
+					$param_name = 'reserve_id';
+				} else if ($addonName == 'Draw') {
+					$param_name = 'games_id';
+				}
+				// $returnData=D('Addons://CustomMenu/CustomMenu')->getListData($addon_name,$addonName,$start_time,$end_time,$token,$status,$status_val);
+				// dump($returnData);
+				$param ['publicid'] = $public_info ['id'];
+				// foreach ($returnData as &$v){
+				$param [$param_name] = $id;
+				$url = addons_url ( "$addonName://Wap/index", $param );
+				// }
+				break;
+		}
+		echo $url;
 	}
 }

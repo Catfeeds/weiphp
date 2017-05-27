@@ -8,7 +8,7 @@ body{ min-height:100%; background:url(content.png) repeat;}
 .bottom{ background:url(bottom.png) no-repeat left bottom; height:30px; margin:0 10px 20px; background-size:100% 100%;}
 .lead_box{ background:url(mid.png) repeat-y; background-size:100% auto; margin:0 10px; padding:10px 25px 10px 25px;}
 .lead_box h6{color:#333;text-align:center;font-size:18px; font-weight:bold; line-height:22px; border-bottom:1px dashed #888; text-shadow:1px 2px #ddd; text-align:left; padding-bottom:10px;}
-.lead_content{border-top:1px dashed #fff; line-height:22px; color:#444; font-size:16px; padding:15px 0 0; text-align:left;}
+.lead_content{border-top:1px dashed #fff; line-height:22px; color:#444; font-size:16px; padding:15px 0 0; text-align:left;word-break: break-all;word-break: break-word;}
 .lead_btn{ border-radius:10px; background-color:#352c3a; -moz-box-shadow:0 1px 2px #6c6570;-webkit-box-shadow:0 1px 2px #6c6570;box-shadow:0 1px 2px #6c6570; padding:10px; color:#fff; width:200px; margin:20px auto; display:block; text-align:center; font-size:20px; position:relative; border:none}
 .lead_btn:active{ background-color:#333333}
 .lead_btn:active span.next_arr em{ background-color:#333333}

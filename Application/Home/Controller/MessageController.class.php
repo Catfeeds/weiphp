@@ -15,22 +15,22 @@ namespace Home\Controller;
 class MessageController extends HomeController {
 	function _initialize() {
 		parent::_initialize ();
-		
+		$param['mdm'] =I('mdm');
 		$act = strtolower ( ACTION_NAME );
 		
 		$res ['title'] = '高级群发';
-		$res ['url'] = U ( 'add' );
+		$res ['url'] = U ( 'add',$param );
 		$res ['class'] = $act == 'add' ? 'current' : '';
 		$nav [] = $res;
 		
 		$res ['title'] = '客服群发';
-		$res ['url'] = U ( 'custom_sendall' );
+		$res ['url'] = U ( 'custom_sendall',$param );
 		$res ['class'] = $act == 'custom_sendall' ? 'current' : '';
 		$nav [] = $res;
 		
 		$res ['title'] = '消息管理';
-		$res ['url'] = U ( 'message_lists' );
-		$res ['class'] = $act == 'message_lists' ? 'current' : '';
+		$res ['url'] = U ( 'sendall_lists',$param );
+		$res ['class'] = $act == 'sendall_lists' ? 'current' : '';
 		$nav [] = $res;
 		$this->assign ( 'nav', $nav );
 	}
@@ -62,7 +62,7 @@ class MessageController extends HomeController {
 				// 清空缓存
 				method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'edit' );
 				
-				$this->success ( '添加' . $model ['title'] . '成功！', U ( 'add' ) );
+				$this->success ( '添加' . $model ['title'] . '成功！', U ( 'add',$this->get_param ) );
 			} else {
 				$this->error ( $Model->getError () );
 			}
@@ -71,9 +71,10 @@ class MessageController extends HomeController {
 			
 			$this->assign ( 'fields', $fields );
 			$this->meta_title = '新增' . $model ['title'];
-			
 			! C ( 'SEND_GROUP_MSG' ) && $this->assign ( 'normal_tips', '温馨提示：目前微信仅开放认证公众号的群发消息权限，未认证公众号无法使用此功能' );
-			
+			$this->assign ( 'normal_tips', '注意：1、对于认证订阅号，群发接口每天可成功调用1次，此次群发可选择发送给全部用户或某个分组；<br/>
+2、对于认证服务号虽然使用高级群发接口的每日调用限制为100次，但是用户每月只能接收4条，无论在公众平台网站上，还是使用接口群发，用户每月只能接收4条群发消息，多于4条的群发将对该用户发送失败；' );
+				
 			$map ['token'] = get_token ();
 			$map ['manager_id'] = $this->mid;
 			$map ['is_del'] = 0;
@@ -96,7 +97,6 @@ class MessageController extends HomeController {
 		if (empty ( $openids )) {
 			$this->error ( '预览OpenID不能为空' );
 		}
-		
 		$info = $this->_sucai_media_info ();
 		if ($info ['msgtype'] == 'text') {
 			$param ['text'] ['content'] = $info ['media_id'];
@@ -106,16 +106,26 @@ class MessageController extends HomeController {
 			$param ['voice'] ['media_id'] = $info ['media_id'];
 		} else if ($info ['msgtype'] == 'mpvideo') {
 			$param ['mpvideo'] ['media_id'] = $info ['media_id'];
+		}else if ($info ['msgtype'] == 'image'){
+		    $param ['image'] ['media_id'] = $info ['media_id'];
 		}
 		$param ['msgtype'] = $info ['msgtype'];
 		
 		$url = 'https://api.weixin.qq.com/cgi-bin/message/mass/preview?access_token=' . get_access_token ();
+		$count=0;
 		foreach ( $openids as $openid ) {
 			$param ['touser'] = $openid;
-			
 			$res = post_data ( $url, $param );
+			if ($res['errcode']>0){
+			    $count++;
+			}
 		}
-		$this->success ( '发送成功~' );
+		if ($count==0){
+		    $this->success ( '发送成功~' );
+		}else{
+		    $this->error('有 '.$count.'条信息发送失败');
+		}
+		
 	}
 	// 按用户组发送
 	function _send_by_group($group_id) {
@@ -149,6 +159,9 @@ class MessageController extends HomeController {
 		} else if ($info ['msgtype'] == 'mpvideo') {
 			// $param ['mpnews'] ['media_id'] = $info ['media_id'];
 			$paramStr .= '"mpvideo":{"media_id":"' . $info ['media_id'] . '"},"msgtype":"mpvideo"}';
+		} else if ($info ['msgtype'] == 'image') {
+			// $param ['mpnews'] ['media_id'] = $info ['media_id'];
+			$paramStr .= '"image":{"media_id":"' . $info ['media_id'] . '"},"msgtype":"image"}';
 		}
 		// $param ['msgtype'] = $info ['msgtype'];
 		// $param ['msgtype'] = 'news';
@@ -187,7 +200,10 @@ class MessageController extends HomeController {
 			$param ['msgtype'] = $info ['msgtype'];
 		} else if ($info ['msgtype'] == 'mpvideo') {
 			$param ['video'] ['media_id'] = $info ['media_id'];
-			$param ['msgtype'] = $info ['video'];
+			$param ['msgtype'] = $info ['msgtype'];
+		}else if ($info ['msgtype'] == 'image') {
+			$param ['image'] ['media_id'] = $info ['media_id'];
+			$param ['msgtype'] = $info ['msgtype'];
 		}
 		
 		$param = JSON ( $param );
@@ -212,6 +228,26 @@ class MessageController extends HomeController {
 			$res ['media_id'] = $content;
 			$res ['msgtype'] = 'text';
 			$_POST ['content'] = $content;
+		} else if ($type == 'image') {
+		    // 图片
+		    $image_material = $_POST ['image_material'];
+		    $image_cover_id = $_POST ['image'];
+		    if (empty($image_material) && empty($image_cover_id)) {
+		    	# code...
+		    	$this->error ( '发送图片不能为空' );
+		    }
+		    if ($image_cover_id) {
+		       $_POST ['media_id'] =  $res ['media_id'] = D ( 'Common/Custom' )->get_image_media_id ( $image_cover_id );
+		    } else if ($image_material) {
+		        $imageMaterial = M ( 'material_image' )->find ( $image_material );
+// 		        $data ['image_id'] = $imageMaterial ['cover_id'];
+		        if ($imageMaterial ['media_id']) {
+		            $_POST ['media_id'] =  $res ['media_id'] = $imageMaterial ['media_id'];
+		        } else {
+		            $_POST ['media_id'] =  $res ['media_id'] = D ( 'Common/Custom' )->get_image_media_id ( $imageMaterial ['cover_id'] );
+		        }
+		    }
+		    $res ['msgtype'] = 'image';
 		} else if ($type == 'appmsg') {
 			if (empty ( $appmsg_id ))
 				$this->error ( '图文素材不能为空' );
@@ -251,7 +287,9 @@ class MessageController extends HomeController {
 		return $res;
 	}
 	function custom_sendall() {
-		$this->assign ( 'noraml_tips', '当用户发消息给认证公众号时，管理员可以在48小时内给用户回复信息' );
+	    $this->assign ( 'normal_tips', '温馨提示<br/>客服群发接口是指：管理者可以给 在48小时内主动发消息给公众号的用户群发消息 ，发送次数没有限制；如果没有成功接收到消息的用户，则在他主动发消息给公众号时，再重新发给该用户。' );
+	    	
+// 		$this->assign ( 'noraml_tips', '当用户发消息给认证公众号时，管理员可以在48小时内给用户回复信息' );
 		if (IS_POST) {
 			$data ['ToUserName'] = get_token ();
 			$data ['cTime'] = time ();
@@ -274,6 +312,9 @@ class MessageController extends HomeController {
 			$count = 0;
 			foreach ( $openidArr as $k => $v ) {
 				if ($data ['msgType'] == 'text') {
+					if (! $data ['content']) {
+						$this->error('文本内容不能为空');
+					}
 					// 文本
 					$result = D ( 'Common/Custom' )->replyText ( $k, $data ['content'] );
 				} else if ($data ['msgType'] == 'news') {
@@ -288,6 +329,9 @@ class MessageController extends HomeController {
 					// 图片
 					$image_material = $_POST ['image_material'];
 					$image_cover_id = $_POST ['image'];
+					if (empty($image_material) && empty($image_cover_id)) {
+						$this->error('发送图片不能为空');
+					}
 					if ($image_cover_id) {
 						$data ['image_id'] = $image_cover_id;
 						$data ['media_id'] = D ( 'Common/Custom' )->get_image_media_id ( $image_cover_id );
@@ -298,7 +342,7 @@ class MessageController extends HomeController {
 						if ($imageMaterial ['media_id']) {
 							$data ['media_id'] = $imageMaterial ['media_id'];
 						} else {
-							$data ['media_id'] = D ( 'Common/Custom' )->get_image_media_id ( $image_material );
+							$data ['media_id'] = D ( 'Common/Custom' )->get_image_media_id (  $imageMaterial ['cover_id'] );
 						}
 						$result = D ( 'Common/Custom' )->replyImage ( $k, $data ['media_id'], '' );
 					} else {
@@ -453,108 +497,19 @@ class MessageController extends HomeController {
 	/**
 	 * ***********消息管理*******************
 	 */
-	// 用户发送的消息
-	function message_lists() {
-		$act = strtolower ( ACTION_NAME );
-		$res ['title'] = '用户发送消息';
-		$res ['url'] = U ( 'message_lists' );
-		$res ['class'] = $act == 'message_lists' ? 'current' : '';
-		$nav [] = $res;
-		
-		$res ['title'] = '高级群发消息';
-		$res ['url'] = U ( 'sendall_lists' );
-		$res ['class'] = $act == 'sendall_lists' ? 'current' : '';
-		$nav [] = $res;
-		
-		$res ['title'] = '客服接口群发消息';
-		$res ['url'] = U ( 'custom_sendall_lists' );
-		$res ['class'] = $act == 'custom_sendall_lists' ? 'current' : '';
-		$nav [] = $res;
-		$this->assign ( 'nav', $nav );
-		
-		$this->assign ( 'nav', $nav );
-		$day = I ( 'send_time', 1 );
-		$now_day = strtotime ( time_format ( time (), 'Y-m-d' ) );
-		if ($day == 1) {
-			// 最近五天
-			$time = $now_day - 4 * 24 * 60 * 60;
-			$map ['CreateTime'] = array (
-					'egt',
-					$time 
-			);
-		} else if ($day == 2) {
-			// 今天
-			$map ['CreateTime'] = array (
-					'egt',
-					$now_day 
-			);
-		} else if ($day == 3) {
-			// 昨天
-			$zhuo_day = $now_day - 1 * 24 * 60 * 60;
-			$map ['CreateTime'] = array (
-					'between',
-					$zhuo_day,
-					$now_day 
-			);
-		} else if ($day == 4) {
-			// 前天
-			$qian_day = $now_day - 2 * 24 * 60 * 60;
-			$map ['CreateTime'] = array (
-					'between',
-					$qian_day,
-					$now_day 
-			);
-		} else if ($day == 5) {
-			// 更早
-			$qian_day = $now_day - 4 * 24 * 60 * 60;
-			$map ['CreateTime'] = array (
-					'elt',
-					$qian_day 
-			);
-		}
-		
-		// $map ['FromUserName'] = I ( 'openid' );
-		$map ['ToUserName'] = get_token ();
-		$map ['type'] = 0;
-		$list = M ( 'weixin_message' )->where ( $map )->order ( 'id desc' )->selectPage ();
-		
-		$dao = D ( 'Common/User' );
-		foreach ( $list ['list_data'] as &$v ) {
-			if ($v ['type'] == 1) {
-				$user = $dao->getUserInfo ( $v ['MsgId'] );
-			} else {
-				$user = $dao->getUserInfoByOpenid ( $v ['FromUserName'] );
-				$toUser = $user;
-			}
-			if ($user) {
-				$v ['user'] = $user;
-			}
-			
-			// $v ['Content'] = $this->_deal_content ( $v );
-		}
-		// dump($list);
-		$url = U ( 'message_lists' );
-		$this->assign ( 'searchUrl', $url );
-		$this->assign ( $list );
-		$this->assign ( 'noraml_tips', '当用户发消息给认证公众号时，管理员可以在48小时内给用户回复信息' );
-		
-		$this->display ();
-	}
+	
 	// 客服群发消息管理
 	function custom_sendall_lists() {
+		$param['mdm'] =I('mdm');
 		$act = strtolower ( ACTION_NAME );
-		$res ['title'] = '用户发送消息';
-		$res ['url'] = U ( 'message_lists' );
-		$res ['class'] = $act == 'message_lists' ? 'current' : '';
-		$nav [] = $res;
 		
 		$res ['title'] = '高级群发消息';
-		$res ['url'] = U ( 'sendall_lists' );
+		$res ['url'] = U ( 'sendall_lists',$param );
 		$res ['class'] = $act == 'sendall_lists' ? 'current' : '';
 		$nav [] = $res;
 		
 		$res ['title'] = '客服接口群发消息';
-		$res ['url'] = U ( 'custom_sendall_lists' );
+		$res ['url'] = U ( 'custom_sendall_lists',$param );
 		$res ['class'] = $act == 'custom_sendall_lists' ? 'current' : '';
 		$nav [] = $res;
 		$this->assign ( 'nav', $nav );
@@ -603,10 +558,20 @@ class MessageController extends HomeController {
 		// $map ['FromUserName'] = I ( 'openid' );
 		$map ['ToUserName'] = get_token ();
 		$map ['manager_id'] = $this->mid;
-		$list = M ( 'custom_sendall' )->where ( $map )->order ( 'id desc' )->group ( 'diff' )->selectPage ();
+// 		$list = M ( 'custom_sendall' )->where ( $map )->order ( 'id desc' )->group ( 'diff' )->selectPage ();
 		// dump($shibai);
 		// dump($chenggong);
-		
+		$page = I ( 'p', 1, 'intval' );
+		$row = 20;
+		$ids= M ( 'custom_sendall' )->where ( $map )->field('MAX(id) as mid')->group('diff')->page($page,$row)->select();
+		foreach ($ids as $vv){
+		    $arr[]=$vv['mid'];
+		}
+		if (!empty($arr)){
+		    $map['id']=array('in',$arr);
+		    // 		    $list ['list_data'] = M('weixin_message')->where($map)->order('is_read ASC,id DESC')->page($page,$row)->select();
+		    $list = M ( 'custom_sendall' )->where ( $map )->order ( 'id desc' )->selectPage ();
+		}
 		$dao = D ( 'Common/User' );
 		foreach ( $list ['list_data'] as &$v ) {
 			$countData = M ( 'custom_sendall' )->where ( array (
@@ -659,7 +624,7 @@ class MessageController extends HomeController {
 				$v ['image_url'] = get_cover_url ( $v ['image_id'] );
 			}
 		}
-		$url = U ( 'custom_sendall_lists' );
+		$url = U ( 'custom_sendall_lists',$this->get_param );
 		$this->assign ( 'searchUrl', $url );
 		$this->assign ( $list );
 		$this->assign ( 'noraml_tips', '当用户发消息给认证公众号时，管理员可以在48小时内给用户回复信息' );
@@ -668,19 +633,16 @@ class MessageController extends HomeController {
 	}
 	// 群发消息管理
 	function sendall_lists() {
+		$param['mdm'] =I('mdm');
 		$act = strtolower ( ACTION_NAME );
-		$res ['title'] = '用户发送消息';
-		$res ['url'] = U ( 'message_lists' );
-		$res ['class'] = $act == 'message_lists' ? 'current' : '';
-		$nav [] = $res;
 		
 		$res ['title'] = '高级群发消息';
-		$res ['url'] = U ( 'sendall_lists' );
+		$res ['url'] = U ( 'sendall_lists',$param );
 		$res ['class'] = $act == 'sendall_lists' ? 'current' : '';
 		$nav [] = $res;
 		
 		$res ['title'] = '客服接口群发消息';
-		$res ['url'] = U ( 'custom_sendall_lists' );
+		$res ['url'] = U ( 'custom_sendall_lists',$param );
 		$res ['class'] = $act == 'custom_sendall_lists' ? 'current' : '';
 		$nav [] = $res;
 		$this->assign ( 'nav', $nav );
@@ -773,11 +735,156 @@ class MessageController extends HomeController {
 				$v ['image_url'] = get_cover_url ( $v ['image_id'] );
 			}
 		}
-		$url = U ( 'sendall_lists' );
+		$url = U ( 'sendall_lists',$this->get_param );
 		$this->assign ( 'searchUrl', $url );
 		$this->assign ( $list );
 		$this->assign ( 'noraml_tips', '当用户发消息给认证公众号时，管理员可以在48小时内给用户回复信息' );
 		
 		$this->display ();
+	}
+	// 设置消息状态
+	function set_status() {
+		$map ['id'] = I ( 'id' );
+		$field = I ( 'field' );
+		$val = I ( 'val' );
+	
+		$res = M ( 'weixin_message' )->where ( $map )->setField ( $field, $val );
+		echo $res;
+	}
+	//设置为文本素材
+	function set_meterial(){
+		$id=I('id');
+		$type=I('type');
+		$set_sucai=I('set_sucai');
+		$message=M('weixin_message')->find($id);
+		$res=0;
+		if ($type=='text' && $message['Content']){
+			$map['token']=get_token();
+			$map['uid']=$this->mid;
+			$map['aim_id']=$id;
+			$map['aim_table']='weixin_message';
+			$material=M('material_text')->where($map)->field('id,is_use')->find();
+			if (!empty($material)){
+				$saveUse['is_use']=$set_sucai;
+				$res1 = M('material_text')->where($map)->save($saveUse);
+			}else{
+				$data['token']=get_token();
+				$data['uid']=$this->mid;
+				$data['aim_id']=$id;
+				$data['aim_table']='weixin_message';
+				$data['content']=$message['Content'];
+				$data['is_use']=$set_sucai;
+				$res1=M('material_text')->add($data);
+			}
+		}else if($type == 'image' ){
+			$content=json_decode($message['Content'],true);
+			$imagemap['media_id']=$content['image']['media_id'];
+			if (!$imagemap['media_id']){
+				$imagemap['media_id']=$message['MediaId'];
+			}
+			$imagemap['token']=get_token();
+			$image=M('material_image')->where($imagemap)->find();
+			if ($image){
+				//保存
+				$save['is_use']=$set_sucai;
+				$save['aim_id']=$id;
+				$save['aim_table']='weixin_message';
+				if (!$image['cover_id']){
+					$save['cover_id']=down_media($imagemap['media_id']);
+					if (!$save['cover_id']){
+						$save['cover_id']=do_down_image($imagemap['media_id']);
+					}
+					 
+					if (!$image['cover_url']){
+						$save['cover_url']=get_cover_url($save['cover_id']);
+					}
+				}
+				$res1=M('material_image')->where($imagemap)->save($save);
+				// 	            $dd['url']=$image['cover_url'];
+			}else{
+				$save['is_use']=$set_sucai;
+				$save['aim_id']=$id;
+				$save['aim_table']='weixin_message';
+				$save['media_id']=$imagemap['media_id'];
+				$save['cTime']=time();
+				$save['manager_id']=$this->mid;
+				$save['token']=get_token();
+				$save['cover_id']=down_media($imagemap['media_id']);
+				if (!$save['cover_id']){
+					$save['cover_id']=do_down_image($imagemap['media_id']);
+				}
+				if (!$image['cover_url']){
+					$save['cover_url']=get_cover_url($save['cover_id']);
+				}
+				$res1=M('material_image')->add($save);
+			}
+			 
+			 
+		}else if($type == 'voice'){
+			$content=json_decode($message['Content'],true);
+			$voicemap['media_id']=$content['voice']['media_id'];
+			if (!$voicemap['media_id']){
+				$voicemap['media_id']=$message['MediaId'];
+			}
+			$voicemap['token']=get_token();
+			$voicemap['manager_id']=$this->mid;
+			$voicemap['type']=1;
+			$voice=M('material_file')->where($voicemap)->find();
+			if ($voice){
+				//保存
+				$save['is_use']=$set_sucai;
+				$save['aim_id']=$id;
+				$save['aim_table']='weixin_message';
+				$res1=M('material_file')->where($voicemap)->save($save);
+				// 	            $dd['url']=$image['cover_url'];
+			}else{
+				$save['is_use']=$set_sucai;
+				$save['aim_id']=$id;
+				$save['aim_table']='weixin_message';
+				$save['media_id']=$voicemap['media_id'];
+				$save['cTime']=time();
+				$save['manager_id']=$this->mid;
+				$save['type']=1;
+				$save['token']=get_token();
+				$save['file_id']=down_file_media($voicemap['media_id'],'voice');
+				$res1=M('material_file')->add($save);
+			}
+		}else if($type == 'video'){
+			$content=json_decode($message['Content'],true);
+			$videomap['media_id']=$content['video']['media_id'];
+			if (!$videomap['media_id']){
+				$videomap['media_id']=$message['MediaId'];
+			}
+			$videomap['token']=get_token();
+			$videomap['manager_id']=$this->mid;
+			$videomap['type']=2;
+			$video=M('material_file')->where($videomap)->find();
+			if ($video){
+				//保存
+				$save['is_use']=$set_sucai;
+				$save['aim_id']=$id;
+				$save['aim_table']='weixin_message';
+				$res1=M('material_file')->where($videomap)->save($save);
+				// 	            $dd['url']=$image['cover_url'];
+			}else{
+				$save['is_use']=$set_sucai;
+				$save['aim_id']=$id;
+				$save['aim_table']='weixin_message';
+				$save['media_id']=$videomap['media_id'];
+				$save['cTime']=time();
+				$save['manager_id']=$this->mid;
+				$save['type']=2;
+				$save['token']=get_token();
+				$save['file_id']=down_file_media($videomap['media_id'],'video');
+				$res1=M('material_file')->add($save);
+			}
+		}
+		if ($res1){
+			// 	        $isMaterial=$message['is_material'];
+			$save['is_material']=$set_sucai;
+			$res=M('weixin_message')->where(array('id'=>$id))->save($save);
+		}
+	
+		echo $res;
 	}
 }

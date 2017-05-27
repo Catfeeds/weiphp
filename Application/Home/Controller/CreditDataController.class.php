@@ -44,12 +44,39 @@ class CreditDataController extends HomeController {
 		    $uidArr=wp_explode($_GET['uid']);
 			$map ['uid'] =array('in',$uidArr);
 		} elseif (! empty ( $_REQUEST ['nickname'] )) {
+		    $uids =D ( 'Common/User' )->searchUser ( $_REQUEST ['nickname'] );
+		    
+		    if($uids){
+		       
 			$map ['uid'] = array (
 					'in',
-					D ( 'Common/User' )->searchUser ( $_REQUEST ['nickname'] ) 
+					$uids
 			);
+		}else{
+		   
+		    $map1['openid']=array(
+		        'like',
+		        '%'.$_REQUEST ['nickname'].'%'
+		        
+		    );
+
+		    $map1['token'] = get_token ();
+		   
+		   // dump($map1);
+		    $uids1 =M ( 'public_follow' )->where ( $map1 )->getField ( 'uid',true );
+		    $where['uid'] = array (
+		        'in',
+		        $uids1
+		    );
+		  // $where['nickname']= null;
+		  $uids2 =M('user')->where($where)->getField('uid',true);
+		//dump($uids2);
+		   $map['uid'] = array (
+		       'in',
+		       $uids2
+		   );
 		}
-		
+		}
 		if (! isset ( $map ['uid'] )) {
 			$map ['uid'] = array (
 					'exp',
@@ -77,15 +104,21 @@ class CreditDataController extends HomeController {
 					intval ( $_REQUEST ['end_time'] ) 
 			);
 		}
-		
+		//dump($map);
 		session ( 'common_condition', $map );
 		
 		$list_data = $this->_get_model_list ( $model );
+		
 		foreach ( $list_data ['list_data'] as &$vo ) {
+		    if(get_nickname ( $vo ['uid'] )){
 			$vo ['uid'] = get_nickname ( $vo ['uid'] );
+		    }else{
+		    $vo ['uid'] = getOpenidByUid($vo ['uid']);
+		    }
 		}
+		
 		$this->assign ( $list_data );
-		// dump($list_data);
+		
 		
 		$this->display ();
 	}

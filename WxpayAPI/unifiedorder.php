@@ -25,45 +25,7 @@ if(!empty($_GET)){
 	$jsApiParameters=$_GET['jsApiParameters'];
 	$paymentId=$_GET['paymentId'];
 }
-//echo $_GET['code'].'<br/>';
-// // //获取用户openid
-// $tools = new JsApiPay();
-// // $openId = $tools->GetOpenid();
-// // echo '<br/>openid:'.$openId.'<br/>';
-// $input = new WxPayUnifiedOrder();
-// $input->SetBody($body);
-// $input->SetOut_trade_no($out_trade_no);
-// $input->SetTotal_fee($totalfee*100);
-// $input->SetNotify_url("http://project.weiphp.cn/weishi/WxpayAPI/notify.php");
-// $input->SetTrade_type("JSAPI");
-// $input->SetOpenid($openId);
-// $order = WxPayApi::unifiedOrder($input);
-// //echo '<font color="#f00"><b>统一下单支付单信息</b></font><br/>';
-// //printf_info($order);
-// $jsApiParameters = $tools->GetJsApiParameters($order);
-//echo $jsApiParameters;
 
-// // //统一下单
-
-// $tools = new JsApiPay();
-// $openId = $tools->GetOpenid();
-// echo '<br/>openid:'.$openId.'<br/>';
-// $input = new WxPayUnifiedOrder();
-// $input->SetBody("test");
-// $input->SetAttach("test");
-// $input->SetOut_trade_no(WxPayConfig::MCHID.date("YmdHis"));
-// $input->SetTotal_fee("1");
-// $input->SetTime_start(date("YmdHis"));
-// $input->SetTime_expire(date("YmdHis", time() + 600));
-// $input->SetGoods_tag("test");
-// $input->SetNotify_url("http://project.weiphp.cn/weishi/WxpayAPI/notify.php");
-// $input->SetTrade_type("JSAPI");
-// $input->SetOpenid($openId);
-// $order = WxPayApi::unifiedOrder($input);
-// echo '<font color="#f00"><b>统一下单支付单信息</b></font><br/>';
-// printf_info($order);
-// $jsApiParameters = $tools->GetJsApiParameters($order);
-// echo $jsApiParameters;
 ?>
 
 <html>
@@ -94,13 +56,13 @@ if(!empty($_GET)){
 					WeixinJSBridge.log(res.err_msg);
 // 					alert(res.err_code+res.err_desc+res.err_msg);
 					if(res.err_msg=='get_brand_wcpay_request:ok'){
-	 					document.getElementById('payDom').style.display='none';
-	 					document.getElementById('successDom').style.display='block';
+	 					//document.getElementById('payDom').style.display='none';
+	 					//document.getElementById('successDom').style.display='block';
 // 	 					setTimeout(function(){
 	 						window.location.href = '<?php echo $returnUrl.'&ispay=1&paymentId='.$paymentId; ?>';	
 // 	 					},2000);
 	 				}else{
-	 					document.getElementById('payDom').style.display='none';
+	 					//document.getElementById('payDom').style.display='none';
 	 					document.getElementById('failDom').style.display='block';
 	 					document.getElementById('failRt').innerHTML='错误提示：'+res.err_msg;
 	 				}
@@ -121,10 +83,11 @@ if(!empty($_GET)){
 			    jsApiCall();
 			}
 		}
+		callpay(); //直接支付，不需要用户再次点击
 	</script>
 </head>
 <body>
-	<div>
+<!--	<div>
     	<div class="payHead">
         	<span class="span1">支付信息</span><br/>
             <span class="price">金额:<?php echo $totalfee; ?>元</span>
@@ -132,7 +95,7 @@ if(!empty($_GET)){
         <div class="footReturn" id="payDom">
         	<a href="javascript:void(0);" class="button" onClick="callpay()" >点击进行微信支付</a>
         </div>
-    </div>
+    </div>-->
     <div id="failDom" style="display:none">
     	<div class="failMsg">
             支付结果:支付失败

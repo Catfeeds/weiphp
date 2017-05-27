@@ -305,4 +305,21 @@ class RealPrizeController extends AddonsController {
 	        $this->display (SITE_PATH . '/Application/Home/View/default/Addons/edit.html');
 	    }
 	}
+	function list_data() {
+        //$page = I ( 'p', 1, 'intval' );
+        $map['token']=get_token();
+        $map['aim_table']='lottery_games';
+        $dao=D ( 'Addons://RealPrize/RealPrize' );
+        $list_data =$dao->where($map)->field('id')->order ( 'id DESC' )->select ( );
+       
+        foreach ($list_data as &$v){
+            $v=$dao->getInfo($v['id']);
+            $v['background']=get_cover_url($v['prize_image']);
+            $v['title']=$v['prize_name'];
+            $v['num']=$v['prize_count'];
+        }
+        $list_data['list_data']=$list_data;
+         //dump ( $list_data );
+        $this->ajaxReturn( $list_data ,'JSON');
+    }
 }

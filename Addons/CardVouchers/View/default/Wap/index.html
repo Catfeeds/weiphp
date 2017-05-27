@@ -24,9 +24,11 @@
   <!--
   <div class="v_nav"> <a class="item" href="{:addons_url('CardVouchers://Wap/cardVouchers_detail',array('id'=>$info[id]))}">卡券详情<em>&nbsp;</em></a> </div>
   -->
+  <notempty name="info.content">
   <div id="content" style="background:#fff; color:#888; border-radius:5px; padding:10px; border:1px solid #ddd; margin:15px;">
   		{$info.content}
   </div>
+  </notempty>
   <p class="copyright">{$system_copy_right}</p>
 </div>
 <include file="Public/mobile_foot"/> 
@@ -37,20 +39,49 @@ $.WeiPHP.initWxShare({
 	desc:"{$info.shop_name}",
 	link:window.location.href
 })
-var readyFunc = function onBridgeReady() {
-	document.querySelector('#batchAddCard').addEventListener('click',
-		function(e) {
-			  WeixinJSBridge.invoke('batchAddCard', { "card_list": [{ "card_id":'{$info[card_id]}', "card_ext":'{$info.card_ext}'}]},								
-			  function(res) {
-			  });
-		}
-	); 
-}
-if (typeof WeixinJSBridge === "undefined") {
-	  document.addEventListener('WeixinJSBridgeReady', readyFunc, false);
-} else {
-	  readyFunc();
-}
+	
+// };
+document.querySelector('#batchAddCard').onclick = function () {
+	 var cardId='{$info.card_id}';
+	 var ext = '{$info.card_ext}';
+	 var aimId="{$aim_id}";
+	 var fromType="{$from_type}";
+	 if(fromType && aimId){
+		 $.post("{:U('doSaveAward')}",{'aim_id':aimId,'from_type':fromType},function(dd){
+//     		 alert(dd);
+    	 });
+	 }
+	 
+		wx.addCard({
+		    cardList: [{
+		        cardId: cardId,
+		        cardExt: ext 
+		    }], // 需要添加的卡券列表
+		    success: function (res) {
+//	 	        var cardList = res.cardList; // 添加的卡券列表信息
+//	 	        console.log(cardList);
+// 		    	 alert('已添加卡券：' + JSON.stringify(res.cardList));
+		    	
+		    	 
+		    }
+		});
+	
+};
+
+// var readyFunc = function onBridgeReady() {
+// 	document.querySelector('#batchAddCard').addEventListener('click',
+// 		function(e) {
+// 			  WeixinJSBridge.invoke('batchAddCard', { "card_list": [{ "card_id":'{$info[card_id]}', "card_ext":'{$info.card_ext}'}]},								
+// 			  function(res) {
+// 			  });
+// 		}
+// 	); 
+// }
+// if (typeof WeixinJSBridge === "undefined") {
+// 	  document.addEventListener('WeixinJSBridgeReady', readyFunc, false);
+// } else {
+// 	  readyFunc();
+// }
 </script>
 </body>
 </html>

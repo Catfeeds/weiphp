@@ -29,8 +29,8 @@ a.block{ display:block}
 .m_20{ margin:20px;}
 .m_15{ margin:15px;}
 .mt_15{ margin-top:15px;}
-.tb{ display:-webkit-box;}
-.tb .flex_1{ -webkit-box-flex:1; display:block}
+.tb{ display: -webkit-flex; display: -ms-flexbox; display: flex;display:-webkit-box;}
+.tb .flex_1{-webkit-flex: 1;-ms-flex: 1;flex: 1; -webkit-box-flex:1; display:block}
 .tb .flex_2{ -webkit-box-flex:2;display:block}
 .tb .flex_3{ -webkit-box-flex:3;display:block}
 .tb .flex_4{ -webkit-box-flex:4;display:block}
@@ -243,15 +243,15 @@ textarea{ height:120px; min-height:60px;}
 .h_item_line{ height:0; overflow:hidden;border-top:1px solid #ddd;}
 .h_item em{ position:absolute; top:50%; margin-top:-10px; right:5px; width:20px; height:20px; background:url(../images/item_arrow.png) no-repeat; background-size:100% 100%;}
 /* 选项tab */
-.tab_nav{ display:-webkit-box; background:#fff; border:1px solid #30b0f3}
+.tab_nav{display: -webkit-flex; display: -ms-flexbox; display: flex;display:-webkit-box; background:#fff; border:1px solid #30b0f3}
 .tab_nav a{ text-align:center; color:#30b0f3; border-right:1px solid #30b0f3; padding:6px 0;}
 .tab_nav a:last-child{ border:none}
 .tab_nav a.cur{ background-color:#30b0f3; color:#fff;}
 .tab_nav a.p_10{ padding:6px 0;}
 /* common bottom nav */
 .bottom_nav_blank{ height:50px; width:100%;}
-.bottom_nav{ height:50px; width:100%; background:#2e393f;display:-webkit-box; position:fixed; bottom:0; left:0; right:0; z-index:1000;}
-.bottom_nav a{ color:#fff; display:block; text-align:center; -webkit-box-flex:1; padding-top:30px; background-size:25px 25px; background-repeat:no-repeat; background-position: center 5px; line-height:20px; font-size:12px;}
+.bottom_nav{ height:50px; width:100%; background:#2e393f;display: -webkit-flex; display: -ms-flexbox; display: flex;display:-webkit-box; position:fixed; bottom:0; left:0; right:0; z-index:1000;}
+.bottom_nav a{ color:#fff; display:block; text-align:center;-webkit-flex: 1;-ms-flex: 1;flex: 1; -webkit-box-flex:1; padding-top:30px; background-size:25px 25px; background-repeat:no-repeat; background-position: center 5px; line-height:20px; font-size:12px;}
 .bottom_nav a.cur{ background-color:#111}
 .bottom_fixed_bar{ height:auto; background:#fff; border-top:1px solid #ddd; padding:10px;position:fixed; bottom:0; left:0; right:0; z-index:1000;}
 /* 数据表 */
@@ -393,8 +393,8 @@ label {
 .shareTips{ background-color:RGBA(0,0,0,0.6); position:fixed;top:0; right:0;bottom:0;left:0; z-index:10000;}
 .shareTips .tipsPic{ width:80%; height:500px; background:url(../images/share_tips.png) no-repeat; position:absolute; top:0; right:0;background-size:100% auto}
 .shareTips .tips_friend{ width:100%; height:500px; background:url(../images/share-friend.png) no-repeat; position:absolute; top:0; right:0;background-size:100% auto}
-.shareTips .tips_concern{ width:100%; height:500px; background:url(../images/share_concern.png) no-repeat; position:absolute; top:0; right:0;background-size:100% auto}
-.shareTips .qrcode{ width:70%; height:250px; position:absolute; top:50%; left:15%; text-align:center; color:#fff}
+.shareTips .tips_concern{ width:100%; height:500px; background:url(../images/share_concern2.png) no-repeat; position:absolute; top:0; right:0;background-size:100% auto}
+.shareTips .qrcode{ width:70%; height:250px; position:absolute; top:20%; left:15%; text-align:center; color:#fff}
 .shareTips .qrcode img{ width:70%;}
 /* icon */
 .icon_add{ background-image:url(../images/m/icon_add.png);}

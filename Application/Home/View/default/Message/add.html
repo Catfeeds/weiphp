@@ -86,7 +86,7 @@ background-color: #eaeaea;">
                     <a class="action_item face" href="javascript:;" title="表情">&nbsp;</a>
                     <a class="action_item link" href="javascript:;" title="连接">&nbsp;</a>
                     <div class="action_item picture" href="javascript:;" title="图片">
-                        <div class="controls uploadrow2" title="点击修改图片" rel="pic">
+                        <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="pic">
                           <input type="file" id="upload_picture_pic">
                           <input type="hidden" name="pic" id="cover_id_pic" value="0"/>
                           <div class="upload-img-box">
@@ -150,7 +150,7 @@ background-color: #eaeaea;">
                         </div>
                       </div>
                       
-                 <button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">回 复</button>
+                 <button class="btn submit-btn ajax-post" id="submit1" type="button" target-form="form-horizontal">群 发</button>
                   &nbsp;&nbsp;&nbsp;&nbsp;
                   <button onclick="preview()" class="border-btn submit-btn ajax-post">预览</button>
            		       	
@@ -170,12 +170,16 @@ background-color: #eaeaea;">
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={:SITE_VERSION}" charset="UTF-8"></script> 
   <script type="text/javascript">
-$('#submit').click(function(){
-    $('#form').submit();
-});
+  $('#submit1').click(function(){
+		if(confirm("确定要群发消息？")){
+			$('#form').submit();
+		}
+	});
+
 function preview(){
-	  var query = $('#form').serialize();
-	  $.post("{:U('preview')}",query,function(data){
+	if(confirm("确定要预览消息？")){
+			var query = $('#form').serialize();
+	  		$.post("{:U('preview')}",query,function(data){
 			if (data.status==1) {
 				  if (data.url) {
 						updateAlert(data.info + ' 页面即将自动跳转~','alert-success');
@@ -199,10 +203,13 @@ function preview(){
 						}
 				  },1500);
 			}
-	  })
+	  	})
+	}
+	  
 }
 
 $(function(){
+	
 	showTab();
 	
 	$('.toggle-data').each(function(){
@@ -336,7 +343,7 @@ function selectText(){
 				var id=data[i]['id'];
 				if(id){
 					$.post("{:U('Material/get_content_by_id')}",{'id':id},function(d){
-						$('#message_text').text(d);
+						$('#message_text').val(d);
 					})
 				}
 			}
@@ -358,7 +365,8 @@ function selectText(){
 // 	})
 // }
 function selectUser(name){
-	$.WeiPHP.openSelectUsers("{:addons_url('UserCenter://UserCenter/lists')}",0,function(data){
+	var seIds = $('textarea[name="'+name+'"]').val();
+	$.WeiPHP.openSelectUsers("{:addons_url('UserCenter://UserCenter/lists')}&seIds="+seIds,0,function(data){
 		if(data && data.length>0){
 			var idsArr  = new Array();
 			var nameArr = new Array();
@@ -368,6 +376,9 @@ function selectUser(name){
 			}
 			$('textarea[name="'+name+'"]').val(idsArr.toString());
 			$('#'+name).text(nameArr.toString());
+		}else{
+			$('textarea[name="'+name+'"]').val('');
+			$('#'+name).text('');
 		}
 	})
 }

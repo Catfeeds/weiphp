@@ -20,18 +20,24 @@ class QrCodeModel extends Model {
 	private $accessToken;
 	public function _initialize() {
 		$token = get_token ();
+
+		empty ( $token ) && $token = DEFAULT_TOKEN;
+
 		$public = get_token_appinfo ( $token );
-		
+
 		$this->appID = trim ( $public ['appid'] );
 		$this->appSecret = trim ( $public ['secret'] );
 		
-		$this->accessToken = get_access_token ();
+		$this->accessToken = get_access_token ( $token );
+
 	}
 	
 	// 增加二维码
 	function add_qr_code($action_name = 'QR_SCENE', $addon = '', $aim_id = '', $extra_int = '', $extra_text = '') {
 		set_time_limit ( 30 );
-		
+
+		if(!$this->appID) return 0;
+
 		$data ['scene_id'] = $this->get_scene_id ( $action_name );
 		if (! $data ['scene_id']) {
 			return - 1; // 场景值已满
@@ -99,7 +105,7 @@ class QrCodeModel extends Model {
 		if ($qrcodeType == 'QR_LIMIT_SCENE') {
 			$tempJson = '{"action_name": "' . $qrcodeType . '", "action_info": {"scene": {"scene_id": ' . $qrcodeID . '}}}';
 		} else {
-			$tempJson = '{"expire_seconds": 1800, "action_name": "' . $qrcodeType . '", "action_info": {"scene": {"scene_id": ' . $qrcodeID . '}}}';
+			$tempJson = '{"expire_seconds": 2592000, "action_name": "' . $qrcodeType . '", "action_info": {"scene": {"scene_id": ' . $qrcodeID . '}}}';
 		}
 		$access_token = $this->accessToken;
 		$url = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" . $access_token;
@@ -107,7 +113,7 @@ class QrCodeModel extends Model {
 		if (@array_key_exists ( 'ticket', $tempArr )) {
 			return 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=' . $tempArr ['ticket'];
 		} else {
-			$this->ErrorLogger ( 'qrcode create falied.' );
+			addWeixinLog ( $tempArr, 'qrcode_error' );
 			return false;
 		}
 	}

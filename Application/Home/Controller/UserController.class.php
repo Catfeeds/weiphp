@@ -13,9 +13,62 @@ namespace Home\Controller;
  * 包括用户中心，用户登录及注册
  */
 class UserController extends HomeController {
-	
-	/* 用户中心首页 */
-	public function index() {
+	// 手机绑定登录
+	function wap_scan() {
+		$key = I ( 'key' );
+		
+		get_token ( DEFAULT_TOKEN );
+		
+		$isWeixinBrowser = isWeixinBrowser ();
+		if (! $isWeixinBrowser) {
+			$this->error ( '请在微信里打开' );
+		}
+		$info = get_token_appinfo ();
+		$param ['appid'] = $info ['appid'];
+		$callback = U ( 'wap_scan', array (
+				'key' => $key 
+		) );
+		if ($_GET ['state'] != 'weiphp') {
+			$param ['redirect_uri'] = $callback;
+			$param ['response_type'] = 'code';
+			$param ['scope'] = 'snsapi_userinfo';
+			$param ['state'] = 'weiphp';
+			$info ['is_bind'] && $param ['component_appid'] = C ( 'COMPONENT_APPID' );
+			$url = 'https://open.weixin.qq.com/connect/oauth2/authorize?' . http_build_query ( $param ) . '#wechat_redirect';
+			redirect ( $url );
+		} elseif ($_GET ['state'] == 'weiphp') {
+			if (empty ( $_GET ['code'] )) {
+				exit ( 'code获取失败' );
+			}
+			
+			$param ['code'] = I ( 'code' );
+			$param ['grant_type'] = 'authorization_code';
+			
+			if ($info ['is_bind']) {
+				$param ['appid'] = I ( 'appid' );
+				$param ['component_appid'] = C ( 'COMPONENT_APPID' );
+				$param ['component_access_token'] = D ( 'Addons://PublicBind/PublicBind' )->_get_component_access_token ();
+				
+				$url = 'https://api.weixin.qq.com/sns/oauth2/component/access_token?' . http_build_query ( $param );
+			} else {
+				$param ['secret'] = $info ['secret'];
+				
+				$url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' . http_build_query ( $param );
+			}
+			
+			$content = file_get_contents ( $url );
+			$content = json_decode ( $content, true );
+			if (! empty ( $content ['errmsg'] )) {
+				exit ( $content ['errmsg'] );
+			}
+			
+			$uid = D ( 'Common/Follow' )->init_follow ( $content ['openid'], $info ['token'] );
+			$user = D ( 'Common/User' )->getUserInfo ( $uid );
+			
+			S ( $key, $user, 120 );
+			
+			$this->display ();
+		}
 	}
 	/* 注册页面 */
 	public function register($username = '', $password = '', $repassword = '', $mobile = '', $truename = '', $email = '', $verify = '') {
@@ -30,9 +83,9 @@ class UserController extends HomeController {
 			/* 测试用户名 */
 			if (empty ( $username )) {
 				$this->error ( '用户名不能为空！' );
-			}else if (!preg_match('/[a-zA-Z0-9_]$/', $username)) {
+			} else if (! preg_match ( '/[a-zA-Z0-9_]$/', $username )) {
 				$this->error ( '用户名必须由‘字母’、‘数字’、‘_’组成！' );
-			}else if (strlen ( $username ) > 16) {
+			} else if (strlen ( $username ) > 16) {
 				$this->error ( '用户名长度必须在16个字符以内！' );
 			} else if ($hasusername) {
 				$this->error ( '该用户名已经存在，请重新填写用户名！' );
@@ -48,8 +101,8 @@ class UserController extends HomeController {
 			// if (! preg_match ( '/^(13[0-9]|15[0|3|6|7|8|9]|18[8|9])\d{8}$/', $mobile )) {
 			// $this->error ( '手机格式不正确！' );
 			// }
-			if (empty($mobile)){
-			    $this->error('手机号码不能为空');
+			if (empty ( $mobile )) {
+				$this->error ( '手机号码不能为空' );
 			}
 			if (strlen ( $mobile ) != 11) {
 				$this->error ( '手机格式不正确！' );
@@ -59,8 +112,8 @@ class UserController extends HomeController {
 				$this->error ( '联系人不能为空！' );
 			}
 			/* 测试邮箱 */
-			if (empty($email)){
-			    $this->error('邮箱不能为空');
+			if (empty ( $email )) {
+				$this->error ( '邮箱不能为空' );
 			}
 			if (! preg_match ( '/^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/', $email )) {
 				$this->error ( '邮箱格式不正确！' );
@@ -71,13 +124,13 @@ class UserController extends HomeController {
 				$this->error ( '验证码输入错误！' );
 			}
 			// CHECKOUT
-// 			$map ['code'] = I ( 'invite_code' );
-// 			if (empty ( $map ['code'] )) {
-// 				$this->error ( '内测码不能为空！' );
-// 			}
-// 			if (! M ( 'invite_code' )->where ( $map )->find ()) {
-// 				$this->error ( '内测码不正确！' );
-// 			}
+			// $map ['code'] = I ( 'invite_code' );
+			// if (empty ( $map ['code'] )) {
+			// $this->error ( '内测码不能为空！' );
+			// }
+			// if (! M ( 'invite_code' )->where ( $map )->find ()) {
+			// $this->error ( '内测码不正确！' );
+			// }
 			
 			/* 调用注册接口注册用户 */
 			$uid = D ( 'Common/User' )->register ( $username, $password, $email, $mobile, $truename );
@@ -105,7 +158,9 @@ class UserController extends HomeController {
 				$user ['username'] = $username;
 				
 				D ( 'Common/User' )->autoLogin ( $user );
-				$this->success ( '恭喜，注册成功！', U ( 'Home/Public/add', array('from'=>3) ) );
+				$this->success ( '恭喜，注册成功！', U ( 'Home/Public/add', array (
+						'from' => 3 
+				) ) );
 			} else { // 注册失败，显示错误信息
 				$this->error ( $this->showRegError ( $uid ) );
 			}
@@ -116,50 +171,131 @@ class UserController extends HomeController {
 	
 	/* 登录页面 */
 	public function login($username = '', $password = '', $verify = '') {
-		if (IS_POST) { // 登录验证
-			/* 检测验证码 */
-			if (C ( 'WEB_SITE_VERIFY' ) && ! check_verify ( $verify )) {
-				$this->error ( '验证码输入错误！' );
-			}
-			
-			/* 调用UC登录接口登录 */
-			$dao = D ( 'Common/User' );
-			$uid = $dao->login ( $username, $password );
-			if (! $uid) { // 登录失败
-				$this->error ( $dao->getError () );
-				exit ();
-			}
-			
-			$url = Cookie ( '__forward__' );
-			if ($url) {
-				Cookie ( '__forward__', null );
+		$key = Cookie ( 'ScanLoginKey' );
+		if (IS_POST) {
+			if (isset ( $_POST ['username'] )) {
+				/* 检测验证码 */
+				if (C ( 'WEB_SITE_VERIFY' ) && ! check_verify ( $verify )) {
+					$this->error ( '验证码输入错误！' );
+				}
+				
+				$dao = D ( 'Common/User' );
+				$uid = $dao->login ( $username, $password );
+				if (! $uid) { // 登录失败
+					$this->error ( $dao->getError () );
+					exit ();
+				}
+				
+				$url = Cookie ( '__forward__' );
+				if ($url) {
+					Cookie ( '__forward__', null );
+				} else {
+					$url = U ( 'Home/Index/index' );
+				}
+				
+				// 判断是否已经绑定公众号登录
+				if (C ( 'SCAN_LOGIN' )) {
+					unset ( $map );
+					$map ['uid'] = $uid;
+					$map ['token'] = DEFAULT_TOKEN;
+					$openid = M ( 'public_follow' )->where ( $map )->getField ( 'openid' );
+					if (! $openid) {
+						$url = U ( 'bind_login' );
+						$this->success ( '请先绑定扫码登录公众号', $url );
+						exit ();
+					}
+				}
+				$this->success ( '登录成功！', $url );
 			} else {
-				$url = U ( 'Home/Index/index' );
+				$user = S ( $key );
+				if ($user ['uid'] > 0) {
+					D ( 'Common/User' )->autoLogin ( $user );
+					echo 1;
+				} else {
+					echo 0;
+				}
 			}
-			
-			if (C ( 'DIV_DOMAIN' )) {
-				$map ['uid'] = $uid;
-				$domain = D ( 'Common/Public' )->where ( $map )->getField ( 'domain' );
-				$url = chang_domain ( $url, $domain );
-			}
-			$this->success ( '登录成功！', $url );
-		} else { // 显示登录表单
+		} else {
 			if (isMobile ()) {
 				// 跳转到手机版的个人空间
 				redirect ( addons_url ( 'UserCenter://Wap/userCenter', array (
 						'from' => 1 
 				) ) );
 			}
+			
+			if (is_login ()) {
+				$url = U ( 'Home/Index/main', array (
+						'from' => 3 
+				) );
+				redirect ( $url );
+			}
+			
+			if (empty ( $key )) {
+				$key = uniqid ();
+				Cookie ( 'ScanLoginKey', $key );
+			}
+			
+			$this->assign ( 'key', $key );
+			
+			$map ['addon'] = 'ScanLogin';
+			$map ['extra_text'] = $key;
+			$info = M ( 'qr_code' )->where ( $map )->field ( true )->find ();
+			
+			if ($info && (NOW_TIME - $info ['cTime'] > $info ['expire_seconds'])) {
+				M ( 'qr_code' )->where ( $map )->delete ();
+				$info ['qr_code'] = '';
+			}
+			if (! $info ['qr_code']) {
+				$info ['qr_code'] = D ( 'Home/QrCode' )->add_qr_code ( 'QR_SCENE', 'ScanLogin', 0, 0, $key );
+			}
+			$this->assign ( 'qrcode', $info ['qr_code'] );
+			
 			$html = 'login';
 			$_GET ['from'] == 'store' && $html = 'simple_login';
 			
 			$this->display ( $html );
 		}
 	}
+	function bind_login() {
+		$key = Cookie ( 'ScanLoginKey' );
+		if (IS_POST) {
+			$has_bind = S ( $key );
+			if ($has_bind == 1) {
+				echo 1;
+			} else {
+				echo 0;
+			}
+		} else {
+			if (empty ( $key )) {
+				$key = uniqid ();
+				Cookie ( 'ScanLoginKey', $key );
+			}
+			S ( $key, 0 );
+			$this->assign ( 'key', $key );
+			
+			$map ['addon'] = 'ScanBindLogin';
+			$map ['extra_text'] = $key;
+			$info = M ( 'qr_code' )->where ( $map )->field ( true )->find ();
+			
+			if ($info && (NOW_TIME - $info ['cTime'] > $info ['expire_seconds'])) {
+				M ( 'qr_code' )->where ( $map )->delete ();
+				$info ['qr_code'] = '';
+			}
+			if (! $info ['qr_code']) {
+				$info ['qr_code'] = D ( 'Home/QrCode' )->add_qr_code ( 'QR_SCENE', 'ScanBindLogin', 0, $this->mid, $key );
+			}
+			$this->assign ( 'qrcode', $info ['qr_code'] );
+			
+			$this->display ();
+		}
+	}
 	
 	/* 退出登录 */
 	public function logout() {
 		if (is_login ()) {
+			$key = Cookie ( 'ScanLoginKey' );
+			S ( $key, NULL );
+			
 			D ( 'Common/User' )->logout ();
 			
 			if (isset ( $_GET ['no_tips'] )) {
@@ -221,7 +357,8 @@ class UserController extends HomeController {
 				$error = '手机号被占用！';
 				break;
 			default :
-				$error = '未知错误';
+// 				$error = '未知错误';
+			    $error = '用户名被占用！';
 		}
 		return $error;
 	}
@@ -248,9 +385,9 @@ class UserController extends HomeController {
 			if ($data ['password'] !== $repassword) {
 				$this->error ( '您输入的新密码与确认密码不一致' );
 			}
-			$isUser=get_userinfo($uid,'manager_id');
-			if ($isUser){
-			    $data['login_password']=$data ['password'];
+			$isUser = get_userinfo ( $uid, 'manager_id' );
+			if ($isUser) {
+				$data ['login_password'] = $data ['password'];
 			}
 			$res = D ( 'Common/User' )->updateUserFields ( $uid, $password, $data );
 			if ($res !== false) {

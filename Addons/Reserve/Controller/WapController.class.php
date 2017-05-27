@@ -12,73 +12,87 @@ class WapController extends AddonsController {
 		$this->reserve_id = I ( 'reserve_id', 0 );
 		$id = I ( 'id', 0 );
 		$reserve = M ( 'reserve' )->find ( $this->reserve_id );
+		$page_title =$reserve['title'];
+		$this->assign('page_title',$page_title);
 		$reserve ['cover'] = ! empty ( $reserve ['cover'] ) ? get_cover_url ( $reserve ['cover'] ) : ADDON_PUBLIC_PATH . '/background.png';
 		$reserve ['intro'] = str_replace ( chr ( 10 ), '<br/>', $reserve ['intro'] );
 		$this->assign ( 'reserve', $reserve );
-		
+
 		// 判断该用户是否已经预约该活动
 		$map ['uid'] = $this->mid;
 		$map ['token'] = get_token ();
 		$map ['reserve_id'] = $this->reserve_id;
 		$map ['openid'] = get_openid ();
-		
+
 		$data = M ( 'reserve_value' )->where ( $map )->find ();
 		$id = $data ['id'];
 		if (! empty ( $id )) {
 			$act = 'save';
-			
+
 			// $data = M ( get_table_name ( $this->model ['id'] ) )->find ( $id );
 			// $data || $this->error ( '数据不存在！' );
-			
+
 			// dump($data);
 			$value = unserialize ( htmlspecialchars_decode ( $data ['value'] ) );
 			// dump($value);
 			unset ( $data ['value'] );
 			$data = array_merge ( $data, $value );
-			$this->assign ( 'data', $data );
+			$para['reserve_id'] =$this->reserve_id;
+			$para['id'] =$data['id'];
+			$param ['model'] = $this->model ['id'];
+			$url =U('reserve_success',$para);
+			redirect($url);
+			//$this->assign ( 'data', $data );
 			// dump($data);
 		} else {
 			$act = 'add';
 			if ($this->mid != 0 && $this->mid != '-1') {
 				// $map ['uid'] = $this->mid;
 				// $map ['reserve_id'] = $this->reserve_id;
-				
+
 				// $data = M ( 'reserve_value' )->where ( $map )->find ();
 				if ($data && $reserve ['jump_url']) {
 					// redirect ( $reserve ['jump_url'] );
 				}
 			}
 		}
-		
+
 		// dump ( $reserve );
-		
+
 		$map2 ['reserve_id'] = $this->reserve_id;
 		$map2 ['token'] = get_token ();
 		$fields = M ( 'reserve_attribute' )->where ( $map2 )->order ( 'sort asc, id asc' )->select ();
 		foreach ( $fields as &$fd ) {
 			$fd ['name'] = 'field_' . $fd ['id'];
 		}
-		
+
 		// 获取预约项
 		$option_list = M ( 'reserve_option' )->where ( $map2 )->order ( 'id asc' )->select ();
 		$this->assign ( 'option_list', $option_list );
-		
+
 		if (IS_POST) {
-			foreach ( $option_list as $opt ) {
-				if ($_POST ['option_id'] == $opt ['id'] && $opt ['join_count'] > $opt ['max_limit']) {
-					$this->error ( '该项目人数已满，请选择其它项目！' );
-					exit ();
-				}
-			}
-			if ($_POST ['option_id']) {
-				$post ['option_id'] = $_POST ['option_id'];
-			}
+		    foreach ($option_list as $opt){
+		        if ($_POST['option_id'] == $opt['id'] && $opt['join_count'] >$opt['max_limit'] && $opt['max_limit'] !=0){
+		            $this->error('该项目人数已满，请选择其它项目！');
+		            exit();
+		        }
+		    }
+		    if ($_POST['option_id']){
+		        $post['option_id']=$_POST['option_id'];
+		    }
 			foreach ( $fields as $vo ) {
 				$error_tip = ! empty ( $vo ['error_info'] ) ? $vo ['error_info'] : '请正确输入' . $vo ['title'] . '的值';
 				$value = $_POST [$vo ['name']];
-				if (($vo ['is_must'] && empty ( $value )) || (! empty ( $vo ['validate_rule'] ) && ! M ()->regex ( $value, $vo ['validate_rule'] ))) {
-					$this->error ( $error_tip );
-					exit ();
+				if ($vo['type'] == 'radio' || $vo['type'] == 'checkbox'){
+				    if (($vo ['is_must'] &&  is_null ( $value )) || (! empty ( $vo ['validate_rule'] ) && ! M ()->regex ( $value, $vo ['validate_rule'] ))) {
+				        $this->error ( $error_tip );
+				        exit ();
+				    }
+				}else {
+				    if (($vo ['is_must'] &&  empty ( $value )) || (! empty ( $vo ['validate_rule'] ) && ! M ()->regex ( $value, $vo ['validate_rule'] ))) {
+				        $this->error ( $error_tip );
+				        exit ();
+				    }
 				}
 				
 				$post [$vo ['name']] = $vo ['type'] == 'datetime' ? strtotime ( $_POST [$vo ['name']] ) : $_POST [$vo ['name']];
@@ -89,16 +103,16 @@ class WapController extends AddonsController {
 			}
 			// 获取验证码
 			$post ['scan_code'] = $this->_get_code ();
-			
+
 			$_POST ['value'] = serialize ( $post );
 			$data = unserialize ( $_POST ['value'] );
 			$act == 'add' && $_POST ['uid'] = $this->mid;
 			// dump($_POST);exit;
 			$Model = D ( parse_name ( get_table_name ( $this->model ['id'] ), 1 ) );
-			
+
 			// 获取模型的字段信息
 			$Model = $this->checkAttr ( $Model, $this->model ['id'], $fields );
-			
+
 			if ($Model->create () && $res = $Model->$act ()) {
 				// 增加积分
 				add_credit ( 'Reserve' );
@@ -111,7 +125,7 @@ class WapController extends AddonsController {
 				$param ['id'] = $act == 'add' ? $res : $id;
 				$param ['model'] = $this->model ['id'];
 				$url = empty ( $reserve ['jump_url'] ) ? U ( 'reserve_success', $param ) : $reserve ['jump_url'];
-				
+
 				$tip = ! empty ( $reserve ['finish_tip'] ) ? $reserve ['finish_tip'] : '提交成功，谢谢参与';
 				$this->success ( $tip, $url, 5 );
 			} else {
@@ -119,32 +133,35 @@ class WapController extends AddonsController {
 			}
 			exit ();
 		}
-		
+
 		$fields [] = array (
 				'is_show' => 4,
 				'name' => 'reserve_id',
-				'value' => $this->reserve_id 
+				'value' => $this->reserve_id
 		);
-		
+        
+       
 		$this->assign ( 'fields', $fields );
-		
+        
 		$this->display ();
 	}
 	function reserve_success() {
 		$map3 ['reserve_id'] = $map ['reserve_id'] = $map2 ['reserve_id'] = $this->reserve_id = I ( 'reserve_id', 0, intval );
 		$reserve = M ( 'reserve' )->find ( $this->reserve_id );
+		$page_title =$reserve['title'];
+		$this->assign('page_title',$page_title);
 		$reserve ['cover'] = ! empty ( $reserve ['cover'] ) ? get_cover_url ( $reserve ['cover'] ) : ADDON_PUBLIC_PATH . '/background.png';
 		$reserve ['intro'] = str_replace ( chr ( 10 ), '<br/>', $reserve ['intro'] );
-		
+
 		$map2 ['token'] = $map3 ['token'] = get_token ();
 		// 获取参与人数
 		$attend = M ( 'reserve_option' )->where ( $map )->sum ( 'join_count' );
-		
+
 		$map3 ['uid'] = $this->mid;
 		$valueArr = M ( 'reserve_value' )->where ( $map3 )->field ( 'id,value,is_pay' )->find ();
 		$value_data = unserialize ( $valueArr ['value'] );
 		$value_data ['id'] = $valueArr ['id'];
-		
+
 		// $map ['token'] = get_token ();
 		$fields = M ( 'reserve_attribute' )->where ( $map2 )->order ( 'sort asc, id asc' )->select ();
 		foreach ( $fields as &$fd ) {
@@ -154,15 +171,15 @@ class WapController extends AddonsController {
 				$value_data [$fd ['name']] = $extArr [$value_data [$fd ['name']]];
 			}
 		}
-		
+
 		$option = M ( 'reserve_option' )->where ( array (
-				'id' => $value_data ['option_id'] 
+				'id' => $value_data ['option_id']
 		) )->field ( 'name,money' )->find ();
 		$value_data ['option_id'] = $option ['name'];
 		$value_data ['price'] = $option ['money'];
 		$value_data ['uid'] = $this->mid;
 		// 判断是否支付
-		
+
 		$is_pay = $valueArr ['is_pay'];
 		if ($is_pay == 0) {
 			$map5 ['uid'] = $this->mid;
@@ -178,9 +195,9 @@ class WapController extends AddonsController {
 				$res = M ( 'reserve_value' )->where ( $map )->save ( $save );
 			}
 		}
-		
+
 		$this->assign ( 'is_pay', $is_pay );
-		
+
 		$this->assign ( 'fields', $fields );
 		$this->assign ( 'value_data', $value_data );
 		$this->assign ( 'reserve', $reserve );
@@ -210,14 +227,14 @@ class WapController extends AddonsController {
 		$uid = I ( 'uid' );
 		$scanCode = I ( 'scan_code' );
 		$map2 ['reserve_id'] = $map3 ['reserve_id'] = $map ['reserve_id'] = $this->reserve_id = I ( 'reserve_id', 0, intval );
-		
+
 		$reserve = M ( 'reserve' )->find ( $this->reserve_id );
 		$reserve ['cover'] = ! empty ( $reserve ['cover'] ) ? get_cover_url ( $reserve ['cover'] ) : ADDON_PUBLIC_PATH . '/background.png';
 		$reserve ['intro'] = str_replace ( chr ( 10 ), '<br/>', $reserve ['intro'] );
-		
+
 		// 获取参与人数
 		$attend = M ( 'reserve_option' )->where ( $map )->sum ( 'join_count' );
-		
+
 		$map3 ['uid'] = $uid;
 		$value = M ( 'reserve_value' )->where ( $map3 )->field ( 'id,value,is_pay' )->find ();
 		$is_pay = $value ['is_pay'];
@@ -233,7 +250,7 @@ class WapController extends AddonsController {
 			// 验证失败
 			$is_check = 0;
 		}
-		
+
 		$fields = M ( 'reserve_attribute' )->where ( $map2 )->order ( 'sort asc, id asc' )->select ();
 		foreach ( $fields as &$fd ) {
 			$fd ['name'] = 'field_' . $fd ['id'];
@@ -242,11 +259,11 @@ class WapController extends AddonsController {
 			}
 		}
 		$option = M ( 'reserve_option' )->where ( array (
-				'id' => $value_data ['option_id'] 
+				'id' => $value_data ['option_id']
 		) )->field ( 'name,money' )->find ();
 		$value_data ['option_id'] = $option ['name'];
 		$value_data ['price'] = $option ['money'];
-		
+
 		// 判断是否支付
 		$map5 ['uid'] = $uid;
 		$map5 ['aim_id'] = $this->reserve_id;
@@ -266,7 +283,7 @@ class WapController extends AddonsController {
 		$this->assign ( 'reserve', $reserve );
 		$this->display ();
 	}
-	
+
 	// 获取扫码时验证码: 当前时间+ 四位随机数
 	function _get_code() {
 		$str = time ();
@@ -278,15 +295,32 @@ class WapController extends AddonsController {
 		$id = I ( 'id' );
 		$res = 0;
 		$res = M ( 'reserve_value' )->where ( array (
-				'id' => $id 
+				'id' => $id
 		) )->getField ( 'is_check' );
 		echo $res;
 	}
 	function set_pay() {
 		$map ['id'] = I ( 'get.id' );
 		$save ['is_pay'] = 1;
-		
+
 		$res = M ( 'reserve_value' )->where ( $map )->save ( $save );
 		echo $res;
 	}
+    function payOK(){
+    	$isPay = I('get.ispay', 0, 'intval');
+    	$paymentId = I('get.paymentId');
+    	$paymentDao = D('Addons://Payment/PaymentOrder');
+    	$res = $paymentDao->where(array(
+    			'id' => $paymentId
+    	))->setField('status', $isPay);
+    	$info = $paymentDao->getInfo($paymentId, true);
+    	$map['reserve_id']=$info['aim_id'];
+    	$map['uid']=$this->mid;
+    	$save['is_pay']=$isPay;
+    	$res=M('reserve_value')->where($map)->save($save);
+
+    	$jurl=U('reserve_success',array('reserve_id'=>$info['aim_id']));
+    	redirect($jurl);
+    }
+    
 }

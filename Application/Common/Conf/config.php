@@ -14,10 +14,10 @@
 return array(
 		// 数据库配置
         'DB_TYPE'   => 'mysql', // 数据库类型
-        'DB_HOST'   => '192.168.0.22', // 服务器地址
-        'DB_NAME'   => 'weiphp', // 数据库名
-        'DB_USER'   => 'root', // 用户名
-        'DB_PWD'    => 'root',  // 密码
+        'DB_HOST'   => 'bdm243712307.my3w.com', // 服务器地址
+        'DB_NAME'   => 'bdm243712307_db', // 数据库名
+        'DB_USER'   => 'bdm243712307', // 用户名
+        'DB_PWD'    => '54703065',  // 密码
         'DB_PORT'   => '3306', // 端口
         'DB_PREFIX' => 'wp_', // 数据库表前缀
 		'DB_PARAMS' => array (
@@ -25,7 +25,7 @@ return array(
 		),
 		
 		// 系统数据加密设置
-		'DATA_AUTH_KEY' => '13Fq-|8,H4{LY}GB/vPpI`5l!Rh)uV_7cywaU$2"', // 默认数据加密KEY
+		'DATA_AUTH_KEY' => 'AlHo_1~kKw$N|asr?(vGRi-9O0#pE+tF=y:b,LjS', // 默认数据加密KEY
 		                                                               
 		// 调试配置
 		'SHOW_PAGE_TRACE' => false,
@@ -83,11 +83,14 @@ return array(
 				'exts' => 'jpg,gif,png,jpeg', // 允许上传的文件后缀
 				'rootPath' => './Uploads/Editor/' 
 		),
+		//编辑器上传服务器
+		// Local--本地  Qiniu --七牛
+		'EDITOR_PICTURE_UPLOAD_DRIVER' => 'Local',		
 		
 		// 文件上传相关配置
 		'DOWNLOAD_UPLOAD' => array (
 				'maxSize' => 5242880, // 5M 上传的文件大小限制 (0-不做限制)
-				'exts' => 'jpg,gif,png,jpeg,zip,rar,tar,gz,7z,doc,docx,txt,xml,xls,xlsx,csv,pem,amr', // 允许上传的文件后缀
+				'exts' => 'jpg,gif,png,jpeg,zip,rar,tar,gz,7z,doc,docx,txt,xml,xls,xlsx,csv,pem,amr,mp3,mp4', // 允许上传的文件后缀
 				'rootPath' => './Uploads/Download/' 
 		) 
 );

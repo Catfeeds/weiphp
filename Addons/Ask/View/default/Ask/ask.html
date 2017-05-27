@@ -15,7 +15,7 @@
         <input name="question_id" value="{$question.id}" type="hidden">
         <input name="other_answer" id="other_answer" value="" type="hidden">
         <switch name="question.type">
-          <case value="textarea"> 
+          <case value="textarea">
             <!-- 文本框 -->
             <div class="form-item cf">
               <label class="item-label"><span class="check-tips"></span></label>
@@ -29,7 +29,7 @@
               <div class="voteItem" type="type_checkbox">
               	<em class="check">&nbsp;</em>
                 <input type="checkbox" value="{$key}" class="checkbox" name="answer[]">
-                {$vo} </div>
+                {$key}:{$vo} </div>
             </volist>
           </case>
           <default/>
@@ -37,7 +37,7 @@
             <div class="voteItem" type="type_radio">
               <em class="check">&nbsp;</em>
               <input type="radio" value="{$key}" class="radio"  name="answer[]">
-              {$vo} </div>
+              {$key}:{$vo} </div>
           </volist>
         </switch>
       </div>
@@ -45,7 +45,7 @@
        <a class="start_btn" href="javascript:;" onClick="$('#form').submit();">确认提交</a>
     </div>
   </form>
-  
+
   <p class="copyright">{$system_copy_right}{$tongji_code}</p>
 </div>
 <script type="text/javascript">
@@ -63,7 +63,7 @@ var is_require = "{$question.is_must}";
 var widget = "{$question.type}";
 function checkForm(){
 	if(is_require=='0') return true;
-	
+
 	var content = '';
 	var msg = '请选择你的答案';
 	if(widget=='textarea'){
@@ -106,13 +106,13 @@ $('.voteItem').click(function(){
 			$('.voteItem').each(function(){
 					$(this).find('input').prop("checked", false);
 			});
-			
+
 			obj.addClass('selected');
 			obj.find('input').prop("checked", true);
 		}
 	}
 })
-document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {  
+document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
 	// 分享到朋友圈
 	WeixinJSBridge.on('menu:share:timeline', function (argv) {
 	WeixinJSBridge.invoke('shareTimeline', {
@@ -122,7 +122,7 @@ document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
 		"link": "{:addons_url('Ask://Ask/ask', $get_param)}",
 		"desc": "{$ask.intro}",
 		"title": "{$ask.title}"
-	}, 
+	},
 	function (res) {
 	//分享到朋友圈成功
 	if(res.err_msg=="share_timeline:ok"){
@@ -131,7 +131,7 @@ document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
 	   });
 	});
 	WeixinJSBridge.on('menu:share:appmessage', function (argv) {
-	WeixinJSBridge.invoke('sendAppMessage', { 
+	WeixinJSBridge.invoke('sendAppMessage', {
 		"img_url": "{$ask.cover|get_cover_url}",
 		"img_width": "640",
 		"img_height": "640",
@@ -147,7 +147,7 @@ document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
 	  })
 	});
 }, false);
-</script> 
+</script>
 <include file="Public/mobile_foot"/>
 </body>
 </html>

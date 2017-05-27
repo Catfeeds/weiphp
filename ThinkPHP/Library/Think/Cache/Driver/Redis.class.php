@@ -32,17 +32,31 @@ class Redis extends Cache {
                 'port'          => C('REDIS_PORT') ? C('REDIS_PORT') : 6379,
                 'timeout'       => C('DATA_CACHE_TIMEOUT') ? C('DATA_CACHE_TIMEOUT') : false,
                 'persistent'    => false,
+            	'user'          => C ( 'REDIS_USER' ) ? C ( 'REDIS_USER' ) : '',
+            	'passwd'        => C ( 'REDIS_PWD' ) ? C ( 'REDIS_PWD' ) : ''
             );
         }
         $this->options =  $options;
-        $this->options['expire'] =  isset($options['expire'])?  $options['expire']  :   C('DATA_CACHE_TIME');
+        $this->options['expire'] =  isset($options['expire'])?  $options['expire']  :   C('DATA_CACHE_TIMEOUT');
         $this->options['prefix'] =  isset($options['prefix'])?  $options['prefix']  :   C('DATA_CACHE_PREFIX');        
         $this->options['length'] =  isset($options['length'])?  $options['length']  :   0;        
         $func = $options['persistent'] ? 'pconnect' : 'connect';
         $this->handler  = new \Redis;
-        $options['timeout'] === false ?
-            $this->handler->$func($options['host'], $options['port']) :
-            $this->handler->$func($options['host'], $options['port'], $options['timeout']);
+		if ($options ['timeout'] === false) {
+			$res = $this->handler->$func($options['host'], $options['port']);
+		} else {
+			$res = $this->handler->$func ( $options ['host'], $options ['port'], $options ['timeout'] );
+		}
+		if ($res === false) {
+			die ( $this->handler->getLastError () );
+		}
+		
+		if(!empty($options ['user'])){
+		$res = $this->handler->auth ( $options ['user'] . ":" . $options ['passwd'] );
+		if ($res === false) {
+			die ( $this->handler->getLastError () );
+		}
+		}
     }
 
     /**
@@ -74,6 +88,7 @@ class Redis extends Cache {
         $name   =   $this->options['prefix'].$name;
         //对数组/对象数据进行缓存处理，保证数据完整性
         $value  =  (is_object($value) || is_array($value)) ? json_encode($value) : $value;
+
         if(is_int($expire)) {
             $result = $this->handler->setex($name, $expire, $value);
         }else{

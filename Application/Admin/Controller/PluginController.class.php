@@ -389,7 +389,7 @@ str;
 	 * 保存插件设置
 	 */
 	public function saveConfig() {
-		$id = ( int ) I ( 'id' );
+		$id = I ( 'id', 0, 'intval' );
 		$config = I ( 'config' );
 		$flag = M ( 'addons' )->where ( "id={$id}" )->setField ( 'config', json_encode ( $config ) );
 		if ($flag !== false) {

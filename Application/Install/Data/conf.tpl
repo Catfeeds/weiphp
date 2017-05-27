@@ -83,11 +83,14 @@ return array(
 				'exts' => 'jpg,gif,png,jpeg', // 允许上传的文件后缀
 				'rootPath' => './Uploads/Editor/' 
 		),
+		//编辑器上传服务器
+		// Local--本地  Qiniu --七牛
+		'EDITOR_PICTURE_UPLOAD_DRIVER' => 'Local',		
 		
 		// 文件上传相关配置
 		'DOWNLOAD_UPLOAD' => array (
 				'maxSize' => 5242880, // 5M 上传的文件大小限制 (0-不做限制)
-				'exts' => 'jpg,gif,png,jpeg,zip,rar,tar,gz,7z,doc,docx,txt,xml,xls,xlsx,csv,pem,amr', // 允许上传的文件后缀
+				'exts' => 'jpg,gif,png,jpeg,zip,rar,tar,gz,7z,doc,docx,txt,xml,xls,xlsx,csv,pem,amr,mp3,mp4', // 允许上传的文件后缀
 				'rootPath' => './Uploads/Download/' 
 		) 
 );

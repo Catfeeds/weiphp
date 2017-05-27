@@ -3,13 +3,27 @@
 <link href="{:ADDON_PUBLIC_PATH}/weisite.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
   <div class="span9 page_message">
     <section id="contents"> 
-      <include file="Addons/_nav" />  
+       <div class="setting_step app_setting content_step content_step_2" style="margin:20px;">
+         <a class="step step_cur" href="{:addons_url('WeiSite://Template/footer',array('mdm'=>I('mdm')))}">1.选择模板</a>
+       	 <a class="step step_cur_1" href="{:addons_url('WeiSite://Footer/lists',array('mdm'=>I('mdm')))}">2.导航配置</a>
+         <!--<a class="step " href="{:addons_url('WeiSite://WeiSite/preview',array('mdm'=>I('mdm')))}">3.效果预览</a>-->
+  </div>
+  
+            <if condition="!$has_data">
+            <p style="padding:80px 30px 30px; text-align:center; font-size:18px">
+      您选择了无导航栏模板，不需要配置导航了！
+      </p>
+       <!--<p style="padding:30px; text-align:center"><a class="btn submit-btn" href="{:addons_url('WeiSite://WeiSite/preview')}">预览</a></p>-->
+      <else />
+      <if condition="!empty($normal_tips)">
+	<p class="normal_tips"><b class="fa fa-info-circle"></b> {$normal_tips}</p>
+</if>
       <div class="table-bar">
         <div class="fl">
           <empty name="model.extend">
 			<div class="tools">
-				<if condition="$add_button"><php> $add_url || $add_url = U('add?model='.$model['id']);</php><a class="btn" href="{$add_url}">新 增</a></if>
-				<if condition="$del_button"><php> $del_url || $del_url = U('del?model='.$model['id']);</php><button class="btn ajax-post confirm" target-form="ids" url="{$del_url}">删 除</button></if>                
+				<if condition="$add_button"><php> $add_url || $add_url = U('add?model='.$model['id'],array('mdm'=>$_GET['mdm']));</php><a class="btn" href="{$add_url}">新 增</a></if>
+				<if condition="$del_button"><php> $del_url || $del_url = U('del?model='.$model['id'],array('mdm'=>$_GET['mdm']));</php><button class="btn ajax-post confirm" target-form="ids" url="{$del_url}">删 除</button></if>                
 			</div>
           </empty>
         </div>
@@ -34,7 +48,7 @@
               <tr>
                 <if condition="$check_all"><th class="row-selected row-selected"> <input class="regular-checkbox check-all" id="checkAll" type="checkbox"><label for="checkAll"></label></th></if>
                 <volist name="list_grids" id="field">
-                  <th>{$field.title}</th>
+                  <th <notempty name="field.width">width="{$field.width}%"</notempty> >{$field.title}</th>
                 </volist>
               </tr>
             </thead>
@@ -54,6 +68,7 @@
         </div>
       </div>
       <div class="page"> {$_page|default=''} </div>
+      </if>
     </section>
   </div>
 </block>

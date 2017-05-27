@@ -22,7 +22,15 @@
     <!-- 头部 -->
     <div class="header">
         <!-- Logo -->
-        <span class="logo" <php>if(C('SYSTEM_LOGO')) {</php> style="float: left;margin-left: 2px;width: 198px;height: 49px;background:url('{:C('SYSTEM_LOGO')}') no-repeat " <php> } </php>></span>
+        <php>if(C('SYSTEM_LOGO')) {</php> 
+        <span class="logo" style="float: left;margin-left: 2px;width: 198px;height: 49px;background:url('{:C('SYSTEM_LOGO')}') no-repeat " >
+        
+        <php> }else{ </php>
+        <span class="logo" style="float: left;margin-left: 2px;width: 198px;height: 49px;background:url('/Public/Home/images/logo.png') no-repeat 0 -22px" >
+        
+<!--         <img style="height:49px;" src="/weiphp3.0/Public/Home/images/logo.png"> -->
+        <php>}</php>
+        </span>
         <!-- /Logo -->
 
         <!-- 主导航 -->

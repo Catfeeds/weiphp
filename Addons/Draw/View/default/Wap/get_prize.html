@@ -106,6 +106,40 @@
     <include file="Public/mobile_foot"/>
     <script>
     $(function(){
+    	var awardType="{$awardInfo.award_type}";
+    	if(awardType == '5'){
+    		var cardId="{$awardInfo.card_id}";
+//     		alert(cardId);
+    		if(cardId){
+				var purl="{:addons_url('CardVouchers://Wap/ajaxdosign')}";
+				$.post(purl,{'card_id':cardId},function(dd){
+					var ext=dd.card_ext;
+					var card_id=dd.strcard;
+// 					alert(ext);
+// 					alert(card_id);
+					wx.addCard({
+					    cardList: [{
+					        cardId: card_id,
+					        cardExt: ext 
+					    }], // 需要添加的卡券列表
+					    success: function (res) {
+				 	        var cardList = res.cardList; // 添加的卡券列表信息
+//				 	        console.log(cardList);
+// 	 				    	 alert('已添加卡券：' + JSON.stringify(res.cardList));
+//	 				    	 var aimId="{$aim_id}";
+//	 				    	 var fromType="{$from_type}";
+//	 				    	 if(fromType && aimId){
+//	 				    		 $.post("{:U('doSaveAward')}",{'aim_id':aimId,'from_type':fromType},function(dd){
+						    		 
+//	 					    	 });
+//	 				    	 }
+				 	       return false;
+					    }
+					});
+				});
+			}
+    		
+    	}
     	var award_state={$user_award.state};
     	if(award_state==0 ){
     		var checkUrl = "{:U('get_state')}&id={$user_award.id}";

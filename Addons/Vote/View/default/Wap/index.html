@@ -36,8 +36,10 @@
                                         </div>
                                         <div class="list_info">
                                             <a class='detail_btn' href="{:addons_url('Vote://Wap/option_detail')}&option_id={$vo.id}&vote_id={$vote_info.id}" >了解</a>
-                                            <eq name='overtime' value='1'>
-                                                <span class="detail_btn over_btn"><em class="zan"></em>活动已结束</span>
+                                            <if condition='$overtime eq 1'>
+                                                <span class="detail_btn over_btn"><em class="zan"></em>活动未开始</span>
+                                            <elseif condition="$overtime eq -1"/>
+                                            <span class="detail_btn over_btn"><em class="zan"></em>活动已结束</span>
                                             <else />
                                                <php> if($vo[has_vote]==1) { </php>
                                                <a class='detail_btn has_vote'><em class="zan"></em>已投票</a>
@@ -46,7 +48,7 @@
                                                 <php> }else { </php>
                                                 <a class='detail_btn' onClick="vote_join({$vo.id},{$vote_info.id},this);"><em class="zan"></em>投TA 一票</a>
                                                 <php> } </php>
-                                            </eq>
+                                            </if>
                                         </div>
                                     </div>
         						</li>

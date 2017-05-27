@@ -142,7 +142,7 @@ class CouponModel extends Model {
 				NOW_TIME
 		);
 		$map ['token'] = get_token ();
-	
+		$map ['is_del']=0;
 		$list = $this->where ( $map )->field ( 'id,title' )->order ( 'id desc' )->select ();
 		return $list;
 	}

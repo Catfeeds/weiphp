@@ -486,8 +486,8 @@ class SimpleDB {
 
 $db = new SimpleDB ( $config );
 
-$data ['publicid'] = safe ( $_GET ['publicid'] );
-$data ['uid'] = safe ( $_GET ['uid'] );
+$data ['publicid'] = intval ( $_GET ['publicid'] );
+$data ['uid'] = intval ( $_GET ['uid'] );
 
 $data ['module_name'] = isset ( $_GET ['_addons'] ) ? safe ( $_GET ['_addons'] ) : safe ( $_GET ['m'] );
 $data ['controller_name'] = isset ( $_GET ['_controller'] ) ? safe ( $_GET ['_controller'] ) : safe ( $_GET ['c'] );
@@ -495,10 +495,15 @@ $data ['action_name'] = isset ( $_GET ['_action'] ) ? safe ( $_GET ['_action'] )
 
 unset ( $_GET ['publicid'], $_GET ['uid'], $_GET ['_addons'], $_GET ['_controller'], $_GET ['_action'], $_GET ['m'], $_GET ['c'], $_GET ['a'], $_GET ['mdm'] );
 
-$data ['param'] = json_encode ( $_GET );
+foreach ( $_GET as $k => $g ) {
+	$k = safe ( $k );
+	$g = safe ( $g );
+	$pram [$k] = $g;
+}
+$data ['param'] = json_encode ( $pram );
 $data ['ip'] = getClientIp ();
 $data ['brower'] = getBrower ();
-$data ['referer'] = $_SERVER ['HTTP_REFERER'];
+$data ['referer'] = safe ( $_SERVER ['HTTP_REFERER'] );
 $data ['cTime'] = time ();
 
 $sql = "INSERT INTO " . $config ['DB_PREFIX'] . "visit_log (publicid,uid,module_name,controller_name,action_name,param,ip,brower,referer,cTime) VALUES ( '{$data [publicid]}','{$data [uid]}','{$data [module_name]}','{$data [controller_name]}','{$data [action_name]}','{$data [param]}','{$data [ip]}','{$data [brower]}','{$data [referer]}','{$data [cTime]}');";
@@ -514,7 +519,7 @@ if ($time === false || $time < $over_time) {
 	$fo = fopen ( RUNTIME_PATH . $file, "w" );
 	
 	$sql = "DELETE FROM " . $config ['DB_PREFIX'] . "visit_log where cTime<" . $over_time;
-	//dump ( $sql );
+	// dump ( $sql );
 	$db->execute ( "$sql" );
 }
 

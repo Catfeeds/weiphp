@@ -14,7 +14,7 @@ class PinYinController extends AddonsController {
 		$param ['token'] = get_token ();
 		$param ['openid'] = get_openid ();
 		
-		addWeixinLog ( ”PinYinController“, $param );
+		addWeixinLog ( 'PinYinController', $param );
 		
 		$this->display ( SITE_PATH . '/Addons/XIXILovePinYin/View/default/show.html' );
 	}

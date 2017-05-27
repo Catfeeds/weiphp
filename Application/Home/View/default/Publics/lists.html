@@ -35,9 +35,10 @@
                 <td>{$data.count}</td>
                 <td>
                 <a href="{:U('Home/Index/main',array('publicid'=>$data[id]))}" target="_self">进入管理</a>&nbsp;&nbsp;&nbsp;
+<a href="{:U('Home/Public/check_res',array('id'=>$data[id]))}" target="_self">自动检测</a>&nbsp;&nbsp;&nbsp;                
                 <a href="{:U('Home/PublicLink/lists',array('mp_id'=>$data[id]))}" target="_self">管理员配置</a>&nbsp;&nbsp;&nbsp;
-                <a href="{:U('step_0',array('id'=>$data[id]))}" target="_self">编辑</a>&nbsp;&nbsp;&nbsp;
-                <a href="{:U('del',array('id'=>$data[id]))}" class="confirm">删除</a> </td>
+                <php>if(!C('PUBLIC_BIND') || !$data['is_bind']) { </php><a href="{:U('step_0',array('id'=>$data[id]))}" target="_self">编辑</a>&nbsp;&nbsp;&nbsp;<php> } </php>
+                <a href="javascript:;" onclick="do_del('{$data.id}','{$data.public_name}')" >取消绑定</a> </td>
               </tr>
               </volist>
             </tbody>
@@ -77,7 +78,7 @@
                 <td>{$data.public_name}</td>
                 <td>{$data.token}</td>
                 <td>{$data.count}</td>
-                <td><a href="{:U('Home/Public/main',array('public_id'=>$data[id]))}" target="_self">进入管理</a></td>
+                <td><a href="{:U('Home/Index/main',array('publicid'=>$data[id]))}" target="_self">进入管理</a></td>
               </tr>
               </volist>
             </tbody>
@@ -87,4 +88,19 @@
       </div>
     </section>
     </div>
+</block>
+<block name="script"> 
+<script type="text/javascript">
+//搜索功能
+function do_del(id,name){
+	var msg='您确定要 取消绑定 以下公众号吗？  '+name;
+	if(confirm(msg)){
+		var url="{:U('del')}";
+// 		alert(url);
+		$.post(url,{'id':id},function(){
+			location.reload();
+		});
+	}
+}
+</script>
 </block>

@@ -18,7 +18,7 @@
         	<strong>注册账号</strong>
         </p>
         <P>
-        	填写正确的用户名、密码、邮箱，以后将使用该用户名和密码登录乐摇系统：
+        	填写正确的用户名、密码、邮箱，以后将使用该用户名和密码登录{:C('WEB_SITE_TITLE')}系统：
             <br/>
             <img src="__IMG__/about/help/ly_lead_001.png"/>
         </P>
@@ -26,7 +26,7 @@
         	<strong>在微信公众号后台</strong>
         </p>
         <P>
-        	请按照图示填写正确的频道信息：
+        	请按照图示填写正确的信息：
             <br/>
             <img src="__IMG__/about/help/ly_lead_0021.png"/>
         </P>
@@ -56,7 +56,7 @@
              <br/>
              <notempty name="id">
              	URL(服务器地址)：<span style="color: #FF0000">{:U('home/weixin/index',array('id'=>$id))}</span><br>
-              	Token(令牌)：<span style="color: #F00">weiphp</span><br>
+              	Token(令牌)：<span style="color: #F00">{:SYSTEM_TOKEN}</span><br>
               <else/>
                 你还没有登录乐摇系统
               </notempty>

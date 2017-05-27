@@ -6,7 +6,7 @@
       <!-- 表单 -->
        <php> $post_url || $post_url = U('edit?model='.$model['id'], $get_param);</php>
       <form id="form" action="{$post_url}" method="post" class="form-horizontal" style="overflow:hidden">
-      	 <div class="fl" style="width:500px;">
+      	 <div >
             <div class="controls">
                 <label class="item-label">
                       卡券标题<span class="check-tips"></span>
@@ -14,14 +14,14 @@
                 <input type="text" name="title" class="text input-large" value="{$data.title}"/>
             </div>
             
+<!--             <div class="controls"> -->
+<!--                 <label class="item-label"> -->
+<!--                        卡劵密钥<span class="check-tips">通过微信卡券后台获取</span> -->
+<!--                 </label> -->
+<!--                 <input type="text" name="appsecre" value="{$data.appsecre}" class="text input-large" /> -->
+<!--             </div> -->
             <div class="controls">
-                <label class="item-label">
-                       卡劵密钥<span class="check-tips">通过微信卡券后台获取</span>
-                </label>
-                <input type="text" name="appsecre" value="{$data.appsecre}" class="text input-large" />
-            </div>
-            <div class="controls">
-                <label class="item-label">
+                <label class="item-label"><span class="need_flag">*</span>
                        卡券ID<span class="check-tips">通过微信卡券后台获取</span>
                 </label>
                 <input type="text" name="card_id" value="{$data.card_id}" class="text input-large" />
@@ -37,7 +37,7 @@
                 <label class="item-label">
                        商家LOGO<span class="check-tips"></span>
                 </label>
-                <div class="controls uploadrow2" title="点击修改图片" rel="shop_logo">
+                <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="shop_logo">
                   <input type="file" id="upload_picture_shop_logo">
                   <input type="hidden" name="shop_logo" id="cover_id_shop_logo" value="{$data.shop_logo}"/>
                   <notempty name="data.shop_logo">
@@ -93,7 +93,7 @@
                 <label class="item-label">
                        卡券图片<span class="check-tips"></span>
                 </label>
-                <div class="controls uploadrow2" title="点击修改图片" rel="background">
+                <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="background">
                   <input type="file" id="upload_picture_background">
                   <input type="hidden" name="background" id="cover_id_background" value="{$data.background}"/>
                    

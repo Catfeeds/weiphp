@@ -1,0 +1,159 @@
+[ 2017-05-26T14:23:12+08:00 ] 183.193.117.99 /weiphp/index.php?s=/Admin/Addons/index.html
+INFO: [ app_init ] --START--
+INFO: Run Behavior\BuildLiteBehavior [ RunTime:0.000015s ]
+INFO: Run Common\Behavior\InitHookBehavior [ RunTime:0.001752s ]
+INFO: [ app_init ] --END-- [ RunTime:0.002217s ]
+INFO: [ app_begin ] --START--
+INFO: Run Behavior\ReadHtmlCacheBehavior [ RunTime:0.000645s ]
+INFO: [ app_begin ] --END-- [ RunTime:0.000684s ]
+SQL: SELECT `value` FROM `wp_config` WHERE ( name="FOLLOW_YOUKE_UID" ) LIMIT 1   [ RunTime:0.0016s ]
+SQL: UPDATE `wp_config` SET `value`='-207' WHERE ( name="FOLLOW_YOUKE_UID" ) [ RunTime:0.0012s ]
+NOTIC: [8] Undefined index: uid /data/home/bxu2359140680/htdocs/weiphp/ThinkPHP/Library/Think/Controller.class.php 第 524 行.
+SQL: SHOW COLUMNS FROM `wp_auth_group_access` [ RunTime:0.0014s ]
+SQL: SELECT a.uid,a.group_id,g.title,g.rules FROM wp_auth_group_access a INNER JOIN wp_auth_group g on a.group_id=g.id  WHERE ( a.uid='-207' and g.status='1' )  [ RunTime:0.0015s ]
+SQL: SELECT `id`,`token` FROM `wp_public`  [ RunTime:0.0013s ]
+NOTIC: [8] Undefined offset: -1 /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/PublicModel.class.php 第 38 行.
+NOTIC: [8] Undefined index: addon_status /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/AddonStatusModel.class.php 第 47 行.
+NOTIC: [8] Undefined index: group_id /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/AddonStatusModel.class.php 第 50 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+SQL: SELECT * FROM `wp_manager_menu` WHERE `uid` = 0 AND `is_hide` = 0 ORDER BY sort asc, id asc  [ RunTime:0.0013s ]
+SQL: SELECT * FROM `wp_manager_menu` WHERE `uid` = 1 AND `is_hide` = 0 ORDER BY sort asc, id asc  [ RunTime:0.0014s ]
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined variable: addons /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Common/function.php 第 501 行.
+NOTIC: [8] Undefined offset: 14 /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 106 行.
+NOTIC: [8] Undefined offset: 14 /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 116 行.
+NOTIC: [8] Undefined offset: 60 /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 106 行.
+NOTIC: [8] Undefined offset: 60 /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 116 行.
+NOTIC: [8] Undefined index: HTTP_REFERER /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 139 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined index: side /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 179 行.
+NOTIC: [8] Undefined offset: 14 /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/ManagerMenuModel.class.php 第 185 行.
+SQL: SELECT * FROM `wp_public_link` WHERE `uid` = 0  [ RunTime:0.0013s ]
+NOTIC: [2] Invalid argument supplied for foreach() /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/PublicModel.class.php 第 48 行.
+NOTIC: [8] Undefined variable: res /data/home/bxu2359140680/htdocs/weiphp/Application/Common/Model/PublicModel.class.php 第 52 行.
+SQL: SELECT `id`,`title` FROM `wp_addons` WHERE `status` = 1  [ RunTime:0.0016s ]
+SQL: UPDATE `wp_attribute` SET `extra`='111:帐号配置
+93:互动游戏
+18:欢迎语
+19:微信用户中心
+56:自定义菜单
+101:微信卡券
+39:微官网
+42:微信宣传页
+48:自定义回复
+50:微调研
+91:微邀约
+97:微抢答
+100:通用表单
+106:微信红包
+107:竞猜
+108:微贺卡
+110:实物奖励
+126:开发者工具箱
+128:微名片
+130:自动回复
+133:支付通
+134:投票
+137:评论互动
+140:没回答的回复
+141:工作授权
+142:优惠券
+143:帮拆礼包
+144:会员卡
+145:签到
+146:微预约
+151:短信服务
+152:微考试
+153:微测试
+162:微社区
+163:扫码管理
+156:比赛抽奖
+164:一键绑定公众号
+166:XIXI爱拼音
+168:亲子游
+' WHERE `name` = 'addon_status' [ RunTime:0.0026s ]
+

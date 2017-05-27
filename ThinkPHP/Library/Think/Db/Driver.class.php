@@ -556,6 +556,7 @@ abstract class Driver {
                              $val[1] =  explode(',',$val[1]);
                         }
                         $zone      =   implode(',',$this->parseValue($val[1]));
+                        empty($zone) && $zone = 0;
                         $whereStr .= $key.' '.strtoupper($val[0]).' ('.$zone.')';
                     }
                 }elseif(preg_match('/BETWEEN/i',$val[0])){ // BETWEEN运算

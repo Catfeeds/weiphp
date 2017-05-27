@@ -16,36 +16,8 @@ use Think\Model;
  * @author 麦当苗儿 <zuojiazi@vip.qq.com>
  */
 class UserModel extends Model {
-	protected $_validate = array(
-		/* 验证用户名 */
-//		array('username', '1,30', -1, self::EXISTS_VALIDATE, 'length'), //用户名长度不合法
-//		array('username', 'checkDenyUser', -2, self::EXISTS_VALIDATE, 'callback'), //用户名禁止注册
-//		array('username', '', -3, self::EXISTS_VALIDATE, 'unique'), //用户名被占用
-		/* 验证密码 */
-//		array('password', '6,30', -4, self::EXISTS_VALIDATE, 'length'), //密码长度不合法
-		/* 验证邮箱 */
-//		array('email', 'email', -5, self::EXISTS_VALIDATE), //邮箱格式不正确
-//		array('email', '1,32', -6, self::EXISTS_VALIDATE, 'length'), //邮箱长度不合法
-//		array('email', 'checkDenyEmail', -7, self::EXISTS_VALIDATE, 'callback'), //邮箱禁止注册
-//		array('email', '', -8, self::EXISTS_VALIDATE, 'unique'), //邮箱被占用
-		/* 验证手机号码 */
-//		array('mobile', '//', -9, self::EXISTS_VALIDATE), //手机格式不正确 TODO:
-//		array('mobile', 'checkDenyMobile', -10, self::EXISTS_VALIDATE, 'callback'), //手机禁止注册
-//		array('mobile', '', -11, self::EXISTS_VALIDATE, 'unique'), //手机号被占用
-
-// 		array('username','require',-12), //必须填写用户名
-// 		array('username','1,16',-1,0,'length'), //16个字符以内
-//      	array('username','',-3,0,'unique',1), // 在新增的时候验证username字段是否唯一
-     	
-//      	array('password','6,30',-4,0,'length'),//密码在6~30个字符之间
-     	
-//      	array('mobile','/^(13[0-9]|15[0|3|6|7|8|9]|18[8|9])\d{8}$/',-9),//验证手机号码
-     	
-//      	array('email','email',-5),	//验证邮箱
-//      	array('email', '1,32', -6, 0, 'length'), //邮箱长度不合法
-     	
-//      	array('truename','require',-13),//验证联系人
-        array (
+	protected $_validate = array (
+			array (
 					'nickname',
 					'1,16',
 					'昵称长度为1-16个字符',
@@ -140,20 +112,9 @@ class UserModel extends Model {
 	 * @return boolean ture-登录成功，false-登录失败
 	 */
 	public function login($username, $password, $from = 'user_login', $type = 1) {
-		// $map ['password'] = array (
-		// 'exp',
-		// 'is not null'
-		// );
-		// $list = $this->where ( $map )->select ();
+		$username = safe ( $username, 'text' );
+		$password = safe ( $password, 'text' );
 		
-		// foreach ( $list as $vo ) {
-		// $map2 ['uid'] = $vo ['uid'];
-		// $save ['login_name'] = deal_emoji ( $vo ['nickname'], 1 );
-		
-		// $this->where ( $map2 )->save ( $save );
-		// lastsql ();
-		// }
-		// exit ();
 		/* 检测是否在当前应用注册 */
 		$map = array ();
 		switch ($type) {
@@ -174,9 +135,19 @@ class UserModel extends Model {
 		}
 		
 		/* 获取用户数据 */
+		
 		$user = $this->field ( true )->where ( $map )->find ();
 		
-		if (is_array ( $user ) && $user ['status']) {
+		if (! $user) {
+			unset ( $map );
+			$map ['login_name'] = $username;
+			$user = $this->field ( true )->where ( $map )->find ();
+		}
+		if ($from == 'admin_login' && intval ( $user ['uid'] ) !== C ( 'USER_ADMINISTRATOR' )) {
+			$this->error = '没有超级管理员权限，不能登录！';
+			return false;
+		}
+		if (is_array ( $user ) && intval ( $user ['status'] ) > 0) {
 			/* 验证用户密码 */
 			if (think_weiphp_md5 ( $password ) === $user ['password']) {
 				// 记录行为
@@ -292,8 +263,26 @@ class UserModel extends Model {
 					1 => '男',
 					2 => '女' 
 			);
+			$sexArr2 = array (
+					0 => 'Ta',
+					1 => '他',
+					2 => '她' 
+			);
 			$userInfo ['sex_name'] = $sexArr [$userInfo ['sex']];
+			$userInfo ['sex_alias'] = $sexArr2 [$userInfo ['sex']];
 			$userInfo = $this->_deal_nickname ( $userInfo, 1 );
+			
+			// 获取标签信息
+			$tag_map ['uid'] = $uid;
+			$userInfo ['tag_ids'] = M ( 'user_tag_link' )->where ( $tag_map )->getFields ( 'tag_id' );
+			if (! empty ( $userInfo ['tag_ids'] )) {
+				$tag_map2 ['id'] = array (
+						'in',
+						$userInfo ['tag_ids'] 
+				);
+				$titles = M ( 'user_tag' )->where ( $tag_map2 )->getFields ( 'title' );
+				$userInfo ['tag_titles'] = implode ( ',', $titles );
+			}
 			
 			S ( $key, $userInfo, 86400 );
 		}
@@ -312,6 +301,9 @@ class UserModel extends Model {
 		return $this->getUserInfo ( $uid, $update );
 	}
 	function updateInfo($uid, $save) {
+		if (empty ( $uid ))
+			return false;
+		
 		$save = $this->_deal_nickname ( $save );
 		
 		$map ['uid'] = $uid;
@@ -398,7 +390,19 @@ class UserModel extends Model {
 		$where2 = "remark LIKE '%$key%'";
 		$uids2 = ( array ) M ( 'public_follow' )->where ( $where2 )->getFields ( 'uid' );
 		
-		$uids = array_unique ( array_merge ( $uids, $uids2 ) );
+		// 搜索标签
+		$where3 = "title LIKE '%$key%'";
+		$tag_ids = ( array ) M ( 'user_tag' )->where ( $where3 )->getFields ( 'id' );
+		$uids3 = array ();
+		if (! empty ( $tag_ids )) {
+			$map ['tag_id'] = array (
+					'in',
+					$tag_ids 
+			);
+			$uids3 = ( array ) M ( 'user_tag_link' )->where ( $map )->getFields ( 'uid' );
+		}
+		
+		$uids = array_unique ( array_merge ( $uids, $uids2, $uids3 ) );
 		
 		if (empty ( $uids )) {
 			return 0;

@@ -15,19 +15,42 @@
 }
 .image_material .select_image{line-height: 196px; display:block; height:200px;}
 .image_material .delete{ position:absolute; bottom:3px; left:3px; display:none}
+.voice_wrap{ width:308px;float:left}
+.video_wrap{ width:222px;}
+#video_area{ height:250px}
+.appmsg_area .select_video{  height: 240px;line-height: 240px; cursor:pointer}
+#voice_area .delete{
+    display: none;
+}
 </style>
   <!-- 标签页导航 -->
   <div class="span9 page_message">
     <section id="contents">
       <include file="Addons/_nav" />
-      <div class="tab-content"> 
+      <div class="tab-content">
         <!-- 表单 -->
         <php> $post_url || $post_url = U('edit?model='.$model['id'], $get_param);</php>
         <form id="form" action="{$post_url}" method="post" class="form-horizontal form-center">
-          
+
               <volist name="fields" id="field">
                 <if condition="$field['is_show'] == 4">
-                  <input type="hidden" class="text" name="{$field.name}" value="{$data[$field['name']]}">
+                	<if condition="$field['name'] == 'voice_id' && $_GET['type']== 'voice'">
+						<div class="form-item cf show show4 appmsg_area" id="voice_area" style="margin:20px 0;">
+							 <input type="hidden" name="voice_id" value="{$data.voice_id}"/>
+						     <a class="select_appmsg" href="javascript:;" onClick="$.WeiPHP.openSelectAppMsg('{:U('/Home/Material/voice_data')}',selectVoiceCallback,'选择语音素材')">选择语音素材</a>
+						     <div class="voice_wrap"></div>
+						     <a class="delete" href="javascript:;" >删除</a>
+						</div>
+					<elseif condition="$field['name'] == 'video_id' && $_GET['type']== 'video'" />
+						<div class="form-item cf show show5 appmsg_area" id="video_area" style="margin:20px 0;">
+							 <input type="hidden" name="video_id" value="{$data.video_id}"/>
+						     <a class="select_appmsg select_video" href="javascript:;" onClick="$.WeiPHP.openSelectAppMsg('{:U('/Home/Material/video_data')}',selectVideoCallback,'选择视频素材')">选择视频素材</a>
+						     <div class="video_wrap" style="float: left;"></div>
+						     <a class="delete" href="javascript:;" style="left: 310px;">删除</a>
+						</div>					
+					<else/>
+					<input type="hidden" class="text" name="{$field.name}" value="{$data[$field['name']]}">
+                	</if>
                 </if>
                 <if condition="$field['is_show'] == 1 || $field['is_show'] == 3 || ($field['is_show'] == 5 && I($field['name']) )">
                   <div class="form-item cf toggle-{$field.name}">
@@ -37,7 +60,7 @@
                     <if condition="$field['name'] eq 'content'" >
                      <a href='javascript:;' id='getText'  onClick="selectText();" style="display: inline;border: 1px solid #DFE2EC;padding: 8px;margin-left: 20px;border-radius: 5px;background-color: #EEEFF1;color: #A6A8AD;">选择文本素材</a>
                    	 <elseif condition="$field['name'] eq 'image_id'"/>
-                   	   
+
                     </if>
                     <span class="check-tips">
                       <notempty name="field['remark']">（{$field['remark']}）</notempty>
@@ -45,6 +68,7 @@
                     <div class="controls">
                       <switch name="field.type">
                         <case value="num">
+                        {$field.name}
                           <input type="number" class="text" name="{$field.name}" value="{$data[$field['name']]}">
                         </case>
                         <case value="string">
@@ -60,19 +84,19 @@
                         </case>
                         <case value="date">
                           <input type="datetime" name="{$field.name}" class="text date" value="{$data[$field['name']]|time_format='Y-m-d'}" placeholder="请选择时间" />
-                        </case>                        
+                        </case>
                         <case value="bool">
                           <volist name=":parse_field_attr($field['extra'])" id="vo">
                           	<div class="check-item">
-							<!--[if !IE]><!-->  
+							<!--[if !IE]><!-->
 								  <input type="radio" class="regular-radio toggle-data" value="{$key}" id="{$field.name}_{$key}" name="{$field.name}" toggle-data="{$vo|get_hide_attr}"
 								  <eq name="data[$field['name']]" value="$key">checked="checked"</eq> />
-								  <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr} 
+								  <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr}
 							  <!--<![endif]-->
 							   <!--[if IE]>
-							       <input type="radio" value="{$key}" 
+							       <input type="radio" value="{$key}"
 								   id="{$field.name}_{$key}" name="{$field.name}" class="toggle-data" toggle-data="{$vo|get_hide_attr}"
-								  <eq name="data[$field['name']]" value="$key">checked="checked"</eq>/> 
+								  <eq name="data[$field['name']]" value="$key">checked="checked"</eq>/>
 								  <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr}
 							   <![endif]-->
                              </div>
@@ -90,31 +114,43 @@
                         <case value="cascade">
                         <div id="cascade_{$field.name}"></div>
                         {:hook('cascade', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
-                        </case>                      
+                        </case>
                         <case value="dynamic_select">
                         <div id="dynamic_select_{$field.name}"></div>
                         {:hook('dynamic_select', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
-                        </case>   
+                        </case>
+                        <case value="dynamic_checkbox">
+                        <div id="dynamic_checkbox_{$field.name}"></div>
+                        {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case>                           
+                        <case value="dynamic_checkbox">
+                        <div id="dynamic_checkbox_{$field.name}"></div>
+                        {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case>                           
+                        <case value="dynamic_checkbox">
+                        <div id="dynamic_checkbox_{$field.name}"></div>
+                        {:hook('dynamic_checkbox', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
+                        </case>                        
                         <case value="news">
                         <div id="news_{$field.name}"></div>
                         {:hook('news', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
-                        </case> 
+                        </case>
                         <case value="image">
                         <div id="image_{$field.name}"></div>
                         {:hook('image', array('name'=>$field['name'],'value'=>$data[$field['name']],'extra'=>$field['extra']))}
-                        
+
                         <case value="radio">
                           <volist name=":parse_field_attr($field['extra'])" id="vo">
                           	<div class="check-item">
-							<!--[if !IE]><!-->  
+							<!--[if !IE]><!-->
 								  <input type="radio" class="regular-radio toggle-data" value="{$key}" id="{$field.name}_{$key}" name="{$field.name}" toggle-data="{$vo|get_hide_attr}"
 								  <eq name="data[$field['name']]" value="$key">checked="checked"</eq> />
-								  <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr} 
+								  <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr}
 							  <!--<![endif]-->
 							   <!--[if IE]>
-							       <input type="radio" value="{$key}" 
+							       <input type="radio" value="{$key}"
 								   id="{$field.name}_{$key}" name="{$field.name}" class="toggle-data" toggle-data="{$vo|get_hide_attr}"
-								  <eq name="data[$field['name']]" value="$key">checked="checked"</eq>/> 
+								  <eq name="data[$field['name']]" value="$key">checked="checked"</eq>/>
 								  <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr}
 							   <![endif]-->
                              </div>
@@ -125,7 +161,7 @@
                           	<div class="check-item">
                               <input type="checkbox" class="regular-checkbox toggle-data" value="{$key}" id="{$field.name}_{$key}" name="{$field.name}[]" toggle-data="{$vo|get_hide_attr}"
                               <in name="key" value="$data[$field['name']]" >checked="checked"</in> >
-                              <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr} 
+                              <label for="{$field.name}_{$key}"></label>{$vo|clean_hide_attr}
                              </div>
                           </volist>
                         </case>
@@ -135,7 +171,7 @@
                             {:hook('adminArticleEdit', array('name'=>$field['name'],'value'=>$data[$field['name']]))} </label>
                         </case>
                         <case value="picture">
-                          <div class="controls uploadrow2" title="点击修改图片" rel="{$field.name}" style="float: left;">
+                          <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="{$field.name}" style="float: left;">
                             <input type="file" id="upload_picture_{$field.name}">
                             <input type="hidden" name="{$field.name}" id="cover_id_{$field.name}" value="{$data[$field['name']]}"/>
                             <div class="upload-img-box">
@@ -145,9 +181,9 @@
                               </notempty>
 
                             </div>
-                            
+
                           </div>
-                           
+
                             <div class='image_material' id='image_material'>
                               <input type="hidden" name="image_material" id="cover_id_image" value="{$data.image_material}"/>
                               <a class="select_image" href="javascript:;"  onClick="$.WeiPHP.openSelectAppMsg('{:U('/Home/Material/picture_data')}',selectImageCallback,'选择图片素材')">从素材库选择图片</a>
@@ -168,7 +204,7 @@
                                     </volist>
                                   </notempty>
                                 </div>
-                                <div class="controls uploadrow2 mult" title="点击上传图片" rel="{$field.name}">
+                                <div class="controls uploadrow2" data-max="9" title="点击上传图片" rel="{$field.name}">
                                   <input type="file" id="upload_picture_{$field.name}">
                                 </div>
                             </div>
@@ -183,7 +219,7 @@
                               </present>
                             </div>
                           </div>
-                          
+
                         </case>
                         <case value="user">
                         <div class="controls">
@@ -192,7 +228,7 @@
                                     <div class="item" onClick="$.WeiPHP.selectSingleUser('{:addons_url('UserCenter://UserCenter/lists')}','{$field.name}');">
                                         <php>
                                             $userInfo = getUserInfo($data[$field['name']]);
-                                            
+
                                         </php>
                                         <img src="{$userInfo['headimgurl']}"/><br/><span>{$userInfo['nickname']}</span>
                                         <input type="hidden" name="{$field.name}'" value="{$data[$field['name']]}"/>
@@ -214,12 +250,12 @@
                                 	<volist name="userIds" id="uid">
                                     <php>
                                             $userInfo = getUserInfo($uid);
-                                            
+
                                     </php>
                                     <div class="item" onClick="$.WeiPHP.selectSingleUser('{:addons_url('UserCenter://UserCenter/lists')}','{$field.name}');">
                                         <php>
                                             $userInfo = getUserInfo($data[$field['name']]);
-                                            
+
                                         </php>
                                         <img src="{$userInfo['headimgurl']}"/><br/><span>{$userInfo['nickname']}</span>
                                         <input type="hidden" name="{$field.name}'[]" value="{$data[$field['name']]}"/>
@@ -238,7 +274,7 @@
                                     <div class="item" onClick="$.WeiPHP.selectSingleUser('{:addons_url('UserCenter://UserCenter/admin_lists')}','{$field.name}');">
                                         <php>
                                             $userInfo = getUserInfo($data[$field['name']]);
-                                            
+
                                         </php>
                                         <img src="{$userInfo['headimgurl']}"/><br/><span>{$userInfo['nickname']}</span>
                                         <input type="hidden" name="{$field.name}'" value="{$data[$field['name']]}"/>
@@ -249,7 +285,7 @@
                                 </notempty>
                            </div>
                         </div>
-                      </case>                      
+                      </case>
                         <default/>
                         <input type="text" class="text input-large" name="{$field.name}" value="{$data[$field['name']]}">
                       </switch>
@@ -257,7 +293,7 @@
                   </div>
                 </if>
               </volist>
-           
+
         </div>
         <div class="form-item form_bh" style="text-align:center">
             <notempty name="data.id"><input type="hidden" name="id" value="{$data.id}"></notempty>
@@ -274,8 +310,8 @@
     <link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
     ';</php>
   <link href="__STATIC__/datetimepicker/css/dropdown.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.min.js"></script> 
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={:SITE_VERSION}" charset="UTF-8"></script> 
+  <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+  <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={:SITE_VERSION}" charset="UTF-8"></script>
   <script type="text/javascript">
   $(function(){
 	 var str_image='<div class="appmsg_item"><div class="main_img"><img src="{$data.cover_url}" width="200px" height="200px"/></div></div><div class="hover_area"></div>';
@@ -292,7 +328,7 @@
     $('input[name="image_material"]').val(0);
   }});
 	initUploadFile();
-   
+
    $('.time').datetimepicker({
         format: 'yyyy-mm-dd hh:ii',
         language:"zh-CN",
@@ -304,18 +340,18 @@
         language:"zh-CN",
         minView:2,
         autoclose:true
-    });	
+    });
     showTab();
-	
+
 	$('.toggle-data').each(function(){
 		var data = $(this).attr('toggle-data');
-		if(data=='') return true;		
-		
+		if(data=='') return true;
+
 	     if($(this).is(":selected") || $(this).is(":checked")){
 			 change_event(this)
 		 }
 	});
-	
+
 	$('.toggle-data').bind("click",function(){ change_event(this) });
 
   $('.image_material .delete').click(function(){
@@ -324,7 +360,46 @@
     $('.image_material .delete').hide();
     $('input[name="image_material"]').val(0);
   })
-
+	$('#voice_area .delete').click(function(){
+		$('.voice_wrap').html('').hide();
+		$('#voice_area .select_appmsg').show();
+		$('#voice_area .delete').hide();
+		$('input[name="voice_id"]').val(0);
+	})
+	$('#video_area .delete').click(function(){
+		$('.video_wrap').html('').hide();
+		$('#video_area .select_appmsg').show();
+		$('#video_area .delete').hide();
+		$('input[name="video_id"]').val(0);
+	})
+	$type = "{$_GET['type']}";
+	if($type == 'voice'){
+		var voice_html='';
+		var voiceid=$("input[name='voice_id']").val();
+		if(voiceid){
+			$.post("{:U('Home/Material/ajax_voice_by_id')}",{'voice_id':voiceid},function(vo){
+				if(vo){
+					voice_html+='<div class="picture_item"><div class="sound_item" onclick="playSound(\'sound_'+voiceid+'\',this);"><img class="icon_sound" src="__IMG__/icon_sound.png"><p class="audio_name">'+vo['title']+'<span class="fr colorless">'+vo['playtime']+'</span></p><audio id="sound_'+voiceid+'" src="'+vo['file_path']+'"></audio></div><div class="hover_area"></div></div>';
+					$('.voice_wrap').html(voice_html).show();
+					$('#voice_area .select_appmsg').hide();
+					$('#voice_area .delete').show();
+				}
+			});
+		}
+	}else if($type == 'video'){
+		var video_html='';
+		var videoid=$("input[name='video_id']").val();
+		if(videoid){
+			$.post("{:U('Home/Material/ajax_video_by_id')}",{'video_id':videoid},function(vo){
+				if(vo){
+					video_html+='<div class="picture_item"><div class="video_item"><p class="title">'+vo['title']+'</p> <p class="ctime colorless">'+vo['cTime']+'</p><div class="video_area"><video src="'+vo['file_url']+'" controls="controls">您的浏览器不支持 video 标签。</video></div><p></p></div></div>';
+					$('.video_wrap').html(video_html).show();
+					$('#video_area .select_appmsg').hide();
+					$('#video_area .delete').show();
+				}
+			});
+		}
+	}
 
 });
   function selectImageCallback(_this){
@@ -350,7 +425,36 @@
 			}
 		})
 	}
+  function selectVoiceCallback(_this){
+		$(_this).find('.icon_sound').attr('src',IMG_PATH+'/icon_sound.png');
+		$('.voice_wrap').html($(_this).html()).show();
+		$('#voice_area .select_appmsg').hide();
+		$('#voice_area .delete').show();
+		$('input[name="voice_id"]').val($(_this).data('id'));
+		$.Dialog.close();
+	}
+	function selectVideoCallback(_this){
+		$('.video_wrap').html($(_this).html()).show();
+		$('#video_area .select_appmsg').hide();
+		$('#video_area .delete').show();
+		$('input[name="video_id"]').val($(_this).data('id'));
+		$.Dialog.close();
+	}
+	function playSound(id,obj){
+		var audio = document.getElementById(id);
+		if(audio.paused){
+			audio.play();
+			$(obj).find('img').attr('src',IMG_PATH+'/icon_sound_play.gif');
+			audio.addEventListener('ended', function () {  
+//	 			alert('over');
+				$(obj).find('img').attr('src',IMG_PATH+'/icon_sound.png');
+			}, false);
+			return;
+		}
+		audio.pause();
+		$(obj).find('img').attr('src',IMG_PATH+'/icon_sound.png');
+		
+	}
 
-
-</script> 
+</script>
 </block>

@@ -11,14 +11,14 @@ class ReserveAttributeController extends BaseController {
 		parent::_initialize();
 		
 		$this->model = $this->getModel ( 'reserve_attribute' );
-		
-		$param ['reserve_id'] = $this->reserve_id = intval ( $_REQUEST ['reserve_id'] );
-		
+		$param['mdm']=$_GET['mdm'];
+
 		$res ['title'] = '微预约';
-		$res ['url'] = addons_url ( 'Reserve://Reserve/lists' );
+		$res ['url'] = addons_url ( 'Reserve://Reserve/lists',$param );
 		$res ['class'] = '';
 		$nav [] = $res;
 		
+		$param ['reserve_id'] = $this->reserve_id = intval ( $_REQUEST ['reserve_id'] );
 		$res ['title'] = '字段管理';
 		$res ['url'] = addons_url ( 'Reserve://ReserveAttribute/lists', $param );
 		$res ['class'] = 'current';
@@ -49,7 +49,7 @@ class ReserveAttributeController extends BaseController {
 				
 				// 清空缓存
 				method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'edit' );
-				
+				$param['mdm']=$_GET['mdm'];
 				$param ['reserve_id'] = $this->reserve_id;
 				$param ['model'] = $this->model ['id'];
 				$url = U ( 'lists', $param );
@@ -73,7 +73,7 @@ class ReserveAttributeController extends BaseController {
 				
 				// 清空缓存
 				method_exists ( $Model, 'clear' ) && $Model->clear ( $id, 'edit' );
-				
+				$param['mdm']=$_GET['mdm'];
 				$param ['reserve_id'] = $this->reserve_id;
 				$param ['model'] = $this->model ['id'];
 				$url = U ( 'lists', $param );

@@ -89,12 +89,22 @@ class CustomModel extends Model {
 			// 文章内容
 			$art ['title'] = $vo ['title'];
 			$art ['description'] = $vo ['intro'];
+			$openid = get_openid ();
 			if (empty ( $vo ['url'] )) {
-				$art ['url'] = U ( 'Material/news_detail', array (
-						'id' => $vo ['id'] 
-				) );
+				$art ['url'] = replace_url ( $vo ['link'] );
+				$public_info=get_token_appinfo();
+				if (! $art ['url']) {
+					$art ['url'] = U ( 'Material/news_detail', array (
+							'id' => $vo ['id'],
+					       'publicid'=>$public_info['id']
+					) );
+				}
 			} else {
 				$art ['url'] = $vo ['url'];
+			}
+			
+			if (! C ( 'USER_OAUTH' )) {
+				$art ['url'] .= '&openid=' . $openid;
 			}
 			
 			// 获取封面图片URL
@@ -106,6 +116,7 @@ class CustomModel extends Model {
 		
 		return $this->_replyData ( $uid, $param, 'news' );
 	}
+	
 	/* 发送回复消息到微信平台 */
 	function _replyData($uid, $param, $msg_type) {
 		$map ['token'] = get_token ();
@@ -169,9 +180,12 @@ class CustomModel extends Model {
 	
 	// 新增临时 voice 语音/ video 视频素材
 	function get_file_media_id($file_id,$type='voice') {
+	  
 	    $fileInfo=M('file')->find($file_id);
 	    if ($fileInfo){
+	       
 	        $path='/Uploads/Download/'.$fileInfo['savepath'].$fileInfo['savename'];
+	        
 	        if (! $path) {
 	           return 0;
 	        }

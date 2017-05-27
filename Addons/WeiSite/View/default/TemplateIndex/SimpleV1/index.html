@@ -1,9 +1,14 @@
 <include file="Public/mobile_head"/>	
 <link href="{:CUSTOM_TEMPLATE_PATH}Index/SimpleV1/main.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
-<body id="weisite" style="background:#eee url({$config.background}) no-repeat; background-size:100% 100%">
+<style>
+body{
+	background:#eee url({$config.background}) no-repeat; background-size:100% 100%
+}
+</style>
+<body id="weisite">
 <div class="container">
     <if condition="!empty($slideshow)">
-    <section class="banner">
+    <section class="banner" id="banner">
     	<ul>
         <volist name="slideshow" id="vo">
         	<li>
@@ -19,11 +24,18 @@
         </span>
     </section>
     </if>
+     <div class="mainbg" style="background:#7ABDE9;">
+<!--  	<img src="{$config.background}" /> -->
+    <volist name="config.background_arr" id="so">
+        <input type='hidden' id='bg_{$key}' value="{$so|get_cover_url}">
+    </volist>
+</div>
+    
     <if condition="!empty($category)">
     <section>
     	<ul class="icon_lists">
             <volist name="category" id="vo">
-            <li class="single_item m_15">
+            <li class="single_item m_15" style='opacity: 0.8;'>
                 <a class="item p_10 arrow_icon mr_10" href="{$vo.url}">
                     <span class="icon random_color"><img src="{$vo.icon}"/></span>
                     <span class="click_item_txt">{$vo.title}</span>
@@ -50,9 +62,28 @@
 </body>
 <script type="text/javascript">
 $(function(){
-	$.WeiPHP.initBanner(true,5000);
+    $.WeiPHP.initBanner('#banner',true,5000);
 	$.WeiPHP.setRandomColor('.random_color');
+	var h=$(window).height();
+	$('#weisite').css('min-height',h);
 })
+
+</script>
+<script type="text/javascript">
+$(function(){
+	var count = $('.mainbg input').length;
+	var i=0;
+	 var imgurl='';
+	 setInterval(function(){
+		imgurl=$('#bg_'+i).val();
+// 		 $('.mainbg img').attr('src', imgurl).fadeTo('3000',1);
+		$('#weisite').css('background-image',"url("+imgurl+")");
+		 i++;
+		 if(i==count){
+			 i=0;
+		 }
+	 },3500);
+});
 
 </script>
 </html>

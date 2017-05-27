@@ -6,44 +6,48 @@ use Addons\WeiSite\Controller\BaseController;
 
 class WeiSiteController extends BaseController {
 	function config() {
-		// 使用提示
-		$publicid = get_token_appinfo('','id');
-		$normal_tips = '在微信里回复“微官网”即可以查看效果，也可点击:<a target="_blank" href="' . U ( 'preview' ) . '">预览</a>,<a id="copyLink" data-clipboard-text="' . U ( 'index',array('publicid'=>$publicid)) . '">复制链接</a><script type="application/javascript">$.WeiPHP.initCopyBtn("copyLink");</script>';
+		$public_info = get_token_appinfo ();
+		$normal_tips = '在微信里回复“微官网”即可以查看效果,也可以点击：<a href="' . addons_url ( 'WeiSite://WeiSite/index', array (
+				'publicid' => $public_info ['id'] 
+		) ) . '">预览</a>， <a id="copyLink" data-clipboard-text="' . addons_url ( 'WeiSite://WeiSite/index', array (
+				'publicid' => $public_info ['id'] 
+		) ) . '">复制链接</a><script type="application/javascript">$.WeiPHP.initCopyBtn("copyLink");</script>';
 		$this->assign ( 'normal_tips', $normal_tips );
 		
+		$config = D ( 'Common/AddonConfig' )->get ( _ADDONS );
+		// dump(_ADDONS);
 		if (IS_POST) {
+			$_POST ['config'] ['background'] = implode ( ',', $_POST ['background'] );
+			// $config = array_merge ( ( array ) $config, ( array ) $_POST ['config'] );
 			$flag = D ( 'Common/AddonConfig' )->set ( _ADDONS, $_POST ['config'] );
-			
 			if ($flag !== false) {
-				$this->success ( '保存成功', Cookie ( '__forward__' ) );
+				if ($_GET ['from'] == 'preview') {
+					$url = U ( 'preview' );
+				} else {
+					$url = Cookie ( '__forward__' );
+				}
+				$this->success ( '保存成功', $url );
 			} else {
 				$this->error ( '保存失败' );
 			}
 			exit ();
 		}
-		
-		parent::config ();
+		$config ['background_arr'] = explode ( ',', $config ['background'] );
+		$config ['background'] = $config ['background_arr'] [0];
+		$this->assign ( 'data', $config );
+		$this->display ();
 	}
 	// 首页
 	function index() {
-		add_credit ( 'weisite', 86400 );
-		
+		// add_credit ( 'weisite', 86400 );
 		if (file_exists ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/pigcms/Index_' . $this->config ['template_index'] . '.html' )) {
 			$this->pigcms_index ();
 			$this->display ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/pigcms/Index_' . $this->config ['template_index'] . '.html' );
 		} else {
-			$map ['token'] = get_token ();
-			$map ['is_show'] = 1;
+			$map1 ['token'] = $map ['token'] = get_token ();
+			$map1 ['is_show'] = $map ['is_show'] = 1;
 			$map ['pid'] = 0; // 获取一级分类
 			                  
-			// 幻灯片
-			$slideshow = M ( 'weisite_slideshow' )->where ( $map )->order ( 'sort asc, id desc' )->select ();
-			foreach ( $slideshow as &$vo ) {
-				$vo ['img'] = get_cover_url ( $vo ['img'] );
-			}
-			$this->assign ( 'slideshow', $slideshow );
-			// dump($slideshow);
-			
 			// 分类
 			$category = M ( 'weisite_category' )->where ( $map )->order ( 'sort asc, id desc' )->select ();
 			foreach ( $category as &$vo ) {
@@ -53,7 +57,24 @@ class WeiSiteController extends BaseController {
 				) );
 			}
 			$this->assign ( 'category', $category );
+			// dump($category);
+			// 幻灯片
+			$slideshow = M ( 'weisite_slideshow' )->where ( $map1 )->order ( 'sort asc, id desc' )->select ();
+			foreach ( $slideshow as &$vo ) {
+				$vo ['img'] = get_cover_url ( $vo ['img'] );
+			}
 			
+			foreach ( $slideshow as &$data ) {
+				foreach ( $category as $cate ) {
+					if ($data ['cate_id'] == $cate ['id'] && empty ( $data ['url'] )) {
+						$data ['url'] = $cate ['url'];
+					}
+				}
+			}
+			$this->assign ( 'slideshow', $slideshow );
+			// dump($slideshow);
+			
+			// dump($category);
 			$map2 ['token'] = $map ['token'];
 			$public_info = get_token_appinfo ( $map2 ['token'] );
 			$this->assign ( 'publicid', $public_info ['id'] );
@@ -61,27 +82,32 @@ class WeiSiteController extends BaseController {
 			$this->assign ( 'manager_id', $this->mid );
 			
 			$this->_footer ();
-			
-			$this->display ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/TemplateIndex/' . $this->config ['template_index'] . '/index.html' );
+			// $backgroundimg=ONETHINK_ADDON_PATH.'WeiSite/View/default/TemplateIndex/'.$this->config['template_index'].'/icon.png';
+			if ($this->config ['show_background'] == 0) {
+				$this->config ['background'] = '';
+				$this->assign ( 'config', $this->config );
+			}
+			$html = empty ( $this->config ['template_index'] ) ? 'ColorV1' : $this->config ['template_index'];
+			$this->display ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/TemplateIndex/' . $html . '/index.html' );
 		}
 	}
 	// 分类列表
 	function lists() {
 		$cate_id = I ( 'cate_id', 0, 'intval' );
 		empty ( $cate_id ) && $cate_id = I ( 'classid', 0, 'intval' );
-		
 		if (file_exists ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/pigcms/Index_' . $this->config ['template_lists'] . '.html' )) {
+			
 			$this->pigcms_lists ( $cate_id );
 			$this->display ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/pigcms/Index_' . $this->config ['template_lists'] . '.html' );
 		} else {
 			$map ['token'] = get_token ();
 			if ($cate_id) {
 				$map ['cate_id'] = $cate_id;
+				$cate = M ( 'weisite_category' )->where ( 'id = ' . $map ['cate_id'] )->find ();
+				$this->assign ( 'cate', $cate );
+				// 二级分类
+				$category = M ( 'weisite_category' )->where ( 'pid = ' . $map ['cate_id'] )->order ( 'sort asc, id desc' )->select ();
 			}
-			$cate = M ( 'weisite_category' )->where ( 'id = ' . $map ['cate_id'] )->find ();
-			$this->assign ( 'cate', $cate );
-			// 二级分类
-			$category = M ( 'weisite_category' )->where ( 'pid = ' . $map ['cate_id'] )->order ( 'sort asc, id desc' )->select ();
 			if (! empty ( $category )) {
 				foreach ( $category as &$vo ) {
 					$vo ['icon'] = get_cover_url ( $vo ['icon'] );
@@ -90,17 +116,51 @@ class WeiSiteController extends BaseController {
 					) );
 				}
 				$this->assign ( 'category', $category );
+				// 幻灯片
+				
+				$slideshow = M ( 'weisite_slideshow' )->where ( $map )->order ( 'sort asc, id desc' )->select ();
+				foreach ( $slideshow as &$vo ) {
+					$vo ['img'] = get_cover_url ( $vo ['img'] );
+				}
+				
+				foreach ( $slideshow as &$data ) {
+					foreach ( $category as $c ) {
+						if ($data ['cate_id'] == $c ['id']) {
+							$data ['url'] = $c ['url'];
+						}
+					}
+				}
+				$this->assign ( 'slideshow', $slideshow );
+				
 				$this->_footer ();
-				$this->display ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/TemplateSubcate/' . $this->config ['template_subcate'] . '/index.html' );
+				if ($this->config ['template_subcate'] == 'default') {
+					// code...
+					$htmlstr = 'cate.html';
+				} else {
+					$htmlstr = 'index.html';
+				}
+				if (! $cate ['template']) {
+					$cate ['template'] = $this->config ['template_subcate'];
+				}
+				$this->display ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/TemplateSubcate/' . $cate ['template'] . '/' . $htmlstr );
 			} else {
 				
 				$page = I ( 'p', 1, 'intval' );
 				$row = isset ( $_REQUEST ['list_row'] ) ? intval ( $_REQUEST ['list_row'] ) : 20;
 				
 				$data = M ( 'custom_reply_news' )->where ( $map )->order ( 'sort asc, id DESC' )->page ( $page, $row )->select ();
+				if (empty ( $data )) {
+					$cmap ['id'] = $map ['cate_id'] = intval ( $cate_id );
+					$cate = M ( 'weisite_category' )->where ( $cmap )->find ();
+					if (! empty ( $cate ['url'] )) {
+						redirect ( $cate ['url'] );
+						die ();
+					}
+				}
 				/* 查询记录总数 */
 				$count = M ( 'custom_reply_news' )->where ( $map )->count ();
 				$list_data ['list_data'] = $data;
+				
 				// 分页
 				if ($count > $row) {
 					$page = new \Think\Page ( $count, $row );
@@ -108,9 +168,26 @@ class WeiSiteController extends BaseController {
 					$list_data ['_page'] = $page->show ();
 				}
 				
+				foreach ( $list_data ['list_data'] as $k => $li ) {
+					if ($li ['jump_url'] && empty ( $li ['content'] )) {
+						$li ['url'] = $li ['jump_url'];
+					} else {
+						$li ['url'] = U ( 'detail', array (
+								'id' => $li ['id'] 
+						) );
+					}
+					$showType = explode ( ',', $li ['show_type'] );
+					if (in_array ( 1, $showType )) {
+						$slideData [] = $li;
+					}
+					if (in_array ( 0, $showType )) {
+						// unset($list_data['list_data'][$k]);
+						$lists [] = $li;
+					}
+				}
+				$this->assign ( 'slide_data', $slideData );
+				$this->assign ( 'lists', $lists );
 				$this->assign ( $list_data );
-				// dump ( $list_data );
-				
 				$this->_footer ();
 				$this->display ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/TemplateLists/' . $this->config ['template_lists'] . '/lists.html' );
 			}
@@ -124,8 +201,14 @@ class WeiSiteController extends BaseController {
 		} else {
 			$map ['id'] = I ( 'get.id', 0, 'intval' );
 			$info = M ( 'custom_reply_news' )->where ( $map )->find ();
+			// dump($info);exit;
+			if ($info ['is_show'] == '0') {
+				unset ( $info ['cover'] );
+			}
+			// dump($info);exit;
 			$this->assign ( 'info', $info );
 			
+			// dump($info);exit;
 			M ( 'custom_reply_news' )->where ( $map )->setInc ( 'view_count' );
 			
 			$this->_footer ();
@@ -172,7 +255,9 @@ class WeiSiteController extends BaseController {
 				$p ['child'] = $two_arr;
 			}
 			$this->assign ( 'footer', $one_arr );
-			
+			if (empty ( $this->config ['template_footer'] )) {
+				$this->config ['template_footer'] = 'V1';
+			}
 			$html = $this->fetch ( ONETHINK_ADDON_PATH . 'WeiSite/View/default/TemplateFooter/' . $this->config ['template_footer'] . '/footer.html' );
 			$this->assign ( 'footer_html', $html );
 		}
@@ -284,17 +369,29 @@ class WeiSiteController extends BaseController {
 		);
 		
 		// 背景图
-		$data ['flashbgcount'] = 1;
-		$data ['flashbg'] [0] = array (
-				'id' => $this->config ['background_id'],
-				'token' => $public_info ['token'],
-				'img' => $this->config ['background'],
-				'url' => "javascript:void(0)",
-				'info' => "背景图片",
-				'tip' => '2' 
-		);
+		$bgarr = $this->config ['background_arr'];
+		$data ['flashbgcount'] = count ( $bgarr );
+		foreach ( $bgarr as $bg ) {
+			$data ['flashbg'] [] = array (
+					'id' => $bg,
+					'token' => $public_info ['token'],
+					'img' => get_cover_url ( $bg ),
+					'url' => "javascript:void(0)",
+					'info' => "背景图片",
+					'tip' => '2' 
+			);
+		}
+		// $data ['flashbg'] [0] = array (
+		// 'id' => $this->config ['background_id'],
+		// 'token' => $public_info ['token'],
+		// 'img' => $this->config ['background'],
+		// 'url' => "javascript:void(0)",
+		// 'info' => "背景图片",
+		// 'tip' => '2'
+		// );
 		$data ['flashbgcount'] = count ( $data ['flashbg'] );
-		
+		$map ['token'] = get_token ();
+		$map ['is_show'] = 1;
 		// 幻灯片
 		$slideshow = M ( 'weisite_slideshow' )->where ( $map )->order ( 'sort asc, id desc' )->select ();
 		foreach ( $slideshow as $vo ) {
@@ -437,6 +534,9 @@ class WeiSiteController extends BaseController {
 		
 		$map ['id'] = I ( 'get.id', 0, 'intval' );
 		$res = M ( 'custom_reply_news' )->where ( $map )->find ();
+		if ($res ['is_show'] == 0) {
+			unset ( $res ['cover'] );
+		}
 		$res = $this->_deal_news ( $res, 1 );
 		$this->assign ( 'res', $res );
 		M ( 'custom_reply_news' )->where ( $map )->setInc ( 'view_count' );
@@ -532,10 +632,37 @@ class WeiSiteController extends BaseController {
 		return $url;
 	}
 	/* 预览 */
-	function preview(){
-		$publicid = get_token_appinfo('','id');
-	    $url = addons_url('WeiSite://WeiSite/index',array('publicid'=>$publicid));
-	    $this->assign('url', $url);
-	    $this->display(SITE_PATH . '/Application/Home/View/default/Addons/preview.html');
+	function preview() {
+		$publicid = get_token_appinfo ( '', 'id' );
+		$url = addons_url ( 'WeiSite://WeiSite/index', array (
+				'publicid' => $publicid 
+		) );
+		$this->assign ( 'url', $url );
+		
+		$config = get_addon_config ( 'WeiSite' );
+		
+		$config ['background_arr'] = explode ( ',', $config ['background'] );
+		$config ['background'] = $config ['background_arr'] [0];
+		$this->assign ( 'data', $config );
+		
+		$this->display ();
+	}
+	function preview_cms() {
+		$publicid = get_token_appinfo ( '', 'id' );
+		$url = addons_url ( 'WeiSite://WeiSite/lists', array (
+				'publicid' => $publicid,
+				'from' => 'preview' 
+		) );
+		$this->assign ( 'url', $url );
+		
+		$this->display ();
+	}
+	function preview_old() {
+		$publicid = get_token_appinfo ( '', 'id' );
+		$url = addons_url ( 'WeiSite://WeiSite/index', array (
+				'publicid' => $publicid 
+		) );
+		$this->assign ( 'url', $url );
+		$this->display ( SITE_PATH . '/Application/Home/View/default/Addons/preview.html' );
 	}
 }

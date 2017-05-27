@@ -23,22 +23,9 @@
                       <input type="text" class="text input-large" name="title" value="{$data.title}">
                     </div>
                   </li>  
-                  <label class="item-label">
-                                投票类型 <span class="check-tips">
-                                </span></label>
-                  
-                  <div class="controls">
-                      <div class="check-item">
-                              <input type="radio" name="select_type" value="0" class="regular-radio" id="select_type_1" checked=""><label for="select_type_1"> </label>单选
-                           </div>
-                           <div class="check-item">   
-                              <input type="radio" name="select_type" value="1" class="regular-radio" id="select_type_2"  ><label for="select_type_2"> </label>双选
-                        
-                        </div>
-                     </div>
                   <li class="form-item cf">
                   		<label class="item-label"><span class="need_flag">*</span>封面图片<span class="check-tips">图片高度控制在200px-400px之间</span></label>
-                		<div class="controls uploadrow2" title="点击修改图片" rel="picurl">
+                		<div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="picurl">
                             <input type="file" id="upload_picture_picurl">
                             <input type="hidden" name="picurl" id="cover_id_picurl" value="{$data.picurl}"/>
                             <div class="upload-img-box" rel="img">
@@ -73,10 +60,15 @@
             	  </li>
                   
                   <li class="form-item cf">
-                    <label class="item-label"><span class="need_flag">*</span>有效期<span class="check-tips"></span></label>
+                    <label class="item-label"><span class="need_flag">*</span>开始时间<span class="check-tips"></span></label>
                     <div class="controls">
-                       <input type="datetime" name="start_date" class="text time" value="{$data.start_date|time_format}" placeholder="请选择时间" /> - 
-                       <input type="datetime" name="end_date" class="text time" value="{$data.end_date|time_format}" placeholder="请选择时间" />
+                       <input type="datetime" name="start_date" class="text input-large time" value="{$data.start_date|time_format}" placeholder="请选择时间" />
+                    </div>
+                  </li>  
+                  <li class="form-item cf">
+                    <label class="item-label"><span class="need_flag">*</span>结束时间<span class="check-tips"></span></label>
+                    <div class="controls">
+                       <input type="datetime" name="end_date" class="text input-large time" value="{$data.end_date|time_format}" placeholder="请选择时间" />
                     </div>
                   </li>   
                   
@@ -109,12 +101,12 @@
                           
                           <tr class="add_list">
                             <td class="pic_td">
-                            <div class="uploadrow" title="更改图片">
+                            <div class="uploadrow2" data-max="1" title="更改图片" rel="{$vo.id}">
                             <input type="file" class="uploadImage" id="uploadImage_exist_{$vo.id}" rel="{$vo.id}">
                             <input type="hidden" name="image[{$vo.id}]" id="cover_id_{$vo.id}" value="{$vo.image}"/>
                             <div class="upload-img-box">
                               <notempty name="vo.image">
-                                <div class="upload-pre-item"><img width="120" height="120" src="{$vo.image|get_cover_url}"/></div>
+                                <div class="upload-pre-item"><img width="100" height="100" src="{$vo.image|get_cover_url}"/></div>
                               </notempty>
                             </div>
                             </div>
@@ -163,45 +155,7 @@ if(C('COLOR_STYLE')=='blue_color') echo '
 /* 初始化上传插件 */
 var node = '';
 function initPuls(){
-	$(".uploadImage").each(function(index, obj) {
-		var id = $(obj).attr('rel');
-		if(id>0)
-			node = '#uploadImage_exist_'+id;
-		else
-		    node = '#uploadImage_'+(0-id);
-		
-		$(node).uploadify({
-			"height"          : 120,
-			"swf"             : "__STATIC__/uploadify/uploadify.swf",
-			"fileObjName"     : "download",
-			"buttonText"      : "上传图片",
-			"uploader"        : "{:U('home/File/uploadPicture',array('session_id'=>session_id()))}",
-			"width"           : 120,
-			'removeTimeout'	  : 1,
-			'fileTypeExts'	  : '*.jpg; *.png; *.gif;',
-			"onUploadSuccess" : function(file, data, response) {
-                uploadPictureimage(file, data, id);
-            }
-	    });
-	});
-}
-
-function uploadPictureimage(file, data, id){
-	var data = $.parseJSON(data);
-	var src = '';
-	if(data.status){
-		$("#cover_id_"+id).val(data.id);
-		src = data.url || '__ROOT__' + data.path;
-		$("#cover_id_"+id).parent().find('.upload-img-box').html(
-			'<div class="upload-pre-item"><img width="120" height="120" src="' + src + '"/></div>'
-		);
-	} else {
-		updateAlert(data.info);
-		setTimeout(function(){
-			$('#top-alert').find('button').click();
-			$(that).removeClass('disabled').prop('disabled',false);
-		},1500);
-	}
+	initUploadImg();
 }
 
 function addOpt(){
@@ -209,7 +163,7 @@ function addOpt(){
 	$('.optionSort').each(function(){i++;});
 	var id = 0-i;
 	
-	var html = '<tr class="add_list"><td class="pic_td"><div class="uploadrow" title="更改图片">'
+	var html = '<tr class="add_list"><td class="pic_td"><div class="uploadrow2" data-max="1" rel="'+id+'" title="更改图片">'
 		+'<input type="file" class="uploadImage" id="uploadImage_'+i+'" rel="'+id+'"/>'
 		+'<input type="hidden" name="image['+id+']" id="cover_id_'+id+'"/>'
 		+'<div class="upload-img-box"></div>'

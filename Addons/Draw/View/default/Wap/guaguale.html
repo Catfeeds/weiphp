@@ -5,12 +5,13 @@
 		
         <div class="guaguale_container">
         	<div id="guaArea" class="guagua_area" style="width: 300px; height: 177px; background: url({:ADDON_PUBLIC_PATH}/loading_prize.png?v={:SITE_VERSION}) no-repeat center center; background-size: auto 70%;">
+            <span></span>
             </div>
         </div>
         <div class="prize_content">
         	<div class="tips_div">
              <eq name='has_prize' value='1'>
-            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;你还有奖品未领取</a>
+            	<a class="unget_btn" href="{:U('my_prize')}&games_id={$info.id}"><img src="__IMG__/notice.png" height="16" style="vertical-align:-2px"/>&nbsp;查看中奖奖品</a>
             </eq>
             </div>
             <div class="content_item">
@@ -71,11 +72,19 @@
         <p class="copyright">{$system_copy_right}{$tongji_code}</p>
     </div>
     
-    <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initGuaguale.js"></script>
+    <script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/initGuaguale.js?v=1"></script>
     <script>
+    var title='{$public_info.public_name}';
+    var qrcode='{$qrcode}';
+    var has_subscribe = "{$has_subscribe}";
 	var container = document.getElementById('guaArea');
  	initGuaGuaKa(container, parseInt(container.style.width), parseInt(container.style.height), '#dddddd','{:ADDON_PUBLIC_PATH}/gua_pic.png','{$joinurl}');
-	//分享
+	$('#guaArea').click(function(){
+		if(!(check_subscribe())){
+    		return false;
+    	}
+	});
+ 	//分享
 	$.WeiPHP.initWxShare({
 		title:'{$shareData.title}',
 		desc:'{$shareData.desc}',

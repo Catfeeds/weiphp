@@ -2,7 +2,7 @@
 <block name="body">
   <style type="text/css">
     td{ font-size:14px;}
-  	#phone{ position:relative; margin:0 0; width:400px; height:698px; background:url(/shop/Public/Home/images/preview_phone_short.jpg) no-repeat center 0;}
+  	#phone{ position:relative; margin:0 0; width:400px; height:698px; background:url({:SITE_URL}/Public/Home/images/preview_phone_short.jpg) no-repeat center 0;}
 	#frame{ position:absolute; left:0; margin:100px 0 0 40px; width:320px; border:2px solid #333; background:#666; height:487px;width:320px; overflow:hidden;}
 	.wx_menu{ position:absolute; bottom:0; left:0; right:0; height:50px; background:#fff;}
 	.wx_menu .keyboard{ float:left; width:44px;height:50px; background:url(__IMG__/wx_menu_keyboard_icon.png) no-repeat; background-size:100% 100%; border-right:1px solid #CCC;}
@@ -122,18 +122,19 @@
   <script type="text/javascript">
 $(function(){
 	//搜索功能
-	$("#search").click(function(){
-		var url = $(this).attr('url');
-        var query  = $('.search-form').find('input').serialize();
-        query = query.replace(/(&|^)(\w*?\d*?\-*?_*?)*?=?((?=&)|(?=$))/g,'');
-        query = query.replace(/^&/g,'');
+  $("#search").click(function(){
+    var url = $(this).attr('url');
+    var str = $('.search-input').val()
+        var query  = $('.search-input').attr('name')+'='+str.replace(/(^\s*)|(\s*$)/g,"");
+
         if( url.indexOf('?')>0 ){
             url += '&' + query;
         }else{
             url += '?' + query;
         }
-		window.location.href = url;
-	});
+    window.location.href = url;
+  }); 
+
 
     //回车自动提交
     $('.search-form').find('input').keyup(function(event){

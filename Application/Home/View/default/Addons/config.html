@@ -61,6 +61,11 @@
 								</select>
 							</div>
 							</case>
+							<case value="material">
+                    			<div id="material_{$o_key}"></div>
+                  {:hook('material', array('name'=>$o_key,'value'=>$form['value'],'extra'=>$field['extra']))}
+                 
+                    		</case>
 							<case value="textarea">
 							<div class="controls">
 								<label class="textarea input-large">
@@ -69,7 +74,7 @@
 							</div>
 							</case>
                             <case value="picture">
-                               <div class="controls uploadrow2" title="点击修改图片" rel="{$o_key}">
+                               <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="{$o_key}">
                                   <input type="file" id="upload_picture_{$o_key}">
                                   <input type="hidden" name="config[{$o_key}]" id="cover_id_{$o_key}" value="{$form['value']}"/>
                                   <div class="upload-img-box">
@@ -82,7 +87,6 @@
                                   </div>
                               </div>
                     		</case>
-                    		
                     		 <case value="file">
                           <div class="controls upload_file">
                           	

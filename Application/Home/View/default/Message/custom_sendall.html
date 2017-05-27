@@ -49,7 +49,9 @@ background-color: #eaeaea;">
             <form id="form" action="{$post_url}" method="post" class="form-horizontal form-center">
                 <input type="hidden" name="msg_type" value="text"/>
                 <label class="textarea" style="position:relative; overflow:hidden; zoom:1;">
-                	<a id="getText" class="txt_icon current" onClick="selectText();" style="position:absolute; bottom:10px; left:10px; cursor:pointer">选择文本素材</a>
+                	
+                	<a id="getText" class="txt_icon current" onClick="selectText();" style="position: absolute; bottom: 20px;left: 10px;cursor: pointer; color: #888;  border-radius: 5px; border: 1px solid #ccc;  padding: 5px 20px; background-color: #eee;">选择文本素材</a>
+
                     <textarea name="content" placeholder="请输入要发送的文本"  id='message_text'></textarea>
                     <div style="display:none" class="appmsg_area" id="appmsg_area">
                         <input type="hidden" name="appmsg_id" value="0"/>
@@ -93,7 +95,7 @@ background-color: #eaeaea;">
                     <a class="action_item face" href="javascript:;" title="表情">&nbsp;</a>
                     <a class="action_item link" href="javascript:;" title="连接">&nbsp;</a>
                     <div class="action_item picture" href="javascript:;" title="图片">
-                        <div class="controls uploadrow2" title="点击修改图片" rel="pic">
+                        <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="pic">
                           <input type="file" id="upload_picture_pic">
                           <input type="hidden" name="pic" id="cover_id_pic" value="0"/>
                           <div class="upload-img-box">
@@ -151,7 +153,7 @@ background-color: #eaeaea;">
 <!--                         </div> -->
 <!--                       </div> -->
                       
-                 <button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">回 复</button>
+                 <button class="btn submit-btn ajax-post" id="submit1" type="button" target-form="form-horizontal">群 发</button>
                   &nbsp;&nbsp;&nbsp;&nbsp;
 <!--                   <button onclick="preview()" class="border-btn submit-btn ajax-post">预览</button> -->
            		       	
@@ -171,9 +173,12 @@ background-color: #eaeaea;">
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={:SITE_VERSION}" charset="UTF-8"></script> 
   <script type="text/javascript">
-$('#submit').click(function(){
-    $('#form').submit();
-});
+$('#submit1').click(function(){
+		if(confirm("确定要群发消息？")){
+			$('#form').submit();
+		}
+	});
+
 function preview(){
 	  var query = $('#form').serialize();
 	  $.post("{:U('preview')}",query,function(data){
@@ -355,6 +360,7 @@ function selectUser(){
 			}
 			$('textarea[name="send_openids"]').val(idsArr.toString());
 			$('#send_openids').text(nameArr.toString());
+			
 		}
 	})
 }

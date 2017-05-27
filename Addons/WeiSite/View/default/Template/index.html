@@ -2,8 +2,12 @@
 <block name="body">
 <div class="span9 page_message">
 	<section id="contents">
-      <include file="Addons/_nav" />
-      
+      <div class="setting_step app_setting content_step" style="margin:20px">
+         <a class="step step_cur_1" href="{:addons_url('WeiSite://Template/index',array('mdm'=>I('mdm')))}">1.选择模板</a>
+       	 <a class="step " href="{:addons_url('WeiSite://Slideshow/lists',array('mdm'=>I('mdm')))}">2.幻灯片配置</a>
+         <a class="step " href="{:addons_url('WeiSite://Category/lists',array('mdm'=>I('mdm')))}">3.栏目配置</a> 
+         <a class="step " href="{:addons_url('WeiSite://WeiSite/preview',array('mdm'=>I('mdm')))}">4.效果预览</a>
+  </div>
       <div class="tab-content" id="hasSubNav"> 
         	<div class="sub_tab_content">
             <form>
@@ -30,13 +34,7 @@
 
 <block name="script">
 <script type="text/javascript" charset="utf-8">
-	//导航高亮
-    $('.side-sub-menu').find('a[href="{:U('Addons/index')}"]').closest('li').addClass('current');
-    if($('ul.tab-nav').length){
-    	$('.btn-return').hide();
-    }
 	$(function(){
-		showTab();
 		//选择模板并且ajax提交
 		//选择Ajax提交		
 		$('.template_item').click(function(){
@@ -46,18 +44,14 @@
 				$(this).find('input').click();
 
 				//如果不是ajax提交 不要以下代码"{:$_GET['_action']}"
-				var value = $(this).find('input').val();
+				var value = $(this).find('input').val();				
 				var type = "{:$_GET['_action']}";
 				$.ajax({
 					url:"{:U('save')}",
 					data:{template:value,type:type},
 					type:"post",
 					dataType:"json",
-					success:function(data){
-						if(data.status){
-							//提交成功
-							}
-						}
+					success:function(data){ window.location.href = "{$next_url}&mdm={:I('mdm')}"; }
 					})
 				}
 			});

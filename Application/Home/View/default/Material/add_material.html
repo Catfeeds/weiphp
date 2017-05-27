@@ -42,7 +42,7 @@
                     <div class="hover_area"><a href="javascript:;" onClick="editItem(this)">编辑</a></div>
                 </form>
                 <volist name="others" id="vo">
-                <form data-index='{$key+1}' class="appmsg_sub_item edit_item">
+                <form data-index='{$key}' class="appmsg_sub_item edit_item">
                     <p class="title">{$vo.title}</p>
                     <div class="main_img">
                         <img src="{$vo.cover_id|get_cover_url}" data-coverid="{$vo.cover_id|get_cover_url}"/>
@@ -79,8 +79,8 @@
                             </div>
                           </li>  
                           <li class="form-item cf">
-                                <label class="item-label"><span class="need_flag">*</span>封面图片<span class="check-tips">图片900X500</span></label>
-                                <div class="controls uploadrow2" title="点击修改图片" rel="p_cover">
+                                <label class="item-label"><span class="need_flag">*</span>封面图片<span class="check-tips">图片<span class="picSize">900X500</span></span></label>
+                                <div class="controls uploadrow2" data-max="1" title="点击修改图片" rel="p_cover">
                                     <input type="file" id="upload_picture_p_cover">
                                     <input type="hidden" name="p_cover" id="cover_id_p_cover" data-callback="uploadImgCallback" value=""/>
                                     <div class="upload-img-box" rel="img" style="display:none">
@@ -98,7 +98,7 @@
                                 </div>
                            </li>   
                            <li class="form-item cf">
-                                <label class="item-label"><span class="need_flag">*</span>正文<span class="check-tips"></span></label>
+                                <label class="item-label">正文<span class="check-tips">图片命名不能有特殊符号</span></label>
                                 <div class="controls">
                                   <label class="textarea">
                                   <textarea style="width:405px; height:200px;" name="p_content" ></textarea>
@@ -209,6 +209,7 @@ function addMsg(){
 		updateAlert('你最多只可以增加8条图文信息');
 		return false;
 	}
+	$('.picSize').text('200X200');
 	//console.log(curCount);
 	var addHtml = $('<form data-index="'+curCount+'" class="appmsg_sub_item edit_item">'+
                     '<p class="title"></p>'+
@@ -230,8 +231,10 @@ function editItem(_this){
 	$(_this).parents('.edit_item').siblings().removeClass('editing');
 	var index = $(_this).parents('.edit_item').data('index');
 	if(index==0){
+		$('.picSize').text('900X500');
 		$('.edit_area').css('margin-top',0);
 	}else{
+		$('.picSize').text('200X200');
 		$('.edit_area').css('margin-top',index*110+120);
 	}
 	initForm($(_this).parents('.edit_item'));

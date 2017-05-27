@@ -11,16 +11,16 @@ class FollowModel extends Model {
 	protected $tableName = 'user';
 	function init_follow($openid, $token = '', $has_subscribe = false) {
 		empty ( $token ) && $token = get_token ();
-		addWeixinLog ( $openid . '::_' . $token, 'init_follow_in' );
+		
 		if (empty ( $openid ) || $openid == - 1 || empty ( $token ) || $token == - 1)
 			return false;
 		
-		$data ['token'] = $token;
-		$data ['openid'] = $openid;
+		$umap ['token'] = $data ['token'] = $token;
+		$umap ['openid'] = $data ['openid'] = $openid;
 		$datas = $data;
 		$uid = M ( 'public_follow' )->where ( $data )->getField ( 'uid' );
-		addWeixinLog ( $uid, 'init_follow_check_uid' );
-		if ($uid) {
+		
+		if ($uid > 0) {
 			return $uid;
 		}
 		
@@ -44,12 +44,17 @@ class FollowModel extends Model {
 		$user2 = getWeixinUserInfo ( $openid );
 		
 		$user = array_merge ( $user, $user2 );
-		$data ['uid'] = $uid = D ( 'Common/User' )->add ( $user );
+		$user['headimgurl']=str_replace('http:', '', $user['headimgurl']);
+		$data ['uid'] = D ( 'Common/User' )->add ( $user );
 		
 		if ($has_subscribe !== false) {
 			$data ['has_subscribe'] = $has_subscribe;
 		}
-		M ( 'public_follow' )->add ( $data );
+		if (! is_null ( $uid )) {
+			M ( 'public_follow' )->where ( $umap )->save ( $data );
+		} else {
+			M ( 'public_follow' )->add ( $data );
+		}
 		
 		return $uid;
 	}

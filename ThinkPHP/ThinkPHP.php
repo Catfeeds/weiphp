@@ -91,10 +91,11 @@ if (! IS_CLI) {
 		define ( '__ROOT__', (($_root == '/' || $_root == '\\') ? '' : $_root) );
 	}
 }
+define ( 'HTTP_PREFIX', isset ( $_SERVER ['HTTPS'] ) && $_SERVER ['HTTPS'] == 'on' ? 'https://' : 'http://' );
 define ( 'SITE_DOMAIN', strip_tags ( $_SERVER ['HTTP_HOST'] ) );
-define ( 'SITE_URL', 'http://' . SITE_DOMAIN . __ROOT__ );
+define ( 'SITE_URL', HTTP_PREFIX . SITE_DOMAIN . __ROOT__ );
 define ( 'SITE_DIR_NAME', str_replace ( '.', '_', pathinfo ( SITE_PATH, PATHINFO_BASENAME ) ) ); // 网站目录名，通常用于缓存，session,cookie的前缀，以防止多网站里数据冲突
-                                                                                              
+                                                                                                 
 // 加载核心Think类
 require CORE_PATH . 'Think' . EXT;
 // 应用初始化

@@ -39,6 +39,8 @@ class PublicModel extends Model {
 	}
 	function clear($id, $type = '', $uid = '') {
 		$info = $this->getInfo ( $id, '', true );
+		$token=get_token();
+		$this->getInfoByToken($token,'',true);
 	}
 	function getMyPublics($uid) {
 		$map ['uid'] = $uid;
@@ -48,6 +50,21 @@ class PublicModel extends Model {
 			$res [$vo ['mp_id']] = array_merge ( $vo, $info );
 		}
 		return $res;
+	}
+	function addPublic() {
+	}
+	function updateRefreshToken($appid, $refresh_token){
+		$map['appid'] = $appid;
+		$info = $this->where($map)->field('id')->find();
+		if(!$info){
+			return false;
+		}
+
+		$save['authorizer_refresh_token'] = $refresh_token;
+		$res = $this->where($map)->save($save);
+		if($res){
+			$this->clear($info['id']);
+		}
 	}
 }
 ?>

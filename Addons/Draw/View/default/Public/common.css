@@ -86,7 +86,8 @@ html,body{ background:#fbf4c1;}
 	display: block;
 }
 /* 刮刮乐 */
-.guagua_area{ margin:15px auto;}
+.guagua_area{ margin:15px auto;position: relative;}
+.guagua_area span{width: 300px;height: 62px; display: block;position: absolute;top: 0;left: 0;background: url(gua_pic_top.png) no-repeat;background-size: 100%;}
 /* 砸金蛋 */
 #zjd{ background:#9fd2ed}
 #zjd .prize_content .content_item{ background:#fff}
@@ -135,13 +136,17 @@ position:relative;
   margin-left:-35px;
   margin-top:-86px;
   display:block;
+}
+/* on 金蛋未中奖，yes中奖*/
+.plane>span.yes{
+
   background: url(gift.png) no-repeat center 28px;
   -webkit-background-size: 70% auto;
   -webkit-transition:background-position .5s ease-in;
   background-size: 70% auto;
   transition:background-position .5s ease-in;
 }
-.plane>span.on{ background-position:center -5px;}
+.plane>span.yes{ background-position:center -5px;}
 .plane>span>figure{
   width: 100%;
   height: 100%;
@@ -172,11 +177,11 @@ position:relative;
   transition:-webkit-background-size .3s ease-in;
   position-events:none;
 }
-.plane>span.on:after{
+.plane>span.on:after,.plane>span.yes:after{
   -webkit-background-size: 120px auto;
   background-size: 120px auto;
 }
-.plane>span.on>figure{
+.plane>span.on>figure,.plane>span.yes>figure{
   background-position: center -121px;
 }
 .cube.pause, .cube.pause span{
@@ -191,11 +196,11 @@ position:relative;
 .plane.four{-webkit-transform:rotateZ(306deg) translateX(80px) rotateX(-90deg);transform:rotateZ(306deg) translateX(80px) rotateX(-90deg);}
 .plane.five{-webkit-transform:rotateZ(378deg) translateX(80px) rotateX(-90deg);transform:rotateZ(378deg) translateX(80px) rotateX(-90deg);}
 
-.cube.on>.one>span {-webkit-animation-name:spin1;-webkit-transform:rotateY(90deg);animation-name:spin1;transform:rotateY(90deg);z-index:203;}
-.cube.on>.two>span {-webkit-animation-name:spin2;-webkit-transform:rotateY(160deg);animation-name:spin2;transform:rotateY(160deg);}
-.cube.on>.three>span {-webkit-animation-name:spin3;-webkit-transform:rotateY(234deg);animation-name:spin3;transform:rotateY(234deg);}
-.cube.on>.four>span {-webkit-animation-name:spin4;-webkit-transform:rotateY(306deg);animation-name:spin4;transform:rotateY(306deg);}
-.cube.on>.five>span {-webkit-animation-name:spin5;-webkit-transform:rotateY(378deg);animation-name:spin5;transform:rotateY(378deg);}
+.cube.on>.one>span,.cube.yes>.one>span {-webkit-animation-name:spin1;-webkit-transform:rotateY(90deg);animation-name:spin1;transform:rotateY(90deg);z-index:203;}
+.cube.on>.two>span,.cube.yes>.two>span {-webkit-animation-name:spin2;-webkit-transform:rotateY(160deg);animation-name:spin2;transform:rotateY(160deg);}
+.cube.on>.three>span,.cube.yes>.three>span {-webkit-animation-name:spin3;-webkit-transform:rotateY(234deg);animation-name:spin3;transform:rotateY(234deg);}
+.cube.on>.four>span,.cube.yes>.four>span {-webkit-animation-name:spin4;-webkit-transform:rotateY(306deg);animation-name:spin4;transform:rotateY(306deg);}
+.cube.on>.five>span,.cube.yes>.five>span {-webkit-animation-name:spin5;-webkit-transform:rotateY(378deg);animation-name:spin5;transform:rotateY(378deg);}
 @-webkit-keyframes spin5 {
   0% { -webkit-transform:rotateY(378deg); transform:rotateY(378deg);}
   100% { -webkit-transform: rotateY(738deg);transform: rotateY(738deg);}

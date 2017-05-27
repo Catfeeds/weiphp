@@ -23,6 +23,9 @@ class ShopController extends AddonsController {
 		$this->assign ( 'nav', $nav );
 	}
 	function lists() {
+	    $public_info=get_token_appinfo();
+	    $normal_tips = '门店导航显示链接：<a id="copyLink" data-clipboard-text="'.addons_url('Card://Wap/storeList',array('publicid'=>$public_info['id'])).'">复制链接</a><script type="application/javascript">$.WeiPHP.initCopyBtn("copyLink");</script>';
+	    $this->assign ( 'normal_tips', $normal_tips );
 		$isAjax = I ( 'isAjax' );
 		// $coupon_id = I ( 'coupon_id','' );
 		// dump($coupon_id);
@@ -47,7 +50,6 @@ class ShopController extends AddonsController {
 		// 解析列表规则
 		$list_data = $this->_list_grid ( $model );
 		$fields = $list_data ['fields'];
-		
 		// 搜索条件
 		// $map ['coupon_id'] = $coupon_id;
 		
@@ -58,7 +60,6 @@ class ShopController extends AddonsController {
 		empty ( $fields ) || in_array ( 'id', $fields ) || array_push ( $fields, 'id' );
 		$name = parse_name ( get_table_name ( $model ['id'] ), true );
 		$data = M ( $name )->field ( empty ( $fields ) ? true : $fields )->where ( $map )->order ( 'id DESC' )->page ( $page, $row )->select ();
-		
 		/* 查询记录总数 */
 		$count = M ( $name )->where ( $map )->count ();
 		$list_data ['list_data'] = $data;

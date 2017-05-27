@@ -61,7 +61,7 @@
                   <label for="check_{$data.id}"></label></td>
                 <td>{$data.title}</td>
                 <td>{$data.start_time}</td>
-                <td>{$data.status_title}</td>
+                <td>{$data.status_text}</td>
                 <td>
                 <a href="{:U('preview',array('id'=>$data[id]))}" target="_blank">预览</a>&nbsp;&nbsp;&nbsp;
                 <eq name="data.status" value="1">
@@ -70,10 +70,10 @@
                 <a href="javascript:void(0)" onclick="setStatus({$data.id}, 1)">启用</a>&nbsp;&nbsp;&nbsp;
                 </eq>
                 
-                <a href="{:U('edit',array('id'=>$data[id]))}" target="_self">编辑</a>&nbsp;&nbsp;&nbsp;
-                <a href="{:addons_url('Reserve://ReserveValue/lists',array('reserve_id'=>$data[id]))}" target="_blank">预约列表</a>&nbsp;&nbsp;&nbsp;
+                <a href="{:U('edit',array('id'=>$data[id],'mdm'=>$_GET['mdm']))}" target="_self">编辑</a>&nbsp;&nbsp;&nbsp;
+                <a href="{:addons_url('Reserve://ReserveValue/lists',array('reserve_id'=>$data[id],'mdm'=>$_GET['mdm']))}" >预约列表</a>&nbsp;&nbsp;&nbsp;
                 <a href="{:U('del',array('id'=>$data[id]))}" class="confirm">删除</a>&nbsp;&nbsp;&nbsp;
-                <a data-clipboard-text="{:addons_url('Reserve://Wap/index',array('reserve_id'=>$data[id],'publicid'=>$public_info[id]))}" class="list_copy_link" id="copyLink_{$data.id}">复制链接</a></td>
+                <a data-clipboard-text="{:addons_url('Reserve://Wap/index',array('token'=>$token,'reserve_id'=>$data[id],'publicid'=>$public_info[id],))}" class="list_copy_link" id="copyLink_{$data.id}">复制链接</a></td>
               </tr>
               </volist>
               

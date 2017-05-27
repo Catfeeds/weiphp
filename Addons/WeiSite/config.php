@@ -18,42 +18,52 @@ return array (
 				'value' => '',
 				'tip' => '' 
 		),
+		'show_background' => array (
+				'title' => '显示模板背景图',
+				'type' => 'radio',
+				'value' => '1',
+				'options' => array (
+						'0' => '不显示',
+						'1' => '显示' 
+				),
+				'tip' => '' 
+		),
 		'background' => array (
 				'title' => '模板背景图:',
-				'type' => 'picture',
+				'type' => 'mult_picture',
 				'value' => '',
-				'tip' => '为空时默认使用模板里的背景图片'
-		),	
-					
+				'tip' => '为空时默认使用模板里的背景图片，最佳尺寸：640X1156' 
+		),
+		
 		'code' => array (
 				'title' => '统计代码:',
 				'type' => 'textarea',
 				'value' => '',
 				'tip' => '' 
-		) ,
+		),
 		'template_index' => array (
 				'title' => '首页模板',
 				'type' => 'hidden',
 				'value' => 'ColorV1',
-				'tip' => ''
+				'tip' => '' 
 		),
 		'template_footer' => array (
 				'title' => '底部模板',
 				'type' => 'hidden',
 				'value' => 'V1',
-				'tip' => ''
+				'tip' => '' 
 		),
 		'template_lists' => array (
 				'title' => '图文列表模板',
 				'type' => 'hidden',
 				'value' => 'V1',
-				'tip' => ''
+				'tip' => '' 
 		),
 		'template_detail' => array (
 				'title' => '图文内容模板',
 				'type' => 'hidden',
 				'value' => 'V1',
-				'tip' => ''
-		)	
+				'tip' => '' 
+		) 
 );
 					

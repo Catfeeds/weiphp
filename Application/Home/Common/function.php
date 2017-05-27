@@ -56,6 +56,7 @@ function get_part_count($id) {
 function get_nav_url($url) {
 	switch ($url) {
 		case 'http://' === substr ( $url, 0, 7 ) :
+		case 'https://' === substr ( $url, 0, 8 ) :
 		case '#' === substr ( $url, 0, 1 ) :
 			break;
 		default :

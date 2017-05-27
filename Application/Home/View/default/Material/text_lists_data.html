@@ -2,9 +2,10 @@
 <body style="background:#fff">
 <div class="lists_data">
   <div class="span9 page_message">
-    <section id="contents"> 
-    <empty name="list_data">
-<div class="empty_container"><p>您的文本素材库为空，<a target='_blank' href="{:U('Home/Material/text_lists')}">请先增加素材</a></p></div>
+    <section id="contents">
+<if condition="empty($list_data) && empty($_GET['content']) ">
+		<div class="empty_container"><p>您的文本素材库为空，<a target='_blank' href="{:U('Home/Material/text_lists')}">请先增加素材</a></p></div>
+
 <else />
 
       <div class="table-bar">
@@ -15,7 +16,7 @@
           <input type="text" placeholder="请输入文本内容搜索" value="{:I('content')}" class="search-input" name="content">
             <a url="{:U('Material/text_lists',$get_param)}" id="search" href="javascript:;" class="sch-btn"><i class="btn-search"></i></a> </div>
         </div>
-        <!-- 多维过滤 --> 
+        <!-- 多维过滤 -->
       </div>
       <!-- 数据列表 -->
       <div class="data-table">
@@ -24,7 +25,7 @@
             <!-- 表头 -->
             <thead>
               <tr>
-                <th class="row-selected row-selected"> 
+                <th class="row-selected row-selected">
                   <if condition="!isRadio">
                   <input type="checkbox" class="check-all regular-checkbox" id="checkAll">
                   <label for="checkAll"></label></th>
@@ -33,7 +34,7 @@
                 <th width='85%'>素材文本内容</th>
               </tr>
             </thead>
-            
+
             <!-- 列表 -->
             <tbody>
               <volist name="list_data" id="vo">
@@ -48,18 +49,18 @@
                     </empty>
                   </td>
                   <td type="headimgurl">{$vo.id}</td>
-                  <td type="nickname">{$vo.content}</td>
+                  <td type="content">{$vo.content}</td>
                 </tr>
               </volist>
             </tbody>
           </table>
         </div>
       </div>
-      </empty>
+      </if>
       <div class="page"> {$_page|default=''} </div>
     </section>
   </div>
-  
+
 <script type="text/javascript">
 $(function(){
 	//搜索功能
@@ -68,6 +69,7 @@ $(function(){
         var query  = $('.search-form').find('input').serialize();
         query = query.replace(/(&|^)(\w*?\d*?\-*?_*?)*?=?((?=&)|(?=$))/g,'');
         query = query.replace(/^&/g,'');
+//        query = query.replace(/(^\s*)|(\s*$)/g, "");
         if( url.indexOf('?')>0 ){
             url += '&' + query;
         }else{
@@ -87,9 +89,9 @@ $(function(){
     });
 	$('select[name=group]').change(function(){
 		location.href = this.value;
-	});	
-	
+	});
+
 })
-</script> 
+</script>
 </body>
 </html>

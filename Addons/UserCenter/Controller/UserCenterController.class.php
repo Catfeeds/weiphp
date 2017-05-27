@@ -33,7 +33,7 @@ class UserCenterController extends AddonsController {
 				0 
 		);
 		$map ['f.token'] = get_token ();
-		
+		$map ['f.has_subscribe'] = 1;
 		$group_id = I ( 'group_id', 0, 'intval' );
 		$this->assign ( 'group_id', $group_id );
 		if ($group_id) {
@@ -50,16 +50,22 @@ class UserCenterController extends AddonsController {
 		}
 		$nickname = I ( 'nickname' );
 		if ($nickname) {
-			$map ['u.uid'] = array (
-					'in',
-					D ( 'Common/User' )->searchUser ( $nickname ) 
-			);
+			$uidstr = D ( 'Common/User' )->searchUser ( $nickname );
+			if ($uidstr) {
+				$map ['u.uid'] = array (
+						'in',
+						$uidstr 
+				);
+			} else {
+				$map ['u.uid'] = 0;
+			}
 		}
 		$row = empty ( $model ['list_row'] ) ? 20 : $model ['list_row'];
 		$order = 'u.uid desc';
 		// 读取模型数据列表
 		$px = C ( 'DB_PREFIX' );
 		$data = M ()->table ( $px . 'public_follow as f' )->join ( $px . 'user as u ON f.uid=u.uid' )->field ( 'u.uid,f.openid' )->where ( $map )->order ( $order )->page ( $page, $row )->select ();
+		
 		foreach ( $data as $k => $d ) {
 			$user = getUserInfo ( $d ['uid'] );
 			$user ['openid'] = $d ['openid'];
@@ -84,6 +90,11 @@ class UserCenterController extends AddonsController {
 		$gmap ['manager_id'] = $this->mid;
 		$auth_group = M ( 'auth_group' )->where ( $gmap )->select ();
 		$this->assign ( 'auth_group', $auth_group );
+		
+		$tagmap ['token'] = get_token ();
+		$tags = M ( 'user_tag' )->where ( $tagmap )->select ();
+		$this->assign ( 'tags', $tags );
+		
 		$this->assign ( 'syc_wechat', $this->syc_wechat );
 		if ($this->syc_wechat) {
 			$this->assign ( 'noraml_tips', '请定期手动点击“一键同步微信公众号粉丝”按钮同步微信数据' );
@@ -97,15 +108,15 @@ class UserCenterController extends AddonsController {
 			$this->display ();
 		}
 	}
-	function getUserRemark(){
-	    $uid=I('uid');
-	    $remark='';
-	    $user=get_userinfo($uid);
-	    $token=get_token();
-	    if ($user['remarks'][$token]){
-	        $remark=$user['remarks'][$token];
-	    }
-	    echo $remark;
+	function getUserRemark() {
+		$uid = I ( 'uid' );
+		$remark = '';
+		$user = get_userinfo ( $uid );
+		$token = get_token ();
+		if ($user ['remarks'] [$token]) {
+			$remark = $user ['remarks'] [$token];
+		}
+		echo $remark;
 	}
 	public function admin_lists() {
 		$model = $this->getModel ( 'user' );
@@ -166,14 +177,14 @@ class UserCenterController extends AddonsController {
 	function detail() {
 		$uid = I ( 'uid' );
 		$userInfo = getUserInfo ( $uid );
-// 		dump($userInfo);
-		$strgroup='';
-		foreach ($userInfo['groups'] as $v){
-		    $strgroup.=$v['title'].',';
+		// dump($userInfo);
+		$strgroup = '';
+		foreach ( $userInfo ['groups'] as $v ) {
+			$strgroup .= $v ['title'] . ',';
 		}
-		$len=strlen($strgroup)-1;
-		$str=substr($strgroup, 0,$len);
-		$userInfo['groupstr']=$str;
+		$len = strlen ( $strgroup ) - 1;
+		$str = substr ( $strgroup, 0, $len );
+		$userInfo ['groupstr'] = $str;
 		$this->assign ( 'info', $userInfo );
 		
 		$this->display ();
@@ -197,14 +208,16 @@ class UserCenterController extends AddonsController {
 				$this->error ( '该账号已经存在，请更换后再试' );
 			}
 			// 手工升级会员时，用户经历值也增加到该会员级别的条件经历值
-			$membership_condition = M ( 'shop_membership' )->where ( array (
-					'id' => $_POST ['membership'] 
-			) )->getField ( 'condition' );
-			$user_experience = get_userinfo ( $map ['uid'], 'experience' );
-			if ($user_experience < $membership_condition) {
-				$save ['experience'] = $membership_condition;
-			}
-			
+			if (is_install("Shop")) {
+                $membership_condition = M('shop_membership')->where(array(
+                    'id' => $_POST['membership']
+                ))->getField('condition');
+                $user_experience = get_userinfo($map['uid'], 'experience');
+                if ($user_experience < $membership_condition) {
+                    $save['experience'] = $membership_condition;
+                }
+            }
+
 			$save ['leven'] = 1;
 			$save ['manager_id'] = $this->mid;
 			$save ['is_audit'] = 1;
@@ -247,12 +260,15 @@ class UserCenterController extends AddonsController {
 		$map ['token'] = get_token ();
 		$uid = I ( 'uid' );
 		$userExperience = get_userinfo ( $uid, 'experience' );
-		$list = M ( 'shop_membership' )->where ( $map )->select ();
-		foreach ( $list as $v ) {
-			if ($v ['condition'] >= $userExperience) {
-				$extra .= $v ['id'] . ':' . $v ['membership'] . "\r\n";
-			}
-		}
+		$extra='';
+		if (is_install("Shop")) {
+            $list = M('shop_membership')->where($map)->select();
+            foreach ($list as $v) {
+                if ($v['condition'] >= $userExperience) {
+                    $extra .= $v['id'] . ':' . $v['membership'] . "\r\n";
+                }
+            }
+        }
 		return $extra;
 	}
 	
@@ -362,16 +378,45 @@ class UserCenterController extends AddonsController {
 	}
 	// 设置用户组
 	public function changeGroup() {
-		$id = array_unique ( ( array ) I ( 'ids', 0 ) );
+		$uids = array_unique ( ( array ) I ( 'ids', 0 ) );
 		
-		if (empty ( $id )) {
+		if (empty ( $uids )) {
 			$this->error ( '请选择用户!' );
 		}
 		$group_id = I ( 'group_id', 0 );
 		if (empty ( $group_id )) {
 			$this->error ( '请选择用户组!' );
 		}
-		D ( 'Home/AuthGroup' )->move_group ( $id, $group_id );
+		D ( 'Home/AuthGroup' )->move_group ( $uids, $group_id );
+		foreach ( $uids as $uid ) {
+			D ( 'Common/User' )->getUserInfo ( $uid, true );
+		}
+		echo 1;
+	}
+	// 设置用户标签
+	public function changeTag() {
+		$uids = array_unique ( ( array ) I ( 'ids', 0 ) );
+		
+		if (empty ( $uids )) {
+			$this->error ( '请选择用户!' );
+		}
+		$tags = array_filter ( explode ( ',', I ( 'tags' ) ) );
+		if (empty ( $tags )) {
+			$this->error ( '请选择用户标签!' );
+		}
+		$map ['uid'] = array (
+				'in',
+				$uids 
+		);
+		M ( 'user_tag_link' )->where ( $map )->delete ();
+		foreach ( $uids as $uid ) {
+			foreach ( $tags as $tid ) {
+				$data ['uid'] = $uid;
+				$data ['tag_id'] = $tid;
+				M ( 'user_tag_link' )->add ( $data );
+			}
+			D ( 'Common/User' )->getUserInfo ( $uid, true );
+		}
 		echo 1;
 	}
 	// 预先同步好用户组数据
@@ -382,15 +427,20 @@ class UserCenterController extends AddonsController {
 	}
 	// 第一步：获取全部用户的ID，并先保存到public_follow表中，新的用户UID暂时为0，后面的步骤补充
 	function syc_openid() {
+		$map ['token'] = $save ['token'] = get_token ();
+		
+		$next_openid = I ( 'next_openid' );
+		if (! $next_openid) {
+			$res = M ( 'public_follow' )->where ( $map )->setField ( 'has_subscribe', 0 );
+		}
 		// 获取openid列表
-		$url = 'https://api.weixin.qq.com/cgi-bin/user/get?access_token=' . get_access_token () . '&next_openid=' . I ( 'next_openid' );
+		$url = 'https://api.weixin.qq.com/cgi-bin/user/get?access_token=' . get_access_token () . '&next_openid=' . $next_openid;
 		$data = wp_file_get_contents ( $url );
 		$data = json_decode ( $data, true );
 		
 		if (! isset ( $data ['count'] ) || $data ['count'] == 0) {
 			// 拉取完毕
-			$this->success ( '同步用户数据中，请勿关闭', U ( 'syc_user' ) );
-			exit ();
+			$this->jump ( U ( 'syc_user' ), '同步用户数据中，请勿关闭' );
 		}
 		
 		$map ['openid'] = array (
@@ -398,7 +448,9 @@ class UserCenterController extends AddonsController {
 				$data ['data'] ['openid'] 
 		);
 		$map ['token'] = $save ['token'] = get_token ();
-		$res = M ( 'public_follow' )->where ( $map )->setField ( 'syc_status', 0 );
+		$pdata ['syc_status'] = 0;
+		$pdata ['has_subscribe'] = 1;
+		$res = M ( 'public_follow' )->where ( $map )->save ( $pdata );
 		if ($res != $data ['count']) {
 			// 更新的数量不一致，可能有增加的用户openid
 			$openids = ( array ) M ( 'public_follow' )->where ( $map )->getFields ( 'openid' );
@@ -408,6 +460,7 @@ class UserCenterController extends AddonsController {
 					$save ['openid'] = $id;
 					$save ['uid'] = 0;
 					$save ['syc_status'] = 0;
+					$save ['has_subscribe'] = 1;
 					$res = M ( 'public_follow' )->add ( $save );
 				}
 			}
@@ -415,17 +468,18 @@ class UserCenterController extends AddonsController {
 		
 		$param2 ['next_openid'] = $data ['next_openid'];
 		$url = U ( 'syc_openid', $param2 );
-		$this->success ( '同步用户OpenID中，请勿关闭', $url );
+		$this->jump ( $url, '同步用户OpenID中，请勿关闭' );
 	}
+	
 	// 第二步：同步用户信息
 	function syc_user() {
 		$map ['token'] = $map2 ['token'] = $map5 ['token'] = get_token ();
 		$map ['syc_status'] = 0;
+		$map ['has_subscribe'] = 1;
 		$list = M ( 'public_follow' )->where ( $map )->field ( 'uid,openid' )->limit ( 100 )->select ();
 		
 		if (empty ( $list )) {
-			$this->success ( '用户分组信息同步中', U ( 'syc_user_group' ) );
-			exit ();
+			$this->jump ( U ( 'syc_user_group' ), '用户分组信息同步中' );
 		}
 		
 		foreach ( $list as $vo ) {
@@ -441,13 +495,49 @@ class UserCenterController extends AddonsController {
 				'in',
 				$openids 
 		);
-		M ( 'public_follow' )->where ( $map2 )->setField ( 'has_subscribe', 0 );
+		// M ( 'public_follow' )->where ( $map2 )->setField ( 'has_subscribe', 0 );
 		
 		$url = 'https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=' . get_access_token ();
 		$data = post_data ( $url, $param );
-		
 		$userDao = D ( 'Common/User' );
 		$config = getAddonConfig ( 'UserCenter' );
+		
+		$countdata ['list_count'] = count ( $list );
+		$countdata ['wp_data_count'] = count ( $data ['user_info_list'] );
+		if ($countdata ['list_count'] != $countdata ['wp_data_count']) {
+			$countdata ['listopenid'] = $param;
+			$countdata ['wp_op'] = $data;
+			$countdata ['access_token'] = get_access_token ();
+			foreach ( $param ['user_list'] as $p ) {
+				$single_url = 'https://api.weixin.qq.com/cgi-bin/user/info?access_token=' . get_access_token () . '&openid=' . $p ['openid'] . '&lang=zh_CN';
+				$tempArr = json_decode ( file_get_contents ( $single_url ), true );
+				if (empty ( $tempArr )) {
+					$tempArr = outputCurl ( $single_url );
+					$tempArr = json_decode ( $tempArr, true );
+					// addWeixinLog($tempArr,'syc_userlistscount5');
+				}
+				$uid = intval ( $uids [$tempArr ['openid']] );
+				if ($uid == 0) { // 新增加的用户
+					$tempArr ['experience'] = intval ( $config ['experience'] );
+					$tempArr ['score'] = intval ( $config ['score'] );
+					$tempArr ['reg_time'] = $tempArr ['subscribe_time'];
+					$tempArr ['status'] = 1;
+					$tempArr ['is_init'] = 1;
+					$tempArr ['is_audit'] = 1;
+					
+					$uid = D ( 'Common/User' )->addUser ( $tempArr );
+					
+					$map5 ['openid'] = $tempArr ['openid'];
+					$uid > 0 && M ( 'public_follow' )->where ( $map5 )->setField ( 'uid', $uid );
+				} else { // 更新的用户
+					$userDao->updateInfo ( $uid, $tempArr );
+				}
+			}
+			M ( 'public_follow' )->where ( $map2 )->setField ( 'syc_status', 1 );
+			$this->jump ( U ( 'syc_user' ), '同步用户数据中，请勿关闭' );
+		}
+		// addWeixinLog($countdata,'syc_userlistscount2');
+		
 		foreach ( $data ['user_info_list'] as $u ) {
 			if ($u ['subscribe'] == 0)
 				continue;
@@ -471,29 +561,30 @@ class UserCenterController extends AddonsController {
 			
 			$openidArr [] = $u ['openid'];
 		}
-		
 		M ( 'public_follow' )->where ( $map2 )->setField ( 'syc_status', 1 );
-		
 		// 设置关注状态
-		if (! empty ( $openidArr )) {
-			$map2 ['openid'] = array (
-					'in',
-					$openidArr 
-			);
-			M ( 'public_follow' )->where ( $map2 )->setField ( 'has_subscribe', 1 );
-		}
+		// if (! empty ( $openidArr )) {
+		// $map2 ['openid'] = array (
+		// 'in',
+		// $openidArr
+		// );
+		// M ( 'public_follow' )->where ( $map2 )->setField ( 'has_subscribe', 1 );
+		// }
 		
-		$this->success ( '同步用户数据中，请勿关闭', U ( 'syc_user?uid=' . $uid ) );
+		$this->jump ( U ( 'syc_user?uid=' . $uid ), '同步用户数据中，请勿关闭' );
 	}
 	// 第三步：同步用户组信息
 	function syc_user_group() {
 		$map ['token'] = $map2 ['token'] = get_token ();
 		$map ['syc_status'] = 1;
+		$map ['uid'] = array (
+				'gt',
+				0 
+		);
 		$uids = M ( 'public_follow' )->where ( $map )->limit ( 100 )->getFields ( 'uid' );
 		
 		if (empty ( $uids )) {
-			$this->success ( '用户分组信息同步完毕', U ( 'lists' ) );
-			exit ();
+			$this->jump ( U ( 'lists' ), '用户分组信息同步完毕' );
 		}
 		
 		$user_map ['uid'] = $map2 ['uid'] = array (
@@ -513,20 +604,29 @@ class UserCenterController extends AddonsController {
 			$wechatArr [$g ['wechat_group_id']] = $g ['id'];
 		}
 		
+		M ( 'auth_group_access' )->where ( $user_map )->delete ();
+		// 获取一个uid是否对应一条数据，多条则删除
+		// $morelist=M ( 'auth_group_access' )->where ( $user_map )->field('uid,count(uid) as cuid')->group('uid')->select();
+		// foreach ($morelist as $mm){
+		// if ($mm['cuid'] >1){
+		// $delmap['uid']=$mm['uid'];
+		// M ( 'auth_group_access' )->where ( $delmap )->delete();
+		// }
+		// }
 		$list = M ( 'auth_group_access' )->where ( $user_map )->select ();
 		foreach ( $list as $vo ) {
 			$access [$vo ['uid']] = $vo ['group_id'];
 		}
+		
 		foreach ( $uids as $uid ) {
 			$new_groupid = $userArr [$uid];
 			$old_groupid = $groupArr [$access [$uid]];
-			
 			if (isset ( $access [$uid] ) && $new_groupid == $old_groupid)
 				continue;
-			
-			$save ['group_id'] = $wechatArr [$new_groupid];
-			if (isset ( $access ['uid'] )) {
-				$amap ['uid'] = $vo ['uid'];
+			$save ['group_id'] = intval ( $wechatArr [$new_groupid] );
+			if (isset ( $access [$uid] )) {
+				$amap ['uid'] = $uid;
+				$amap ['group_id'] = $access [$uid];
 				$res = M ( 'auth_group_access' )->where ( $amap )->save ( $save );
 			} else {
 				$save ['uid'] = $uid;
@@ -538,7 +638,7 @@ class UserCenterController extends AddonsController {
 		// exit ();
 		M ( 'public_follow' )->where ( $map2 )->setField ( 'syc_status', 2 );
 		
-		$this->success ( '用户分组信息同步中，请勿关闭', U ( 'syc_user_group?uid=' . $uid ) );
+		$this->jump ( U ( 'syc_user_group?uid=' . $uid ), '用户分组信息同步中，请勿关闭' );
 	}
 	function set_remark() {
 		$map ['uid'] = I ( 'uid', 0, 'intval' );
@@ -574,5 +674,60 @@ class UserCenterController extends AddonsController {
 		}
 		
 		$this->success ( '设置成功' );
+	}
+	function clear_score() {
+		$token = get_token ();
+		$map ['token'] = $token;
+		$users = M ( 'public_follow' )->where ( $map )->getFields ( 'uid' );
+		$scoresave ['score'] = 0;
+		$userdao = D ( 'Common/User' );
+		// 每个用户积分清0
+		foreach ( $users as $uid ) {
+			if (empty ( $uid )) {
+				continue;
+			}
+			$uidArr [$uid] = $uid;
+			// $userdao->updateInfo ( $uid, $scoresave );
+		}
+		$userMap ['uid'] = array (
+				'in',
+				$uidArr 
+		);
+		$userMap ['score'] = array (
+				'neq',
+				0 
+		);
+		$userdao->where ( $userMap )->save ( $scoresave );
+		foreach ( $uidArr as $u ) {
+			$key = 'getUserInfo_' . $u;
+			S ( $key, null );
+		}
+		// 积分记录
+		$creditMap ['uid'] = array (
+				'in',
+				$uidArr 
+		);
+		$creditMap ['token'] = $token;
+		M ( 'credit_data' )->where ( $creditMap )->delete ();
+		// 会员卡设置等级
+		$firstlevel = M ( 'card_level' )->where ( $map )->order ( 'score asc' )->getField ( 'id' );
+		// 会员卡等级都设为体验卡
+		$cardMap1 ['uid'] = array (
+				'in',
+				$uidArr 
+		);
+		$cardMap1 ['level'] = array (
+				'gt',
+				0 
+		);
+		$savecardlev ['level'] = intval ( $firstlevel );
+		M ( 'card_member' )->where ( $cardMap1 )->save ( $savecardlev );
+		echo 1;
+	}
+	function jump($url, $msg) {
+		$this->assign ( 'url', $url );
+		$this->assign ( 'msg', $msg );
+		$this->display ( 'jump' );
+		exit ();
 	}
 }

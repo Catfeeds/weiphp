@@ -47,7 +47,7 @@ class AnswerController extends AddonsController {
 		$list = M ( $name )->where ( $map )->field ( $data ['fields'] )->order ( 'id DESC' )->group ( 'uid' )->selectPage ();
 		foreach ( $list ['list_data'] as &$vo ) {
 			$member = get_userinfo ( $vo ['uid'] );
-			$vo ['truename'] = $member ['truename'];
+			$vo ['truename'] = $member ['truename']?$member['truename']:$member['nickname'];
 			$vo ['mobile'] = $member ['mobile'];
 			$vo ['score'] = $vo ['total'];
 		}
@@ -84,11 +84,12 @@ class AnswerController extends AddonsController {
 			$type [$q ['id']] = $q ['type'];
 			$extra [$q ['id']] = parse_config_attr ( $q ['extra'] );
 		}
-		
 		$map ['uid'] = intval ( $_REQUEST ['uid'] );
 		$answers = M ( 'test_answer' )->where ( $map )->select ();
 		foreach ( $answers as $a ) {
 			$qid = $a ['question_id'];
+			if (empty($qid))
+			    continue;
 			$data ['question'] = $title [$qid];
 			$value = unserialize ( $a ['answer'] );
 			switch ($type [$qid]) {

@@ -10,10 +10,11 @@ class AnswerController extends AddonsController {
 	function _initialize() {
 		parent::_initialize ();
 		$this->model = $this->getModel ( 'ask_answer' );
+		$param['mdm']=$_GET['mdm'];
 		$param ['ask_id'] = $this->ask_id = intval ( $_REQUEST ['ask_id'] );
 		
 		$res ['title'] = '微抢答';
-		$res ['url'] = addons_url ( 'Ask://Ask/lists' );
+		$res ['url'] = addons_url ( 'Ask://Ask/lists'  ,$this->get_param);
 		$res ['class'] = '';
 		$nav [] = $res;
 		
@@ -34,7 +35,8 @@ class AnswerController extends AddonsController {
 		$top_more_button [] = array (
 				'title' => '导出数据',
 				'url' => U ( 'export', array (
-						'ask_id' => $this->ask_id 
+						'ask_id' => $this->ask_id ,
+				    'mdm'=>$_GET['mdm']
 				) ) 
 		);
 		$this->assign ( 'top_more_button', $top_more_button );

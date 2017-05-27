@@ -16,7 +16,7 @@ class LotteryGamesAwardLinkModel extends Model{
             $map['games_id']=$gamesId;
             $map['token']=get_token();
             $awardDao=D('Addons://Draw/Award');
-            $info=$this->where($map)->order('num asc')->select();
+            $info=$this->where($map)->order('id asc')->select();
             foreach ($info as &$v){
                 $award=$awardDao->getInfo($v['award_id']);
                 unset($award['id']);

@@ -137,7 +137,7 @@ class ForumController extends HomeController {
 			$this->error ( '附件ID无效！' );
 		}
 		
-		M ( 'store' )->where ( 'id=' . I ( 'id', 0 ) )->setInc ( 'download_count' );
+		M ( 'store' )->where ( 'id=' . I ( 'id', 0, 'intval' ) )->setInc ( 'download_count' );
 		
 		/* 下载附件 */
 		$Attachment = D ( 'File' );

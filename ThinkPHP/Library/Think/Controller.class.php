@@ -52,10 +52,9 @@ abstract class Controller {
 			$index_3 = strtolower ( MODULE_NAME . '/' . CONTROLLER_NAME . '/' . ACTION_NAME );
 			if ($index_3 != 'home/weixin/index') { // 微信客户端请求的用户初始化在home/weixin/index里实现，这里不作处理
 				$info = $this->initPublic ();
-				$this->initUser ();
+				$this->initUser ( $info );
 				
 				$GLOBALS ['is_wap'] ? $this->initMoblie ( $info ) : $this->initWeb ( $info );
-				
 				// 权限验证，原则：开放一切未禁止的页面
 				if ($this->mid > 0 && ! checkRule ( '', $this->mid )) {
 					$this->error ( '您无权访问！' );
@@ -445,7 +444,6 @@ abstract class Controller {
 			session ( 'manager_id', $manager_id );
 		}
 		$manager = get_userinfo ( $manager_id );
-		
 		// 设置版权信息
 		$this->assign ( 'system_copy_right', empty ( $manager ['copy_right'] ) ? C ( 'COPYRIGHT' ) : $manager ['copy_right'] );
 		$tongji_code = empty ( $manager ['tongji_code'] ) ? C ( 'TONGJI_CODE' ) : $manager ['tongji_code'];
@@ -471,22 +469,41 @@ abstract class Controller {
 		// 初始化微信JSAPI需要的参数
 		Vendor ( 'jssdk.jssdk' );
 		$jssdk = new \JSSDK ( $info ['appid'], $info ['secret'] );
-		$jsapiParams = $jssdk->GetSignPackage ();
+		$jsapiParams = $jssdk->GetsignPackage ();
 		$this->assign ( 'jsapiParams', $jsapiParams );
-		
-		$this->assign ( 'page_title', $info ['public_name'] ); // 用公众号名作为默认的页面标题
-		$this->assign ( 'public_info', $info ); // 通用公众号信息
 		
 		return $info;
 	}
 	// 初始化用户信息
-	private function initUser() {
+	private function initUser($info) {
 		if (isset ( $_GET ['is_stree'] )) {
 			$suid = $user ['uid'] = rand ( 1, 10000 );
 		} else {
 			$uid = session ( 'mid' );
 		}
-		if ((! $uid || $uid < 0) && $GLOBALS ['is_wap']) {
+		// 重新跳转，去掉URL中的openid参数，以防分享出去的地址带有openid参数
+		$openid = I ( 'get.openid' );
+		
+		if (! empty ( $openid ) && $openid != '-1' && $openid != '-2' && IS_GET) {
+			$token = session ( 'token' );
+			$old_openid = session ( 'openid_' . $token );
+			get_openid ( $openid );
+			$is_manager = M ( 'manager' )->find ( $uid );
+			if (! $is_manager && $old_openid != $openid) {
+				session ( 'mid', null );
+			}
+			if (! $is_manager) {
+				$sreach_arr = array (
+						'/openid/' . $openid,
+						'&openid=' . $openid,
+						'?openid=' . $openid 
+				);
+				$url = str_replace ( $sreach_arr, '', $_SERVER ['REQUEST_URI'] );
+				redirect ( $url );
+			}
+		}
+		
+		if ((! $uid || $uid <= 0) && $GLOBALS ['is_wap']) {
 			$uid = get_uid_by_openid ();
 			$uid > 0 && session ( 'mid', $uid );
 		}
@@ -497,6 +514,7 @@ abstract class Controller {
 			M ( 'config' )->where ( 'name="FOLLOW_YOUKE_UID"' )->setField ( 'value', $youke_uid );
 			session ( 'mid', $youke_uid );
 		}
+		
 		// 当前登录者
 		$GLOBALS ['mid'] = $this->mid = intval ( $uid );
 		$myinfo = get_userinfo ( $this->mid );
@@ -508,6 +526,11 @@ abstract class Controller {
 		$this->assign ( 'mid', $this->mid ); // 登录者
 		$this->assign ( 'uid', $this->uid ); // 访问对象
 		$this->assign ( 'myinfo', $GLOBALS ['myinfo'] ); // 访问对象
+		
+		if ($info ['uid'] == $this->mid) {
+			$this->assign ( 'page_title', $info ['public_name'] ); // 用公众号名作为默认的页面标题
+			$this->assign ( 'public_info', $info ); // 通用公众号信息
+		}
 	}
 	/**
 	 * 系统管理员信息初始化
@@ -544,7 +567,7 @@ abstract class Controller {
 		}
 		
 		// 判断公众号是否初始化、审核，跳转到对应的页面
-		if (IS_GET && ! $guest_login && $index_2 != 'home/public/*' && $index_2 != 'home/publiclink/*') {
+		if (IS_GET && ! $guest_login && $index_2 != 'home/public/*' && $index_2 != 'home/publiclink/*' && $index_3 != 'home/user/logout') {
 			if (! $info) {
 				redirect ( U ( 'home/Public/lists', array (
 						'form' => 1 
@@ -557,13 +580,6 @@ abstract class Controller {
 			} else if ($GLOBALS ['myinfo'] ['is_audit'] == 0 && ! C ( 'REG_AUDIT' )) {
 				redirect ( U ( 'home/Public/waitAudit' ) );
 			}
-		}
-		
-		// 在开启泛域名下必须先配置自定义域名才能用
-		if (C ( 'DIV_DOMAIN' ) && is_login () && $index_2 != 'home/public/*' && ! (defined ( '_ADDONS' ) && _ADDONS == 'PublicBind') && (empty ( $info ['domain'] ) || ($GLOBALS ['mid'] != 1 && $info ['domain'] == 'demo'))) {
-			redirect ( U ( 'home/Public/step_0', array (
-					'from' => 1 
-			) ) );
 		}
 		
 		/* 管理中心的导航 */
@@ -774,11 +790,65 @@ abstract class Controller {
 			D ( 'Common/Keyword' )->set ( $_POST ['keyword'], _ADDONS, $id, $_POST ['keyword_type'] );
 		}
 	}
+	// 判断奖品库选择器 数量是否大于库存
+	function checkPriceNum($prizeValue) {
+		$data = array ();
+		$prizeData = explode ( ',', $prizeValue );
+		foreach ( $prizeData as $key => $value ) {
+			$keyArr = explode ( ':', $value );
+			if (empty ( $keyArr [0] ))
+				continue;
+			$total_count = 0;
+			$num = $keyArr [2];
+			$title = '';
+			if ($keyArr [0] == 'coupon') {
+				$pdata = D ( 'Addons://Coupon/Coupon' )->getInfo ( $keyArr [1] );
+				$title = $pdata ['title'];
+				$total_count = $pdata ['num'];
+			} elseif ($keyArr [0] == 'shopCoupon' && is_install("ShopCoupon")) {
+				$pdata = D ( 'Addons://ShopCoupon/Coupon' )->getInfo ( $keyArr [1] );
+				$title = $pdata ['title'];
+				$total_count = $pdata ['num'];
+			} elseif ($keyArr [0] == 'realPrize') {
+				$pdata = D ( 'Addons://RealPrize/RealPrize' )->getInfo ( $keyArr [1] );
+				$total_count = $pdata ['prize_count'];
+				$title = $pdata ['prize_name'];
+			} elseif ($keyArr [0] == 'cardVouchers') {
+				// 无库存，不判断
+				$title = $pdata ['title'];
+				if (intval ( $num ) <= 0) {
+					$this->error ( '奖品 “' . $title . '” 的数量不能小于0' );
+				}
+				continue;
+			} elseif ($keyArr [0] == 'redBag') {
+				$pdata = D ( 'Addons://RedBag/RedBag' )->getInfo ( $keyArr [1] );
+				$title = $pdata ['act_name'];
+				$total_count = $pdata ['total_num'];
+			} elseif ($keyArr [0] == 'points') {
+				// 判断数量是否小于0
+				$title = '积分';
+				$num = $keyArr [3];
+				if (intval ( $num ) <= 0) {
+					$this->error ( '奖品 “' . $title . '” 的数量不能小于0' );
+				}
+				continue;
+			}
+			if (intval ( $num ) <= 0) {
+				$this->error ( '奖品 “' . $title . '” 的数量不能小于0' );
+			}
+			if ($num > $total_count) {
+				$this->error ( '奖品 “' . $title . '” 的数量不能大于库存数量' );
+			}
+		}
+	}
 	protected function checkAttr($Model, $model_id) {
-		
 		$fields = get_model_attribute ( $model_id, false );
 		$validate = $auto = array ();
 		foreach ( $fields as $key => $attr ) {
+			if ($attr ['type'] == 'prize' && $_POST [$key]) {
+				// 判断奖品库选择器 数量是否大于库存
+				$this->checkPriceNum ( $_POST [$key] );
+			}
 			if ($attr ['is_must']) { // 必填字段
 				$validate [] = array (
 						$attr ['name'],
@@ -786,6 +856,7 @@ abstract class Controller {
 						$attr ['title'] . '必须!' 
 				);
 			}
+			
 			// 自动验证规则
 			if (! empty ( $attr ['validate_rule'] ) || $attr ['validate_type'] == 'unique') {
 				$validate [] = array (
@@ -805,14 +876,14 @@ abstract class Controller {
 						$attr ['auto_time'],
 						$attr ['auto_type'] 
 				);
-			} elseif ('checkbox' == $attr ['type']) { // 多选型
+			} elseif ('checkbox' == $attr ['type'] || 'dynamic_checkbox' == $attr ['type']) { // 多选型
 				$auto [] = array (
 						$attr ['name'],
 						'arr2str',
 						3,
 						'function' 
 				);
-			} elseif ('datetime' == $attr ['type']) { // 日期型
+			} elseif ('datetime' == $attr ['type']) { // 时间型
 				$auto [] = array (
 						$attr ['name'],
 						'strtotime',
@@ -823,6 +894,13 @@ abstract class Controller {
 				$auto [] = array (
 						$attr ['name'],
 						'strtotime',
+						3,
+						'function' 
+				);
+			} elseif ('mult_picture' == $attr ['type']) { // 多图片
+				$auto [] = array (
+						$attr ['name'],
+						'arr2str',
 						3,
 						'function' 
 				);
@@ -849,7 +927,14 @@ abstract class Controller {
 		
 		// 读取模型数据列表
 		
-		empty ( $fields ) || in_array ( 'id', $fields ) || array_push ( $fields, 'id' );
+		if ($model['name'] != 'user'){
+		    empty ( $fields ) || in_array ( 'id', $fields ) || array_push ( $fields, 'id' );
+		   
+		}else{
+		    empty ( $fields ) || in_array ( 'uid', $fields ) || array_push ( $fields, 'uid' );
+		    $order='uid desc';
+		}
+		
 		$name = parse_name ( get_table_name ( $model ['id'] ), true );
 		$data = M ( $name )->field ( empty ( $fields ) ? true : $fields )->where ( $map )->order ( $order )->page ( $page, $row )->select ();
 		
@@ -887,7 +972,7 @@ abstract class Controller {
 				// 链接信息
 				$value ['href'] = $val [2];
 				// 搜索链接信息中的字段信息
-				preg_replace_callback ( '/\[([a-z_]+)\]/', function ($match) use(&$fields) {
+				preg_replace_callback ( '/\[([a-z_]+)\]/', function ($match) use (&$fields) {
 					$fields [] = $match [1];
 				}, $value ['href'] );
 			}
@@ -998,9 +1083,6 @@ abstract class Controller {
 		
 		return $msg;
 	}
-	
-	
-	
 }
 // 设置控制器别名 便于升级
 class_alias ( 'Think\Controller', 'Think\Action' );
