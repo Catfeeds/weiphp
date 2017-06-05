@@ -11,11 +11,11 @@
 <script type="text/javascript" src="__JS__/m/mobile_module.js"></script>
 <script type="text/javascript">
     var myScroll;
-    var loading;
+    var page = 1;
     function loaded() {
-//        $('#scroller').css("backgroundImage", "url({$scroller_img_url})");
-//        $('#memo').css("backgroundImage", "url({$memo_img_url})");
-//        $('#background').css("backgroundImage", "url({$background_img_url})");
+        $('#scroller').css("backgroundImage", "url({:ADDON_PUBLIC_PATH}/scroller1.png)");
+        $('#memo').css("backgroundImage", "url({:ADDON_PUBLIC_PATH}/memo1.png)");
+        $('#background').css("backgroundImage", "url({:ADDON_PUBLIC_PATH}/background.jpg)");
         myScroll = new IScroll('#wrapper', {
             mouseWheel: true,
             indicators: [{
@@ -33,17 +33,20 @@
         myScroll.on('scrollEnd', function () {
             console.log(this.y);
             console.log($('#page').val());
-            if (this.y === 0 && $('#page').val() > '1' && loading !== 1) {
-                console.log('previousPage');
-                var url = "{$previous_url}";
-                $("#submitForm").attr("action", url);
-                $("#submitForm").submit();
+            if (this.y === 0 && page > 1) {
+                onsole.log('previousPage');
+                page++;
+                $('#scroller').css("backgroundImage", "url({:ADDON_PUBLIC_PATH}/scroller" + page + ".png')");
+                $('#memo').css("backgroundImage", "url({:ADDON_PUBLIC_PATH}/memo" + page + ".png)");
             }
-            if (this.y <= -3373 && $('#page').val() < '3' && loading !== 1 ) {
+            if (this.y <= -1373 && page < 3) {
                 console.log('nextPage');
-                var url = "{$next_url}";
-                $("#submitForm").attr("action", url);
-                $("#submitForm").submit();
+                page--;
+                $('#scroller').css("backgroundImage", "url({:ADDON_PUBLIC_PATH}/scroller" + page + ".png')");
+                $('#memo').css("backgroundImage", "url({:ADDON_PUBLIC_PATH}/memo" + page + ".png)");
+            }
+            if (this.y <= -1373 && page === 3) {
+                console.log('regist');
             }
         });
     }
@@ -71,9 +74,6 @@
 </head>
 <body onload="loaded()">
     <form id="submitForm" class="form-horizontal form-center">
-        {$scroller_img_url}
-        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        <button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">确 定</button>
         <div id="wrapper">
             <div id="scroller"></div>
         </div>
@@ -85,7 +85,6 @@
         <div class="starfield" id="starfield2">
             <div id="background"></div>
         </div>
-        <input type="hidden" id="page" name="page" value="{$page}">
     </form>
 </body>
 </html>
