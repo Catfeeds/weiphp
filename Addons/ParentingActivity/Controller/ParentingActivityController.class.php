@@ -6,8 +6,6 @@ use Home\Controller\AddonsController;
 
 class ParentingActivityController extends AddonsController {
 
-    var $table = 'wp_ParentingActivity';
-
     function _initialize() {
         parent::_initialize();
     }

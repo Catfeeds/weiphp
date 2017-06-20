@@ -1,0 +1,57 @@
+<include file="Public/mobile_head"/>	
+<link href="{:ADDON_PUBLIC_PATH}/Add.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
+<body>
+    <div id="container" class="container body">
+        <div class="head_div">
+            <img src="{:ADDON_PUBLIC_PATH}/img/title.png"/>
+        </div>
+        <div class="m_15"> 
+            <form id="form" action="{:addons_url('WishCard://Wap/choose_template')}" method="post">
+                <label class="mb_10">
+                   日期
+                   <div class="controls">
+                        <input style="height:44px;" type="date" maxlength="30" placeholder="请选择日期" class="text input-large" name="birthday" id="birthday" value="{$info.birthday|time_format='Y-m-d'}">                  
+                    </div>
+ 
+                   <input type="text" placeholder="发送人" name="send_name" value="{$user.nickname}"/>
+                </label>
+                <label class="mb_10">
+                    收支
+                    
+            <div class="form-item cf">
+                <div class="controls">
+                  <select maxlength="30" name="pay_type">
+                  	<option value="0">收入</option>
+                  	<option value='1'>支出</option>
+                  </select>
+                 </div>
+           </div>
+                </label>
+                <label class="mb_10">
+                    时间
+                    <input type="number" maxlength="30" placeholder="请输入时间" class="text input-large flex_1 mr_10" name="verifyCode" id="verifyCode" value="">
+                </label>
+                <button class="btn" id="submitBtn" type="submit">提交</button>
+            </form>
+        </div>
+        <p class="copyright">{$system_copy_right}{$tongji_code}</p>
+    </div>
+    <script type="text/javascript">
+        $('#submitBtn').click(function () {
+            /*
+             if($('input[name="send_name"]').val()==""){
+             $.Dialog.fail("发送人不能为空");
+             return false;
+             }aa
+             */
+            if ($('input[name="receive_name"]').val() == "") {
+                $.Dialog.fail("请填写接收人");
+                return false;
+            } else if ($('textarea[name="content"]').val() == "") {
+                $.Dialog.fail("请填写祝福语");
+                return false;
+            }
+        })
+    </script>
+</body>
+</html>
