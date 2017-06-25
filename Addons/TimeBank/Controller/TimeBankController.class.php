@@ -23,7 +23,7 @@ class TimeBankController extends AddonsController {
         $out = intval($data [0] ['amount']);
         $balance = $in - $out;
         $this->assign('balance', $balance);
-        $editFlg = "1";
+        $editFlg = "0";
         if ($param ['token'] == "gh_20576134fc23" &&
                 ($param ['openid'] == "ogMEps6tWx4w0fsB03i4Y7vJTjao" ||
                 $param ['openid'] == "ogMEps2awMek2ThngULwDOMLc-W4")) {
