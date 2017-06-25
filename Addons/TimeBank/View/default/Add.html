@@ -1,56 +1,78 @@
-<include file="Public/mobile_head"/>	
-<link href="{:ADDON_PUBLIC_PATH}/Add.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
-<body>
-    <div id="container" class="container body">
-        <div class="head_div">
-            <img src="{:ADDON_PUBLIC_PATH}/img/title.png"/>
+<include file="Public/mobile_head"/>
+<link href="{:ADDON_PUBLIC_PATH}/Show.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
+<!-- 引入 jQuery Mobile 样式 -->
+<link rel="stylesheet" href="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<!-- 引入 jQuery 库 -->
+<script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+<!-- 引入 jQuery Mobile 库 -->
+<script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script type="text/javascript" src="__JS__/m/dialog.js"></script>
+<script type="text/javascript" src="__JS__/m/mobile_module.js"></script>
+<body id="scratch">
+    <div class="container body"style="position:relative;"> 
+        <div class="head_box">
+            <img src="{:ADDON_PUBLIC_PATH}/img/title.gif" width="100%"/>
+            <a style="float:right;" href="{:addons_url('TimeBank://TimeBank/show')}">返回&nbsp;&nbsp;</a>
         </div>
         <div class="m_15"> 
-            <form id="form" action="{:addons_url('WishCard://Wap/choose_template')}" method="post">
+            <form id="form" action="{:U('addTime')}" method="post">
                 <label class="mb_10">
-                   日期
-                   <div class="controls">
-                        <input style="height:44px;" type="date" maxlength="30" placeholder="请选择日期" class="text input-large" name="birthday" id="birthday" value="{$info.birthday|time_format='Y-m-d'}">                  
+                    日期
+                    <div class="controls">
+                        <input style="height:44px;" type="date" maxlength="30" placeholder="请选择日期" class="text input-large" name="tradeDate">                  
                     </div>
- 
-                   <input type="text" placeholder="发送人" name="send_name" value="{$user.nickname}"/>
                 </label>
                 <label class="mb_10">
                     收支
-                    
-            <div class="form-item cf">
-                <div class="controls">
-                  <select maxlength="30" name="pay_type">
-                  	<option value="0">收入</option>
-                  	<option value='1'>支出</option>
-                  </select>
-                 </div>
-           </div>
+                    <div class="form-item cf">
+                        <select maxlength="30" name="incommeExpense">
+                            <option value=""></option>
+                            <option value="0">收入</option>
+                            <option value='1'>支出</option>
+                        </select>
+                    </div>
+                </label>
+                <label class="mb_10">
+                    项目
+                    <div class="form-item cf">
+                        <select maxlength="30" name="project">
+                            <option value=""></option>
+                            <option value="0">看电视</option>
+                            <option value='1'>玩手机</option>
+                            <option value='2'>做作业</option>
+                            <option value='3'>看书</option>
+                            <option value='4'>其他</option>
+                        </select>
+                    </div>
                 </label>
                 <label class="mb_10">
                     时间
-                    <input type="number" maxlength="30" placeholder="请输入时间" class="text input-large flex_1 mr_10" name="verifyCode" id="verifyCode" value="">
+                    <input type="number" maxlength="3" placeholder="请输入时间" class="text input-large flex_1 mr_10" name="amount"/>
                 </label>
-                <button class="btn" id="submitBtn" type="submit">提交</button>
+                <label class="mb_10">
+                    备注
+                    <input type="text" maxlength="4" placeholder="请输入备注" name="memo"/>
+                </label>
+                <a class="lead_btn" id="submitBtn" >提交</a>
             </form>
         </div>
-        <p class="copyright">{$system_copy_right}{$tongji_code}</p>
     </div>
     <script type="text/javascript">
         $('#submitBtn').click(function () {
-            /*
-             if($('input[name="send_name"]').val()==""){
-             $.Dialog.fail("发送人不能为空");
-             return false;
-             }aa
-             */
-            if ($('input[name="receive_name"]').val() == "") {
-                $.Dialog.fail("请填写接收人");
+            if ($('input[name="tradeDate"]').val() == "") {
+                $.Dialog.fail("请填写日期");
                 return false;
-            } else if ($('textarea[name="content"]').val() == "") {
-                $.Dialog.fail("请填写祝福语");
+            } else if ($('select[name="incommeExpense"]').val() == "") {
+                $.Dialog.fail("请填写收支");
+                return false;
+            } else if ($('select[name="project"]').val() == "") {
+                $.Dialog.fail("请填写项目");
+                return false;
+            } else if ($('input[name="amount"]').val() == "") {
+                $.Dialog.fail("请填写时间");
                 return false;
             }
+            $('#form').submit();
         })
     </script>
 </body>

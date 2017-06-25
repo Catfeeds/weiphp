@@ -1,14 +1,13 @@
 @charset "utf-8";
-/* CSS Document by jacy use in vipcard */
-body{ padding:0; margin:0; background:#f0eef5 url(img/background.jpg) repeat-x;background-size: cover;}
+body{ padding:0; margin:0;background:#f0eef5;background-size: cover;}
 .body{background:#f0eef5 repeat;}
-.container{ max-width:640px; min-width:320px; margin:0 auto;}
+.container{ max-width:640px; min-width:320px; margin:0 auto;background:url('img/background.jpg');}
 .head_box{ position:relative}
 .head_box img{ width:100%; display:block; position:relative; z-index:10;}
 .head_box .style{ height:8px; width:100%; background:url(img/head_style.png) repeat-x; position:absolute; bottom:0; z-index:100;}
 .head_box .title_layer{ position:absolute; bottom:0; z-index:99; width:100%; padding:10px 0; text-align: center; color:#fff; background:RGBA(0,0,0,.3); font-size:16px;}
 
-.box{ border:1px solid #e5e5e5; background:#fafafa; padding:15px; margin:15px; border-radius:5px;}
+.box{ border:1px solid #e5e5e5; background:#cc99cc; padding:15px; margin:15px; border-radius:5px; font-size:20px;}
 .get_btn{ background:#db4444; border-radius:5px; padding:13px 0; display:block; margin:15px; text-align:center; color:#fff}
 a.get_btn{ color:#fff}
 .gray_btn{ background:#ccc; border-radius:5px; padding:13px 0; display:block; margin:15px; text-align:center; color:#888}
@@ -27,3 +26,102 @@ a.use_btn,a.gray_btn{ color:#fff}
 .start_btn:hover,.start_btn:link,.start_btn:active,.start_btn:visited{ color:#fff}
 .detail .title{ font-size:16px; color:#888; line-height:50px; padding:0 15px;}
 .detail .content{ padding:10px 15px; background:#fff;}
+.share_btn{ border-radius:24px; height:40px; width:200px; 
+            line-height:40px; border:2px solid #090; color:#060; text-align:center; display:block; margin:20px auto;}
+.lead_box{ margin:0 20px; padding:10px 0; position:relative; z-index:100 ;}
+.lead_btn{ border-radius:30px;
+           background:-webkit-linear-gradient(top,#27b7b8,#119798);
+           background:-moz-linear-gradient(top, #27b7b8, #119798);
+           background:linear-gradient(top, #27b7b8, #119798); 
+           -moz-box-shadow:0 1px 2px #077a7b;
+           -webkit-box-shadow:0 1px 2px #077a7b;
+           box-shadow:0 1px 2px #077a7b; 
+           padding:10px; color:#fff; width:200px; margin:20px auto 20px; display:block; text-align:center; font-size:30px; position:relative; font-weight:bold; border:none}
+.lead_btn:active{ background-color:#333333}
+.lead_btn:active span.next_arr em{ background-color:#333333}
+
+
+.msg_list{ margin: 0 15px 15px 0;}
+.msg_list td{ border-bottom:1px dashed #ccc; padding:5px;}
+.msg_list tr:last-child td{ border:none}
+.msg_list td img{ border-radius:100%;}
+
+/* 动画 */
+.animated{
+	-webkit-animation-duration:1.0s;
+	animation-duration:1.0s;
+	-webkit-animation-fill-mode:both;
+	animation-fill-mode:both
+}
+@-webkit-keyframes slideLeftIn{
+0%{
+	-webkit-transform:translate(-100%,0);
+	transform:translate(-100%,0)
+}
+100%{
+	-webkit-transform:translate(0,0);
+	transform:translate(0,0);
+}
+
+}
+@keyframes slideLeftIn{
+0%{
+	-webkit-transform:translate(-100%,0);
+	transform:translate(-100%,0)
+}
+100%{
+	-webkit-transform:translate(0,0);
+	transform:translate(0,0);
+}
+
+}
+
+.slideLeftIn {
+  -webkit-animation-name: slideLeftIn;
+  animation-name: slideLeftIn;
+}
+@-webkit-keyframes slideRightIn{
+0%{
+	-webkit-transform:translate(100%,0);
+	transform:translate(100%,0)
+}
+100%{
+	-webkit-transform:translate(0,0);
+	transform:translate(0,0);
+}
+
+}
+@keyframes slideRightIn{
+0%{
+	-webkit-transform:translate(100%,0);
+	transform:translate(100%,0)
+}
+100%{
+	-webkit-transform:translate(0,0);
+	transform:translate(0,0);
+}
+
+}
+
+.slideRightIn {
+  -webkit-animation-name: slideRightIn;
+  animation-name: slideRightIn;
+}
+
+.commenttitle{
+    background-color: lightseagreen;
+    color: aliceblue;
+    text-align: center;
+ 	border-top-right-radius: 10px;
+    margin:15px 20px 0 0;
+    line-height: 40px;
+}
+.commentbottom{
+    background-color: #52BABD;
+    text-align: center;
+    line-height: 40px;
+	margin:0 20px 15px 0;
+	border-bottom-right-radius:10px;
+	
+}
+.commentbottom input[type="text"],.commentbottom textarea{ border:none; border-bottom:1px solid #ddd; border-radius:0;}

@@ -20,7 +20,7 @@ class WeixinAddonModel extends WeixinModel{
 		);
 		
 		$articles [0] ['Description'] = "时间银行";
-		$articles [0] ['PicUrl'] = SITE_URL . '/Addons/TimeBank/View/default/Public/img/pic.gif';
+		$articles [0] ['PicUrl'] = SITE_URL . '/Addons/TimeBank/View/default/Public/img/pic.jpg';
 		addWeixinLog ( 'TimeBankModel', $articles );
 		$this->replyNews ( $articles );
 	}

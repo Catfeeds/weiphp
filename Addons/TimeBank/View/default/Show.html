@@ -6,15 +6,24 @@
 <script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
 <!-- 引入 jQuery Mobile 库 -->
 <script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script type="text/javascript" src="__JS__/m/dialog.js"></script>
+<script type="text/javascript" src="__JS__/m/mobile_module.js"></script>
 <body id="scratch">
-   <div class="container body" style="position:relative; background:#fff;">
-    	<div class="head_box">
-    		<img src="{:ADDON_PUBLIC_PATH}/img/title.png" width="100%"/>
+    <div class="container body"style="position:relative;"> 
+        <div class="head_box">
+            <img src="{:ADDON_PUBLIC_PATH}/img/title.gif" width="100%"/>
+            <a class="share_btn" href="{:addons_url('TimeBank://TimeBank/help')}" >说明</a>
         </div>
-            <div class="box">
-                <h6>时间银行余额：{$balance}分钟</h6>
-            </div>
-    	 <p class="copyright">{$system_copy_right}{$tongji_code}</p>
-   </div>
+        <div class="box">
+            <h6>余额：{$balance}分钟</h6>
+        </div>
+        <div class="lead_box">
+            <a class="lead_btn" href="{:addons_url('TimeBank://TimeBank/detail')}" >明细</a>
+            <!--<a class="lead_btn" href="{:addons_url('TimeBank://TimeBank/deposit')}" >存储</a>-->
+            <php>if($editFlg == "1") { </php>
+            <a class="lead_btn" href="{:addons_url('TimeBank://TimeBank/showAdd')}" >追加</a>
+            <php> } </php>
+        </div>
+    </div>
 </body>
 </html>
