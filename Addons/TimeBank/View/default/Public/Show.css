@@ -40,6 +40,7 @@ a.use_btn,a.gray_btn{ color:#fff}
 .lead_btn:active{ background-color:#333333}
 .lead_btn:active span.next_arr em{ background-color:#333333}
 
+.sn_box{ border:1px solid #e5e5e5; background:#cccccc; padding:15px; margin:15px; border-radius:5px; font-size:20px;}
 
 .msg_list{ margin: 0 15px 15px 0;}
 .msg_list td{ border-bottom:1px dashed #ccc; padding:5px;}

@@ -17,9 +17,12 @@
         <div class="box">
             <h6>余额：{$balance}分钟</h6>
         </div>
+        <div class="sn_box">
+            <h6>目标：{$targetTime}分钟</h6>
+        </div>
         <div class="lead_box">
             <a class="lead_btn" href="{:addons_url('TimeBank://TimeBank/detail')}" >明细</a>
-            <!--<a class="lead_btn" href="{:addons_url('TimeBank://TimeBank/deposit')}" >存储</a>-->
+            <a class="lead_btn" href="{:addons_url('TimeBank://TimeBank/deposit')}" >目标</a>
             <php>if($editFlg == "1") { </php>
             <a class="lead_btn" href="{:addons_url('TimeBank://TimeBank/showAdd')}" >追加</a>
             <php> } </php>

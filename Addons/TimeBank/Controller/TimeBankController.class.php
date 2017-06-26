@@ -13,7 +13,7 @@ class TimeBankController extends AddonsController {
     function show() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('TimeBankController::show', $param);
+addWeixinLog('TimeBankController::show', $param);
         $map ['acount'] = 'XIXI';
         $map ['incommeExpense'] = 0;
         $data = M('time_bank')->where($map)->field("sum(amount) amount")->select();
@@ -23,6 +23,12 @@ class TimeBankController extends AddonsController {
         $out = intval($data [0] ['amount']);
         $balance = $in - $out;
         $this->assign('balance', $balance);
+        $taget ['acount'] = 'XIXI';
+        
+        $taget ['status'] = '0';
+        $tagetdata = M('time_deposit')->where($map)->field("sum(time) time")->select();
+        $this->assign('targetTime', intval($tagetdata [0] ['time']));
+        
         $editFlg = "0";
         if ($param ['token'] == "gh_20576134fc23" &&
                 ($param ['openid'] == "ogMEps6tWx4w0fsB03i4Y7vJTjao" ||
@@ -36,14 +42,14 @@ class TimeBankController extends AddonsController {
     function help() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('TimeBankController::help', $param);
+addWeixinLog('TimeBankController::help', $param);
         $this->display(SITE_PATH . '/Addons/TimeBank/View/default/help.html');
     }
 
     function detail() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('TimeBankController::detail', $param);
+addWeixinLog('TimeBankController::detail', $param);
         $model = $this->getModel('time_bank');
         $map ['acount'] = 'XIXI';
         $data = M('time_bank')->where($map)->order('tradeDate desc')->select();
@@ -55,23 +61,43 @@ class TimeBankController extends AddonsController {
         $this->assign('data', $data);
         $this->display(SITE_PATH . '/Addons/TimeBank/View/default/Detail.html');
     }
+    
+    function deposit() {
+        $param ['token'] = get_token();
+        $param ['openid'] = get_openid();
+addWeixinLog('TimeBankController::deposit', $param);
+        $model = $this->getModel('time_deposit');
+        $map ['acount'] = 'XIXI';
+        $data = M('time_deposit')->where($map)->order('expiate')->select();
+        foreach ($data as &$c) {
+            $c['expiate'] = time_format($c['expiate'], 'Y-m-d');
+            $c['status'] = get_name_by_status($c['status'], 'status', $model['id']);
+        }
+        $this->assign('data', $data);
+        $this->display(SITE_PATH . '/Addons/TimeBank/View/default/Deposit.html');
+    }
 
     function showAdd() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('TimeBankController::showAdd', $param);
+addWeixinLog('TimeBankController::showAdd', $param);
+        $map ['acount'] = 'XIXI';
+        $map ['status'] = '0';
+        $data = M('time_deposit')->where($map)->order('id desc')->select();
+        $this->assign('data', $data);
         $this->display(SITE_PATH . '/Addons/TimeBank/View/default/Add.html');
     }
 
     function addTime() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('TimeBankController::addTime', $param);
+addWeixinLog('TimeBankController::addTime', $param);
         if ($_POST['tradeDate'] != 0) {
             $map ['acount'] = 'XIXI';
             $map ['tradeDate'] = strtotime($_POST['tradeDate']);
             $map ['incommeExpense'] = $_POST['incommeExpense'];
             $map ['project'] = $_POST['project'];
+            $map ['targetId'] = $_POST['targetId'];
             $map ['amount'] = $_POST['amount'];
             $map ['memo'] = $_POST['memo'];
             if ($param ['token'] == "gh_20576134fc23" &&
@@ -82,8 +108,16 @@ class TimeBankController extends AddonsController {
                 $map ['handlerName'] = '妈妈';
             }
             $map ['ceateTime'] = time();
-            addWeixinLog('TimeBankController::addTime', $map);
             M('time_bank')->add($map);
+            if ($map ['project'] == '5') {
+                $target ['acount'] = 'XIXI';
+                $target ['id'] = $map ['targetId'];
+                $data = M('time_deposit')->where($target)->select();
+                if (!empty($data)) {
+                    $data['time'] = intval($data['time']) + intval($map ['amount']);
+                    M('time_deposit')->where ( $target )->save($data);
+                }
+            }
             unset($map);
         }
         redirect(addons_url('TimeBank://TimeBank/show', $param));

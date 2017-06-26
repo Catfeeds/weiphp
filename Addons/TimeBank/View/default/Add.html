@@ -42,6 +42,18 @@
                             <option value='2'>做作业</option>
                             <option value='3'>看书</option>
                             <option value='4'>其他</option>
+                            <option value='5'>储蓄</option>
+                        </select>
+                    </div>
+                </label>
+                <label class="mb_10" id="target" style="display: none">
+                    目标
+                    <div class="form-item cf">
+                        <select maxlength="30" name="targetId">
+                            <option value=""></option>
+                            <volist name='data' id='c'>
+                                <option value="{$c.id}">{$c.targetName}</option>
+                            </volist>
                         </select>
                     </div>
                 </label>
@@ -58,6 +70,13 @@
         </div>
     </div>
     <script type="text/javascript">
+        $('select[name="project"]').change(function () {
+            if ($('select[name="project"]').val() == "5") {
+                $('#target').show();
+            } else {
+                $('#target').hide();
+            }
+        })
         $('#submitBtn').click(function () {
             if ($('input[name="tradeDate"]').val() == "") {
                 $.Dialog.fail("请填写日期");
@@ -74,6 +93,7 @@
             }
             $('#form').submit();
         })
+        
     </script>
 </body>
 </html>
