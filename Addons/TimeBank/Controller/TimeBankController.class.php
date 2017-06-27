@@ -13,7 +13,7 @@ class TimeBankController extends AddonsController {
     function show() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-//addWeixinLog('TimeBankController::show', $param);
+//addWeixinLog('TimeBankController::show', $param); 
         $map ['acount'] = 'XIXI';
         $map ['incommeExpense'] = 0;
         $data = M('time_bank')->where($map)->field("sum(amount) amount")->select();
