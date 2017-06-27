@@ -15,30 +15,42 @@
             <a style="float:right;" href="{:addons_url('TimeBank://TimeBank/show')}">返回&nbsp;&nbsp;</a>
             <br>
         </div>
-        <div class='animated slideLeftIn'>
-            <div class='commenttitle'>明细</div>
-            <div class='commentbottom'>
-                <table class="msg_list" width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <th>日期</th>
-                        <th>收支</th>
-                        <th>项目</th>
-                        <th>时间</th>
-                        <th>备注</th>
-                        <th>经办人</th>
-                    </tr>
-                    <volist name='data' id='c'>
+        <div class="card_wrap">
+            <div class='animated slideLeftIn'>
+                <div class='commenttitle'>明细</div>
+                <div class='commentbottom'>
+                    <table class="msg_list" width="100%" cellpadding="0" cellspacing="0">
                         <tr>
-                            <td>{$c.tradeDate}</td>
-                            <td>{$c.incommeExpense}</td>
-                            <td>{$c.project}</td>
-                            <td>{$c.amount}</td>
-                            <td>{$c.memo}</td>
-                            <td>{$c.handlerName}</td>
+                            <th>日期</th>
+                            <th>收支</th>
+                            <th>项目</th>
+                            <th>时间</th>
+                            <th>备注</th>
+                            <th>经办人</th>
                         </tr>
-                    </volist>
-                </table>
-                </eq>
+                        <volist name='data' id='c'>
+                            <tr>
+                                <td>{$c.tradeDate}</td>
+                                <td>{$c.incommeExpense}</td>
+                                <td>{$c.project}</td>
+                                <td>{$c.amount}</td>
+                                <td>{$c.memo}</td>
+                                <td>{$c.handlerName}</td>
+                            </tr>
+                        </volist>
+                    </table>
+                    </eq>
+                </div>
+                <php>if($totalPages > 1):</php>
+                <div id="pager_box">
+                    <php>if($page > 1):</php>
+                    <a href="{:addons_url('TimeBank://TimeBank/detail',array('page'=>$page-1))}" id="prev" class="pure-button pager_child pager_p_n pure-button-primary">上一页</a>
+                    <php>endif;</php>
+                    <php>if($page < $totalPages):</php>
+                    <a href="{:addons_url('TimeBank://TimeBank/detail',array('page'=>$page+1))}" id="next" class="pure-button pager_child pager_p_n pure-button-primary">下一页</a>
+                    <php>endif;</php>
+                </div>
+                <php>endif;</php>
             </div>
         </div>
     </div>

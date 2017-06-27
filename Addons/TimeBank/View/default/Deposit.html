@@ -15,28 +15,30 @@
             <a style="float:right;" href="{:addons_url('TimeBank://TimeBank/show')}">返回&nbsp;&nbsp;</a>
             <br>
         </div>
-        <div class='animated slideLeftIn'>
-            <div class='commenttitle'>目标</div>
-            <div class='commentbottom'>
-                <table class="msg_list" width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <th>目标名</th>
-                        <th>目标</th>
-                        <th>有效期</th>
-                        <th>累计时间</th>
-                        <th>状态</th>
-                    </tr>
-                    <volist name='data' id='c'>
+        <div class="card_wrap">
+            <div class='animated slideLeftIn'>
+                <div class='commenttitle'>目标</div>
+                <div class='commentbottom'>
+                    <table class="msg_list" width="100%" cellpadding="0" cellspacing="0">
                         <tr>
-                            <td>{$c.targetName}</td>
-                            <td>{$c.target}</td>
-                            <td>{$c.expiate}</td>
-                            <td>{$c.time}</td>
-                            <td>{$c.status}</td>
+                            <th>目标名</th>
+                            <th>目标</th>
+                            <th>有效期</th>
+                            <th>累计时间</th>
+                            <th>状态</th>
                         </tr>
-                    </volist>
-                </table>
-                </eq>
+                        <volist name='data' id='c'>
+                            <tr>
+                                <td>{$c.targetName}</td>
+                                <td>{$c.target}</td>
+                                <td>{$c.expiate}</td>
+                                <td>{$c.time}</td>
+                                <td>{$c.status}</td>
+                            </tr>
+                        </volist>
+                    </table>
+                    </eq>
+                </div>
             </div>
         </div>
     </div>
