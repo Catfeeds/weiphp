@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>期末成绩查询</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta content="telephone=no,email=no" name="format-detection">
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+    <script type="text/javascript">
+        /*wx.config({
+            debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: 'wxc5d2229adc0102a3', // 必填，公众号的唯一标识
+            timestamp: "<?php echo $timestamp?>",//这个一定要与上面的php代码里的一样。
+            nonceStr: "<?php echo $noncestr?>",//这个一定要与上面的php代码里的一样。
+            signature: "<?php echo $signature?>",
+            jsApiList: [
+              // 所有要调用的 API 都要加到这个列表中
+                'onMenuShareTimeline',
+                'onMenuShareAppMessage',
+                'onMenuShareQQ',
+                'onMenuShareWeibo'
+            ]
+        });
+
+        wx.onMenuShareTimeline({
+            title: '123', // 分享标题
+            link: 'http://www.baidu.com', // 分享链接
+            imgUrl: 'https://camo.githubusercontent.com/80c01ecd820a72bec3b22dcb27e872ba0b149bef/687474703a2f2f7777772e626169647566652e636f6d2f75706c6f61642f696d616765732f323031342d30362d31345f332e34372e30322e706e67', // 分享图标
+            success: function () { 
+                alert('123');
+            },
+            cancel: function () { 
+                alert('456');
+            }
+        });*/
+
+    </script>
+    <style>
+        .row{margin: 0px;}
+        #navid{background-color: #B9D3EE;height: 50px;} 
+        #navid span{color: #ffffff;font-size: 18px; line-height: 35px;}
+        #content{margin: 15px 10px 0px 10px;border-top: 1px solid #B9D3EE;}
+        .glyphicon-user, .glyphicon-education, .glyphicon-eye-open{line-height: 32px;font-size: 27px;color: #B9D3EE;}
+        .btn-success{width: 100%;background-color: #B9D3EE;border-color:#B9D3EE; }
+        footer{background-color:#BCD2EE;color:#666;position: fixed;bottom: 0px;width: 100%;padding: 10px;text-align: center;}
+    </style>
+
+    <script>
+
+        $(document).ready(function() {
+            /* 验证码刷新 */
+            $('#imgId').click(function() {
+                $("#imgId").attr('src',"{:U('verify')}");
+            });
+            $('#verify').click(function() {
+                $("#imgId").attr('src','{:U("verify")}');
+            });
+
+            /* 数据校验 */
+            $('#buttonId').click(function() {
+                var zjh= $("#input1").val();
+                var mm = $("#input2").val();
+                var v_yzm = $("#input3").val();
+
+                if (zjh == '') {alert('请输入学号'); return false;}
+                if (mm == '') {alert('请输入密码'); return false;}
+                if (v_yzm == '') {alert('请输入验证码'); return false;}
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- 头部 -->
+    <div class="row" id="navid">
+        <div class="col-xs-12" style="text-align: center;">
+            <span>河南理工大学</span>
+        </div>
+    </div>
+    <!-- 表单 -->
+    <div class="row">
+        <div class="panel panel-default" id="content">
+            <div class="panel-body">
+                <form class="form-horizontal" action="{:U('bxqcj')}" method="post">
+                <literal>
+                    <div class="form-group">
+                        <label for="input1" class="col-xs-2 control-label">
+                            <span class="glyphicon glyphicon-user"></span>
+                        </label>
+                        <div class="col-xs-10">
+                            <input type="text" class="form-control" name="zjh" value="<?php echo $studentid?>" id="input1" placeholder="学号">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="input2" class="col-xs-2 control-label">
+                            <span class="glyphicon glyphicon-education"></span>
+                        </label>
+                        <div class="col-xs-10">
+                            <input type="password" class="form-control" value="<?php echo $mm?>" name="mm" id="input2" placeholder="教务处密码">
+                            <input type="hidden" name="openid" value=""> 
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="input3" class="col-xs-2 control-label">
+                            <span class="glyphicon glyphicon-eye-open"></span>
+                        </label>
+                        <div class="col-xs-6">
+                            <input type="text" class="form-control" value="" name="v_yzm" id="input3"  placeholder="验证码">
+                        </div>
+                        </literal>
+                        <div class="col-xs-4" style="line-height: 30px;padding: 0px;">
+                            <img src="{:U('verify')}" alt="点击获取" id="imgId" style="height: 27px;" onclick="this.src='verify.php?'+Math.random()">
+                        </div>
+                        <div class="col-xs-4" style="line-height: 30px;padding: 0px;">
+                            <input type="button" id="verify" class="btn btn-info btn-sm " onclick="this.src='{:U('verify')}?'+Math.random()" value="看不见换张">                      
+                        </div>
+                    </div>
+
+                    <input type="submit" class="btn btn-success" id="buttonId" name="submit" value="查询">
+                </form>
+            </div>
+            
+            <!-- 脚注 -->
+                    
+        </div>
+    </div>
+    <br>
+    <div class="col-xs-12 " style="text-align: left;">          
+        <strong style="color: red">1.服务器资源紧张并且教务处有登录人数限制,所以不能成功查询时还请谅解</strong><br>  
+        <strong style="color: red">2.查询后未显示成绩或者提示人数已满请返回刷新验证码重新查询,一般多试几次就能成功</strong><br>
+    </div>
+    <footer>
+        &copy;HPU小微提供<br>
+    </footer>
+</body>
+</html>
