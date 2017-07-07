@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS `wp_study_math` (
+`id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+`studyDate`  int(10) NULL  COMMENT '学习日期',
+`studyContent`  varchar(255) NULL  COMMENT '学习内容',
+`type`  tinyint(2) NULL  COMMENT '类型',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci CHECKSUM=0 ROW_FORMAT=DYNAMIC DELAY_KEY_WRITE=0;
+CREATE TABLE IF NOT EXISTS `wp_math_questions` (
+`id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+`type`  tinyint(2) NULL  COMMENT '类型',
+`content`  varchar(255) NULL  COMMENT '题目',
+`facilityValue`  tinyint(2) NULL  COMMENT '难易度',
+`errorprone`  tinyint(2) NULL  DEFAULT 0 COMMENT '易错',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci CHECKSUM=0 ROW_FORMAT=DYNAMIC DELAY_KEY_WRITE=0;
+INSERT INTO `wp_model` (`name`,`title`,`extend`,`relation`,`need_pk`,`field_sort`,`field_group`,`attribute_list`,`template_list`,`template_add`,`template_edit`,`list_grid`,`list_row`,`search_key`,`search_list`,`create_time`,`update_time`,`status`,`engine_type`,`addon`) VALUES ('study_math','数学题','0','','1','["studyDate","studyContent"]','1:基础','','','','','studyDate|time_format:学习时间\r\nstudyContent:学习内容\r\nids:操作:[EDIT]&id=[id]|编辑,[DELETE]&id=[id]|删除','10','studyDate:请输入学习时间搜索','','1499411659','1499411996','1','MyISAM','StudyMath');
+INSERT INTO `wp_attribute` (`name`,`title`,`field`,`type`,`value`,`remark`,`is_show`,`extra`,`model_id`,`model_name`,`is_must`,`status`,`update_time`,`create_time`,`validate_rule`,`validate_time`,`error_info`,`validate_type`,`auto_rule`,`auto_time`,`auto_type`) VALUES ('studyDate','学习日期','int(10) NULL','date','','','1','','0','study_math','0','1','1499411733','1499411733','','3','','regex','','3','function');
+INSERT INTO `wp_attribute` (`name`,`title`,`field`,`type`,`value`,`remark`,`is_show`,`extra`,`model_id`,`model_name`,`is_must`,`status`,`update_time`,`create_time`,`validate_rule`,`validate_time`,`error_info`,`validate_type`,`auto_rule`,`auto_time`,`auto_type`) VALUES ('studyContent','学习内容','varchar(255) NULL','string','','','1','','0','study_math','0','1','1499411808','1499411808','','3','','regex','','3','function');
+INSERT INTO `wp_attribute` (`name`,`title`,`field`,`type`,`value`,`remark`,`is_show`,`extra`,`model_id`,`model_name`,`is_must`,`status`,`update_time`,`create_time`,`validate_rule`,`validate_time`,`error_info`,`validate_type`,`auto_rule`,`auto_time`,`auto_type`) VALUES ('type','类型','tinyint(2) NULL','bool','','','1','0:普通\r\n1:罚题','0','study_math','1','1','1499417058','1499417058','','3','','regex','','3','function');
+INSERT INTO `wp_model` (`name`,`title`,`extend`,`relation`,`need_pk`,`field_sort`,`field_group`,`attribute_list`,`template_list`,`template_add`,`template_edit`,`list_grid`,`list_row`,`search_key`,`search_list`,`create_time`,`update_time`,`status`,`engine_type`,`addon`) VALUES ('math_questions','数学题库','0','','1','["content","type","facilityValue","errorprone"]','1:基础','','','','','content:题目\r\ntype|get_name_by_status:类型\r\nfacilityValue|get_name_by_status:难易度 \r\nerrorprone|get_name_by_status:易错\r\nids:操作:[EDIT]&id=[id]|编辑,[DELETE]&id=[id]|删除','10','content:请输入题目搜索','','1499416629','1499417534','1','MyISAM','StudyMath');
+INSERT INTO `wp_attribute` (`name`,`title`,`field`,`type`,`value`,`remark`,`is_show`,`extra`,`model_id`,`model_name`,`is_must`,`status`,`update_time`,`create_time`,`validate_rule`,`validate_time`,`error_info`,`validate_type`,`auto_rule`,`auto_time`,`auto_type`) VALUES ('type','类型','tinyint(2) NULL','bool','','','1','0:加法\r\n1:减法\r\n2:乘法\r\n3:除法\r\n4:连加\r\n5:连减\r\n6:连乘\r\n7:连除\r\n','0','math_questions','1','1','1499416887','1499416887','','3','','regex','','3','function');
+INSERT INTO `wp_attribute` (`name`,`title`,`field`,`type`,`value`,`remark`,`is_show`,`extra`,`model_id`,`model_name`,`is_must`,`status`,`update_time`,`create_time`,`validate_rule`,`validate_time`,`error_info`,`validate_type`,`auto_rule`,`auto_time`,`auto_type`) VALUES ('content','题目','varchar(255) NULL','string','','','1','','0','math_questions','1','1','1499417101','1499417101','','3','','regex','','3','function');
+INSERT INTO `wp_attribute` (`name`,`title`,`field`,`type`,`value`,`remark`,`is_show`,`extra`,`model_id`,`model_name`,`is_must`,`status`,`update_time`,`create_time`,`validate_rule`,`validate_time`,`error_info`,`validate_type`,`auto_rule`,`auto_time`,`auto_type`) VALUES ('facilityValue','难易度','tinyint(2) NULL','bool','','','1','0:简单\r\n1:一般\r\n2:难\r\n3:非常难','0','math_questions','1','1','1499417212','1499417212','','3','','regex','','3','function');
+INSERT INTO `wp_attribute` (`name`,`title`,`field`,`type`,`value`,`remark`,`is_show`,`extra`,`model_id`,`model_name`,`is_must`,`status`,`update_time`,`create_time`,`validate_rule`,`validate_time`,`error_info`,`validate_type`,`auto_rule`,`auto_time`,`auto_type`) VALUES ('errorprone','易错','tinyint(2) NULL','bool','0','','1','0:一般\r\n1:易错','0','math_questions','0','1','1499417380','1499417380','','3','','regex','','3','function');
+UPDATE `wp_attribute` a, wp_model m SET a.model_id = m.id WHERE a.model_name=m.`name`;
