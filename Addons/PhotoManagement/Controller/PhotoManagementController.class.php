@@ -11,6 +11,6 @@ class PhotoManagementController extends AddonsController{
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
         addWeixinLog('PhotoManagementController', $param);
-        redirect('http://shzhuhui.wicp.net/photo/');
+        redirect('http://shzhuhui.iask.in/photo/');
     }
 }
