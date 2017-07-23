@@ -43,7 +43,7 @@ a.use_btn,a.gray_btn{ color:#fff}
 .sn_box{ border:1px solid #e5e5e5; background:#cccccc; padding:15px; margin:15px; border-radius:5px; font-size:20px;}
 
 .msg_list{ margin: 0 15px 15px 0;}
-.msg_list td{ border-bottom:1px dashed #ccc; padding:5px;}
+.msg_list td{ border-bottom:1px dashed #ccc; padding:5px; font-size:30px;}
 .msg_list tr:last-child td{ border:none}
 .msg_list td img{ border-radius:100%;}
 

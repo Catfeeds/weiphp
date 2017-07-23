@@ -14,7 +14,7 @@ class StudyMathController extends AddonsController {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
         addWeixinLog('StudyMathController::show', $param);
-        $editFlg = "1";
+        $editFlg = "0";
         if ($param ['token'] == "gh_20576134fc23" &&
                 ($param ['openid'] == "ogMEps6tWx4w0fsB03i4Y7vJTjao" ||
                 $param ['openid'] == "ogMEps2awMek2ThngULwDOMLc-W4")) {
@@ -44,6 +44,15 @@ class StudyMathController extends AddonsController {
         addWeixinLog('StudyMathController::addList', $param);
         $nowDate = $_POST['studyDate'];
         $map ['studyDate'] = strtotime($nowDate);
+        $cnt = M('study_math')->where($map)->count();
+        if ($cnt == 0) {
+            $questions = M('math_questions')->limit ( 21 )->order('RAND()')->select();
+            foreach ( $questions as $vo ) {
+                $studyMath['studyDate'] = strtotime($nowDate);
+                $studyMath['studyContent'] = $vo['content'];
+                M('study_math')->add($studyMath);
+            }
+        }
         $data = M('study_math')->where($map)->select();
         $this->assign('data', $data);
         $this->assign('nowDate', $nowDate);
