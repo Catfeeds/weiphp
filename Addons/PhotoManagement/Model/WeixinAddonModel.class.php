@@ -20,7 +20,7 @@ class WeixinAddonModel extends WeixinModel{
 		);
 		
 		$articles [0] ['Description'] = "照片管理";
-		$articles [0] ['PicUrl'] = SITE_URL . '/Addons/PhotoManagement/View/default/img/photo.gif';
+		$articles [0] ['PicUrl'] = SITE_URL . '/Addons/PhotoManagement/View/default/Public/img/photo.gif';
 		addWeixinLog ( 'WeixinAddonModel', $articles );
 		$this->replyNews ( $articles );
 	}

@@ -1,0 +1,30 @@
+<include file="Public/mobile_head"/>
+<link href="{:ADDON_PUBLIC_PATH}/Show.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
+<!-- 引入 jQuery Mobile 样式 -->
+<link rel="stylesheet" href="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<!-- 引入 jQuery 库 -->
+<script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+<!-- 引入 jQuery Mobile 库 -->
+<script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script type="text/javascript" src="__JS__/m/dialog.js"></script>
+<script type="text/javascript" src="__JS__/m/mobile_module.js"></script>
+<body id="scratch">
+    <div class="container body"style="position:relative;"> 
+        <ul id="img-lt">
+            <volist name='data' id='c'>
+                <li><img src="{$c.name}"></li>
+            </volist>  
+        </ul>
+    </div>
+        <php>if($totalPages > 1):</php>
+        <div id="pager_box">
+            <php>if($page > 1):</php>
+            <a href="{:addons_url('PhotoManagement://PhotoManagement/showList',array('page'=>$page-1 , 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate ))}" id="prev" class="pure-button pager_child pager_p_n pure-button-primary">上一页</a>
+            <php>endif;</php>
+            <php>if($page < $totalPages):</php>
+            <a href="{:addons_url('PhotoManagement://PhotoManagement/showList',array('page'=>$page+1, 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate ))}" id="next" class="pure-button pager_child pager_p_n pure-button-primary">下一页</a>
+            <php>endif;</php>
+        </div>
+        <php>endif;</php>
+</body>
+</html>
