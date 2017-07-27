@@ -54,7 +54,7 @@ class TimeBankController extends AddonsController {
         $param ['openid'] = get_openid();
 //addWeixinLog('TimeBankController::detail', $param);
         $page = I ( 'page', 1, 'intval' ); // 默认显示第一页数据
-        $row = empty ( $model ['list_row'] ) ? 6 : $model ['list_row'];
+        $row = 6;
         $model = $this->getModel('time_bank');
         $map ['acount'] = 'XIXI';
         $cnt = M('time_bank')->where($map)->count ();
