@@ -11,45 +11,45 @@
 <body id="scratch">
     <div class="container body"style="position:relative;"> 
         <div class="m_15"> 
-            <form id="form" method="post">
+            <form id="form" method="post" action="{:addons_url('PhotoManagement://PhotoManagement/showList')}">
                 <div class="box">
+                    <h6>照片总数：{$piccnt}</h6>
+                    <h6>影像总数：{$videocnt}</h6>
                     <label class="mb_10">
                          <select maxlength="30" name="type">
-                            <option value="0">照片</option>
-                            <option value='1'>影像</option>
+                            <option value="0" <php>if($type == 0):</php>selected<php>endif;</php> >照片</option>
+                            <option value='1' <php>if($type == 1):</php>selected<php>endif;</php> >影像</option>
                         </select>
                     </label>
                     <label class="mb_10">
                         开始日期
-                        <input type="date" maxlength="30" placeholder="请选择开始日期" class="text input-large" name="startDate">
+                        <input type="date" maxlength="30" placeholder="请选择开始日期" class="text input-large" name="startDate" value="{$startDate}"/>
                     </label>
                     <label class="mb_10">
                         结束日期
-                        <input type="date" maxlength="30" placeholder="请选择结束日期" class="text input-large" name="endDate">
+                        <input type="date" maxlength="30" placeholder="请选择结束日期" class="text input-large" name="endDate" value="{$endDate}"/>
                     </label>
                     <label class="mb_10">
                         标记
-                        <input type="text" maxlength="10" placeholder="请输入标记" name="flag"/>
+                        <select maxlength="30" name="flag">
+                            <volist name='flaglist' id='c'>
+                                <option value="{$c.flag}" <eq name='flag' value='c.flag'>selected</eq> >{$c.flag}</option>
+                            </volist> 
+                        </select>
+                        
                     </label>
                     <label class="mb_10">
                         备注
-                        <input type="text" maxlength="10" placeholder="请输入备注" name="memo"/>
+                        <input type="text" maxlength="10" placeholder="请输入备注" name="memo" value="{$memo}"/>
                     </label>
                     <label class="mb_10">
                         隐藏文件
-                        <input type="checkbox" value="1" class="checkbox" name="hidden">
+                        <input type="checkbox" value="1" class="checkbox" name="hidden" value="{$hidden}" <php>if($hidden == 1):</php>checked<php>endif;</php>/>
                     </label>
                 </div>
+            <button class="lead_btn" type="submit">搜索
             </form>
-            <a class="lead_btn" id="showList" >搜索
-            </a>
         </div>
     </div>
-    <script type="text/javascript">
-        $('#showList').click(function () {
-            $("#form").attr("action", "{:U('showList')}");
-            $('#form').submit();
-        })
-    </script>
 </body>
 </html>

@@ -1,0 +1,51 @@
+<include file="Public/mobile_head"/>
+<link href="{:ADDON_PUBLIC_PATH}/Show.css?v={:SITE_VERSION}" rel="stylesheet" type="text/css">
+<!-- 引入 jQuery Mobile 样式 -->
+<link rel="stylesheet" href="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<!-- 引入 jQuery 库 -->
+<script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+<!-- 引入 jQuery Mobile 库 -->
+<script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script type="text/javascript" src="__JS__/m/dialog.js"></script>
+<script type="text/javascript" src="__JS__/m/mobile_module.js"></script>
+<link rel="stylesheet" href="{:ADDON_PUBLIC_PATH}/amazeui.min.css?v={:SITE_VERSION}" />
+<body id="scratch">
+    <div class="container body"style="position:relative;"> 
+        <img src="{$url}"  alt="{$name}"/>
+        <div class="m_15"> 
+            <form id="form" method="post" action="{:addons_url('PhotoManagement://PhotoManagement/editPhoto')}">
+                <div class="box">
+                    <input type="hidden" name="name" value="{$name}"/>
+                    
+                    <input type="hidden" name="type" value="{$type}"/>
+                    <input type="hidden" name="startDate" value="{$startDate}"/>
+                    <input type="hidden" name="endDate" value="{$endDate}"/>
+                    <input type="hidden" name="flag" value="{$flag}"/>
+                    <input type="hidden" name="memo" value="{$memo}"/>
+                    <input type="hidden" name="hidden" value="{$hidden}"/>
+                    <input type="hidden" name="page" value="{$page}"/>
+                    
+                    
+                    <label class="mb_10">
+                        拍摄日期:{$shoutday}
+                    </label>
+                    <label class="mb_10">
+                        标记
+                        <input type="text" maxlength="10" placeholder="请输入标记" name="eflag" value="{$eflag}"/>
+                    </label>
+                    <label class="mb_10">
+                        备注
+                        <input type="text" maxlength="10" placeholder="请输入备注" name="ememo" value="{$ememo}"/>
+                    </label>
+                    <label class="mb_10">
+                        隐藏文件
+                        <input type="checkbox" value="1" class="checkbox" name="ehidden" value="{$ehidden}" <php>if($ehidden == 1):</php>checked<php>endif;</php> />
+                    </label>
+                </div>
+                <button class="lead_btn" type="submit">提交
+            </form>
+        </div>
+        <a class="start_btn" href="{:addons_url('PhotoManagement://PhotoManagement/showList',array('page'=>$page , 'flag'=>$flag , 'memo'=>$memo , 'hidden'=>$hidden , 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate ))}" >返回</a>
+    </div>
+</body>
+</html>
