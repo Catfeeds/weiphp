@@ -10,16 +10,16 @@
 <script type="text/javascript" src="__JS__/m/mobile_module.js"></script>
 <link rel="stylesheet" href="{:ADDON_PUBLIC_PATH}/amazeui.min.css?v={:SITE_VERSION}" />
 <body id="scratch">
-<a class="start_btn" href="{:addons_url('PhotoManagement://PhotoManagement/show',array('flag'=>$flag , 'memo'=>$memo , 'hidden'=>$hidden , 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate ))}">重新搜索</a>
+    <a class="start_btn" href="{:addons_url('PhotoManagement://PhotoManagement/show',array('flag'=>$flag , 'memo'=>$memo , 'hidden'=>$hidden , 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate ))}">重新搜索</a>
     <div class="container body"style="position:relative;">
-           <ul data-am-widget="gallery" class="am-gallery am-avg-sm-2
-                am-avg-md-3 am-avg-lg-4 am-gallery-overlay" data-am-gallery="{ pureview: true }">
-                <volist name='data' id='c'>
-                    <a href="{:addons_url('PhotoManagement://PhotoManagement/showPhoto',array('name'=>$c['name'] ,'page'=>$page , 'flag'=>$flag , 'memo'=>$memo , 'hidden'=>$hidden , 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate))}">
-                        <img src="{$c.short}"  alt="{$c.name}"/>
-                    </a>
-                </volist>  
-            </ul>
+        <ul data-am-widget="gallery" class="am-gallery am-avg-sm-2
+            am-avg-md-3 am-avg-lg-4 am-gallery-overlay" data-am-gallery="{ pureview: true }">
+            <volist name='data' id='c'>
+                <a href="{:addons_url('PhotoManagement://PhotoManagement/showPhoto',array('name'=>$c['name'] ,'page'=>$page , 'flag'=>$flag , 'memo'=>$memo , 'hidden'=>$hidden , 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate))}">
+                    <img src="{$c.short}"  alt="{$c.name}"/>
+                </a>
+            </volist>  
+        </ul>
     </div>
 <php>if($totalPages > 1):</php>
 <div id="pager_box">

@@ -10,13 +10,18 @@
 <script type="text/javascript" src="__JS__/m/mobile_module.js"></script>
 <link rel="stylesheet" href="{:ADDON_PUBLIC_PATH}/amazeui.min.css?v={:SITE_VERSION}" />
 <body id="scratch">
-    <div class="container body"style="position:relative;"> 
-        <img src="{$url}"  alt="{$name}"/>
+    <div class="container body"style="position:relative;">
+        <php>if($etype == 0):</php>
+        <img src="{$url}"  alt="{$name}" id="previewImage"/>
+        <php>endif;</php>
+        <php>if($etype == 1):</php>
+        <video id="video" class="video" poster="{$image}" preload="auto" playsinline src="{$url}" type="video/mp4"></video>
+        <php>endif;</php>
         <div class="m_15"> 
             <form id="form" method="post" action="{:addons_url('PhotoManagement://PhotoManagement/editPhoto')}">
                 <div class="box">
                     <input type="hidden" name="name" value="{$name}"/>
-                    
+
                     <input type="hidden" name="type" value="{$type}"/>
                     <input type="hidden" name="startDate" value="{$startDate}"/>
                     <input type="hidden" name="endDate" value="{$endDate}"/>
@@ -24,16 +29,23 @@
                     <input type="hidden" name="memo" value="{$memo}"/>
                     <input type="hidden" name="hidden" value="{$hidden}"/>
                     <input type="hidden" name="page" value="{$page}"/>
-                    
-                    
+
+
                     <label class="mb_10">
                         拍摄日期:{$shoutday}<br/>
                         {$week}
                     </label>
                     <label class="mb_10">
                         标记
-                        <input type="text" maxlength="10" placeholder="请输入标记" name="eflag" value="{$eflag}"/>
-                    </label>
+                         <select maxlength="30" name="eflag">
+                            <option value="" ></option>
+                            <option value='1星' <php>if($eflag == '1星'):</php>selected<php>endif;</php> >1星</option>
+                            <option value='2星' <php>if($eflag == '2星'):</php>selected<php>endif;</php> >2星</option>
+                            <option value='3星' <php>if($eflag == '3星'):</php>selected<php>endif;</php> >3星</option>
+                            <option value='4星' <php>if($eflag == '4星'):</php>selected<php>endif;</php> >4星</option>
+                            <option value='5星' <php>if($eflag == '5星'):</php>selected<php>endif;</php> >5星</option>
+                        </select>
+                     </label>
                     <label class="mb_10">
                         备注
                         <input type="text" maxlength="10" placeholder="请输入备注" name="ememo" value="{$ememo}"/>
@@ -48,5 +60,17 @@
         </div>
         <a class="start_btn" href="{:addons_url('PhotoManagement://PhotoManagement/showList',array('page'=>$page , 'flag'=>$flag , 'memo'=>$memo , 'hidden'=>$hidden , 'type'=>$type , 'startDate'=>$startDate , 'endDate'=>$endDate ))}" >返回</a>
     </div>
+    <php>if($etype == 0):</php>
+    <script type="text/javascript">
+        document.querySelector('#previewImage').onclick = function () {
+            wx.previewImage({
+                current: '{$url}',
+                urls: [
+                    '{$url}'
+                ]
+            });
+        };
+    </script>
+    <php>endif;</php>
 </body>
 </html>

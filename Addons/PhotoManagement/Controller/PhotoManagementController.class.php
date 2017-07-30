@@ -20,11 +20,11 @@ class PhotoManagementController extends AddonsController {
         $piccnt = M('photo_management')->where($map)->count();
         $map['type'] = "1";
         $videocnt = M('photo_management')->where($map)->count();
-        
-        $data=M('photo_management')->field('distinct flag')->select();
+
+        $data = M('photo_management')->field('distinct flag')->select();
         //addWeixinLog('PhotoManagementController:show', $data);
         $this->assign('flaglist', $data);
-        
+
         $type = I("type");
         $startDate = I("startDate");
         $endDate = I("endDate");
@@ -80,7 +80,7 @@ class PhotoManagementController extends AddonsController {
 
         $map['type'] = $type;
         if (!empty($flag)) {
-            $map['flag'] = array('like', '%' . $flag . '%');
+            $map['flag'] = $flag;
         }
         if (!empty($memo)) {
             $map['memo'] = array('like', '%' . $memo . '%');
@@ -106,7 +106,11 @@ class PhotoManagementController extends AddonsController {
 
         $data = M('photo_management')->where($map)->order('name desc')->page($page, $row)->select();
         foreach ($data as &$c) {
-            $c['short'] = 'http://image.syue77.top/' . $c['name'] . '.jpg?imageView2/1/w/120/h/120';
+            if ($c['type'] == '0') {
+                $c['short'] = 'http://image.syue77.top/' . $c['name'] . '.jpg?imageView2/1/w/120/h/120';
+            } else {
+                $c['short'] = 'http://image.syue77.top/' . $c['name'] . '.mp4?vframe/jpg/offset/3|imageView2/1/w/120/h/120';
+            }
         }
         $this->assign('data', $data);
 
@@ -120,16 +124,22 @@ class PhotoManagementController extends AddonsController {
         //addWeixinLog('PhotoManagementController::showPhoto', I('name'));
         $map ['name'] = I('name');
         $data = M('photo_management')->where($map)->select();
-        $weekarray=array("日","一","二","三","四","五","六");
+        $weekarray = array("日", "一", "二", "三", "四", "五", "六");
         foreach ($data as &$c) {
-            $this->assign('url', 'http://image.syue77.top/' . $c['name'] . '.jpg');
+            if ($c['type'] == '0') {
+                $this->assign('url', 'http://image.syue77.top/' . $c['name'] . '.jpg');
+            } else {
+                $this->assign('url', 'http://image.syue77.top/' . $c['name'] . '.mp4');
+                $this->assign('image', 'http://image.syue77.top/' . $c['name'] . '.mp4?vframe/jpg/offset/3');
+            }
             $this->assign('shoutday', substr($c['name'], 0, 4) . '年' . substr($c['name'], 4, 2) . '月' . substr($c['name'], 6, 2) . '日' . substr($c['name'], 8, 2) . '时' . substr($c['name'], 10, 2) . '分');
-            $this->assign('week', "星期".$weekarray[date("w",strtotime(substr($c['name'], 0, 4) . '-' . substr($c['name'], 4, 2) . '-' . substr($c['name'], 6, 2)))]);
+            $this->assign('week', "星期" . $weekarray[date("w", strtotime(substr($c['name'], 0, 4) . '-' . substr($c['name'], 4, 2) . '-' . substr($c['name'], 6, 2)))]);
             //addWeixinLog('PhotoManagementController::showPhoto', date("w",strtotime(substr($c['name'], 0, 4) . '-' . substr($c['name'], 4, 2) . '-' . substr($c['name'], 6, 2))));
             $this->assign('name', $c['name']);
             $this->assign('eflag', $c['flag']);
             $this->assign('ememo', $c['memo']);
             $this->assign('ehidden', $c['hidden']);
+            $this->assign('etype', $c['type']);
         }
         $type = I('type');
         $startDate = I('startDate');
@@ -164,7 +174,7 @@ class PhotoManagementController extends AddonsController {
             $c['updatetime'] = time();
             M('photo_management')->where($map)->save($c);
         }
-        
+
         $type = I('type');
         $startDate = I('startDate');
         $endDate = I('endDate');
@@ -174,12 +184,12 @@ class PhotoManagementController extends AddonsController {
         $page = I('page');
 
         $param ['type'] = $type;
-        $param ['startDate'] =  $startDate;
+        $param ['startDate'] = $startDate;
         $param ['endDate'] = $endDate;
-        $param ['flag'] =  $flag;
-        $param ['hidden'] =  $hidden;
-        $param ['memo'] =  $memo;
-        $param ['page'] =  $page;
+        $param ['flag'] = $flag;
+        $param ['hidden'] = $hidden;
+        $param ['memo'] = $memo;
+        $param ['page'] = $page;
         $param ['name'] = I('name');
         redirect(addons_url('PhotoManagement://PhotoManagement/showPhoto', $param));
     }
