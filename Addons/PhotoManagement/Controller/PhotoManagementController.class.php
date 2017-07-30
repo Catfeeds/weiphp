@@ -15,14 +15,14 @@ class PhotoManagementController extends AddonsController {
     function show() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('PhotoManagementController:show', $param);
+        //addWeixinLog('PhotoManagementController:show', $param);
         $map['type'] = "0";
         $piccnt = M('photo_management')->where($map)->count();
         $map['type'] = "1";
         $videocnt = M('photo_management')->where($map)->count();
         
         $data=M('photo_management')->field('distinct flag')->select();
-        addWeixinLog('PhotoManagementController:show', $data);
+        //addWeixinLog('PhotoManagementController:show', $data);
         $this->assign('flaglist', $data);
         
         $type = I("type");
@@ -47,7 +47,7 @@ class PhotoManagementController extends AddonsController {
     function showList() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('PhotoManagementController::showList', $param);
+        //addWeixinLog('PhotoManagementController::showList', $param);
 
         $page = I('page', 1, 'intval'); // 默认显示第一页数据
         $row = 30;
@@ -91,16 +91,16 @@ class PhotoManagementController extends AddonsController {
         } else {
             $map['hidden'] = '0';
         }
-        addWeixinLog('PhotoManagementController::showList', $map);
+        //addWeixinLog('PhotoManagementController::showList', $map);
         $cnt = M('photo_management')->where($map)->count();
         if ($cnt % $row > 0) {
             $totalPages = intval($cnt / $row) + 1;
         } else {
             $totalPages = intval($cnt / $row);
         }
-        addWeixinLog('PhotoManagementController::showList', $totalPages);
-        addWeixinLog('PhotoManagementController::showList', $page);
-        addWeixinLog('PhotoManagementController::showList', $cnt);
+        //addWeixinLog('PhotoManagementController::showList', $totalPages);
+        //addWeixinLog('PhotoManagementController::showList', $page);
+        //addWeixinLog('PhotoManagementController::showList', $cnt);
         $this->assign('totalPages', $totalPages);
         $this->assign('page', $page);
 
@@ -116,13 +116,16 @@ class PhotoManagementController extends AddonsController {
     function showPhoto() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('PhotoManagementController::showPhoto', $param);
-        addWeixinLog('PhotoManagementController::showPhoto', I('name'));
+        //addWeixinLog('PhotoManagementController::showPhoto', $param);
+        //addWeixinLog('PhotoManagementController::showPhoto', I('name'));
         $map ['name'] = I('name');
         $data = M('photo_management')->where($map)->select();
+        $weekarray=array("日","一","二","三","四","五","六");
         foreach ($data as &$c) {
             $this->assign('url', 'http://image.syue77.top/' . $c['name'] . '.jpg');
             $this->assign('shoutday', substr($c['name'], 0, 4) . '年' . substr($c['name'], 4, 2) . '月' . substr($c['name'], 6, 2) . '日' . substr($c['name'], 8, 2) . '时' . substr($c['name'], 10, 2) . '分');
+            $this->assign('week', "星期".$weekarray[date("w",strtotime(substr($c['name'], 0, 4) . '-' . substr($c['name'], 4, 2) . '-' . substr($c['name'], 6, 2)))]);
+            //addWeixinLog('PhotoManagementController::showPhoto', date("w",strtotime(substr($c['name'], 0, 4) . '-' . substr($c['name'], 4, 2) . '-' . substr($c['name'], 6, 2))));
             $this->assign('name', $c['name']);
             $this->assign('eflag', $c['flag']);
             $this->assign('ememo', $c['memo']);
@@ -150,7 +153,7 @@ class PhotoManagementController extends AddonsController {
     function editPhoto() {
         $param ['token'] = get_token();
         $param ['openid'] = get_openid();
-        addWeixinLog('PhotoManagementController::editPhoto', $param);
+        //addWeixinLog('PhotoManagementController::editPhoto', $param);
         $map ['name'] = I('name');
         $data = M('photo_management')->where($map)->select();
         foreach ($data as &$c) {
